@@ -1,0 +1,16 @@
+	.section	.text
+
+#include "sai/sai.h"
+
+#if SAI_TARGET==SAI_TARGET_MD
+	.global	sai_min_tmss_init
+; a6.l = return
+sai_min_tmss_init:
+	; TMSS
+	move.b	IO_LOC_VERSION, d0
+	andi.b	#$0F, d0
+	beq.s	0f
+	move.l	#$53454741, TMSS_PORT  ; "SEGA"
+0:
+	jmp	(a6)
+#endif

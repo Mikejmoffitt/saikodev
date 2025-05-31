@@ -1,0 +1,17 @@
+	.section	.text
+
+#include "sai/sai.h"
+
+	.global	sai_min_c2_init
+; a6.l = return
+sai_min_c2_init:
+	; Set up I/O
+	sf	(SYSC_IO_CTRL0).l
+	sf	(SYSC_IO_CTRL1).l
+	sf	(SYSC_IO_CTRL2).l
+;	move.b	#$F0, (SYSC_IO_CTRL2).l  ; TODO: What are these? used by Puyo 2 for comms?
+	move.b	#$88, (SYSC_IO_CTRL3).l  ; Ports D and H become outputs.
+	move.b	#$B0, (SYSC_IO_PORTD).l
+	move.b	#$30, (SYSC_IO_PORTH).l
+
+	jmp	(a6)
