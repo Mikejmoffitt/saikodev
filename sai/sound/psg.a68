@@ -4,7 +4,7 @@
 
 ; a6.l = return
 	.global	sai_min_psg_init
-sai_psg_init:
+sai_min_psg_init:
 	; Shut up PSG - On my VA0 units it defaults to a loud noise.
 	lea	PSG_BASE, a0
 	move.b	#$9F, d0  ; Channel 0 att 15

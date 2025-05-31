@@ -150,3 +150,13 @@ sai_vdp_wait_vbl:
 	tst.b	g_vbl_wait_flag
 	bne.s	0b
 	rts
+
+	.global	sai_vdp_debug_set
+; d1.w = number
+; d0.w = number
+sai_vdp_debug_port_sel:
+	lsl.w	#8, d1
+	move.w	d1, (VDP_DBG_SEL).l
+	ori.b	#0, d1
+	move.w	d0, (VDP_DBG_DATA).l
+	rts

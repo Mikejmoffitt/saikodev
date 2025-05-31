@@ -142,15 +142,15 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_OFFS_CTRL          (0x04)
 #define VDP_OFFS_STATUS        (0x04)
 #define VDP_OFFS_HVCOUNT       (0x08)
-#define VDP_DBG_SEL            (0x18)
-#define VDP_DBG_DATA           (0x1C)
+#define VDP_OFFS_DBG_SEL       (0x18)
+#define VDP_OFFS_DBG_DATA      (0x1C)
 
 #define VDP_DATA               (VDP_BASE+VDP_OFFS_DATA)
 #define VDP_CTRL               (VDP_BASE+VDP_OFFS_CTRL)
 #define VDP_STATUs             (VDP_BASE+VDP_OFFS_STATUS)
 #define VDP_HVCOUNT            (VDP_BASE+VDP_OFFS_HVCOUNT)
-#define VDP_DBG_SEL            (VDP_BASE+VDP_DBG_SEL)
-#define VDP_DBG_DATA           (VDP_BASE+VDP_DBG_DATA)
+#define VDP_DBG_SEL            (VDP_BASE+VDP_OFFS_DBG_SEL)
+#define VDP_DBG_DATA           (VDP_BASE+VDP_OFFS_DBG_DATA)
 
 // Status register
 #define VDP_STATUS_PAL         SAI_BITVAL(0)
@@ -289,10 +289,10 @@ static inline uint32_t md_vdp_get_plane_base(uint16_t plane);
 static inline uint32_t md_vdp_get_sprite_base(void);
 static inline uint32_t md_vdp_get_hscroll_base(void);
 
-// Interrupts.
-static inline void sai_vdp_set_vint_en(bool enabled);
-static inline void sai_vdp_set_thint_en(bool enabled);
-static inline void sai_vdp_set_hint_en(bool enabled);
+// Interrupts. Returns the prior enablement status.
+static inline bool sai_vdp_set_vint_en(bool enabled);
+static inline bool sai_vdp_set_thint_en(bool enabled);
+static inline bool sai_vdp_set_hint_en(bool enabled);
 static inline void sai_vdp_set_hint_line(uint8_t line);
 
 // Scroll planes.
@@ -314,11 +314,7 @@ static inline uint16_t md_vdp_get_hvcount(void);
 static inline uint16_t md_vdp_get_hcount(void);
 static inline uint16_t md_vdp_get_vcount(void);
 
-
-
-// -----------------------------------------------------------------------------
 // Scroll planes
-// -----------------------------------------------------------------------------
 
 // Sets the size of the scroll planes (they are set together).
 // Not all values are valid and respected by the VDP, so please use a value
@@ -340,9 +336,11 @@ static inline void md_vdp_set_window_bottom(uint8_t cell);
 static inline void md_vdp_set_window_right(uint8_t width);
 static inline void md_vdp_set_window_left(uint8_t width);
 
+// -----------------------------------------------------------------------------
 //
 // Static implementations
 //
+// -----------------------------------------------------------------------------
 
 static inline void sai_vdp_set_reg(uint8_t reg, uint8_t val)
 {
@@ -396,25 +394,31 @@ static inline uint32_t md_vdp_get_hscroll_base(void)
 }
 
 // Interrupt config
-static inline void sai_vdp_set_hint_en(bool enabled)
+static inline bool sai_vdp_set_hint_en(bool enabled)
 {
+	const bool ret = g_sai_vdp_reg_mode[0] & VDP_MODESET1_IE1;
 	if (enabled) g_sai_vdp_reg_mode[0] |= VDP_MODESET1_IE1;
 	else g_sai_vdp_reg_mode[0] &= ~(VDP_MODESET1_IE1);
 	sai_vdp_set_reg(VDP_MODESET1, line);
+	return ret;
 }
 
-static inline void sai_vdp_set_vint_en(bool enabled)
+static inline bool sai_vdp_set_vint_en(bool enabled)
 {
+	const bool ret = g_sai_vdp_reg_mode[1] & VDP_MODESET2_IE0;
 	if (enabled) g_sai_vdp_reg_mode[1] |= VDP_MODESET2_IE0;
 	else g_sai_vdp_reg_mode[1] &= ~(VDP_MODESET2_IE0);
 	sai_vdp_set_reg(VDP_MODESET2, line);
+	return ret;
 }
 
-static inline void sai_vdp_set_thint_en(bool enabled)
+static inline bool sai_vdp_set_thint_en(bool enabled)
 {
+	const bool ret = g_sai_vdp_reg_mode[2] & VDP_MODESET3_IE2;
 	if (enabled) g_sai_vdp_reg_mode[2] |= VDP_MODESET3_IE2;
 	else g_sai_vdp_reg_mode[2] &= ~(VDP_MODESET3_IE2);
 	sai_vdp_set_reg(VDP_MODESET3, line);
+	return ret;
 }
 
 static inline void sai_vdp_set_hint_line(uint8_t line)
