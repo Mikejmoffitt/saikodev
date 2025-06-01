@@ -87,12 +87,10 @@ _v_table:
 	.long	_v_unimp
 	.long	_v_unimp
 
-#if SAI_TARGET==SAI_TARGET_MD
-	.extern	sai_min_tmss_init
-#endif
 	.extern	sai_min_vdp_init
 	.extern	sai_crt0_begin
 
+	; TODO: Header
 ;
 ; Entry point
 ;
@@ -100,10 +98,11 @@ _v_table:
 ; Routines here do not use a call stack, but instead store the return address in
 ; the a6 register; until the WRAM test has completed it is not assumed that the
 ; RAM actually works.
+	.org	$200
 _start:
 start:
 	move.w	#$2700, sr
-	move.l	($0).l, sp
+	lea	__stack, sp
 
 
 #if SAI_TARGET==SAI_TARGET_MD
@@ -187,6 +186,19 @@ startup_forever_wait_start_release:
 	beq.s	startup_forever_wait_start_release
 #endif
 	bra.w	start
+
+#if SAI_TARGET==SAI_TARGET_MD
+	.global	sai_min_tmss_init
+; a6.l = return
+sai_min_tmss_init:
+	; TMSS
+	move.b	IO_LOC_VERSION, d0
+	andi.b	#$0F, d0
+	beq.s	0f
+	move.l	#$53454741, TMSS_PORT  ; "SEGA"
+0:
+	jmp	(a6)
+#endif
 
 
 ; ==============================================================================

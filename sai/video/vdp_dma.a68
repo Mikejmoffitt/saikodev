@@ -1,33 +1,41 @@
 #include	"sai/memmap.h"
 #include	"sai/vdp.h"
 ;
-; void md_dma_process_cmd(DmaCmd *cmd)
-;
-	.global	md_dma_process_cmd
+	
+	.struct	0
 
 ; Parameters in DmaCmd struct
-.set	PRM_STRIDE, 0   ; uint16_t
-.set	PRM_LEN1,   2   ; uint16_t
-.set	PRM_LEN2,   4   ; uint16_t
-.set	PRM_SRC1,   6   ; uint16_t
-.set	PRM_SRC2,   8   ; uint16_t
-.set	PRM_SRC3,   10  ; uint16_t
-.set	PRM_CTRL32, 12  ; uint32_t, cache of ctrl longword for dest addr
-
-
+DmaCmd.stride:	ds.w 1
+DmaCmd.len:
+DmaCmd.len1:	ds.w 1
+DmaCmd.len2:	ds.w 1
+DmaCmd.src1:	ds.w 1
+DmaCmd.src2:	ds.w 1
+DmaCmd.src3:	ds.w 1
+DmaCmd.ctrl32:	ds.l 1
+DmaCmd.len:
+	.section	.text
 
 ; a0.l = command
-md_dma_process_cmd:
-	lea	VDP_CTRL, a1
-; A0 holds the DMA command, with precalculated register values.
+	.global	sai_dma_process_cmd
+sai_dma_process_cmd:
+	lea	VDP_BASE, a1
+	; Wait for another DMA to be done.
+0:
+	move.w	VDP_OFFS_STATUS(a1), d0
+	andi.w	#VDP_STATUS_DMA, d0
+	bne.s	0b
+
+	lea	VDP_OFFS_CTRL(a1), a1
+	; A0 holds the DMA command, with precalculated register values.
 	move.w	PRM_SRC3(a0), d0
-	move.w	(a0)+, (a1)  ; PRM_STRIDE
-	move.l	(a0)+, (a1)  ; PRM_LEN1/2
+	move.w	(a0)+, (a1)  ; DmaCmd.stride
+	move.l	(a0)+, (a1)  ; DmaCmd.len1/len2
 	tst.b	d0
 	bmi.s	dma_fill
-	move.l	(a0)+, (a1)  ; PRM_SRC1/2
-	addq.w	#2, a0
-	move.w	d0, (a1)  ; PRM_SRC3
+	move.l	(a0)+, (a1)  ; DmaCmd.src1/2
+	addq.w	#2, a0  ; Skip src3, already read it
+	move.w	d0, (a1)  ; src3
 
 #if SAI_TARGET==SAI_TARGET_MD
 	move.w	#$100, SYS_Z80_BUSREQ
@@ -35,14 +43,14 @@ md_dma_process_cmd:
 	btst	#0, SYS_Z80_BUSREQ
 	bne.s	0b
 #endif  // SAI_TARGET
-	move.l	(a0), (a1)   ; PRM_CTRL32
+	move.l	(a0), (a1)   ; DmaCmd.ctrl32
 #if SAI_TARGET==SAI_TARGET_MD
 	move.w	#$000, SYS_Z80_BUSREQ
 #endif  // SAI_TARGET
 	rts
 
 dma_fill:
-	subq	#6, a0
+	subq	#DmaCmd.src1, a0  ; walk back
 	move.w	d0, (a1)  ; PRM_SRC3
 
 #if SAI_TARGET==SAI_TARGET_MD
@@ -52,8 +60,8 @@ dma_fill:
 	bne.s	0b
 #endif  // SAI_TARGET
 
-	move.l	PRM_CTRL32(a0), (a1)  ; PRM_CTRL32
-	move.w	PRM_SRC1(a0), -4(a1)  ; data
+	move.l	DmaCmd.ctrl32(a0), (a1)
+	move.w	DmaCmd.src1(a0), VDP_OFFS_DATA-VDP_OFFS_CTRL(a1)  ; data
 #if SAI_TARGET==SAI_TARGET_MD
 	move.w	#$000, SYS_Z80_BUSREQ
 #endif  // SAI_TARGET

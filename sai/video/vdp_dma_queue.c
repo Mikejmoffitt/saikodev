@@ -2,6 +2,7 @@
 #include "sai/macro.h"
 #include "sai/vdp.h"
 
+#define DMA_QUEUE_PRIO_DEPTH 8
 #define DMA_QUEUE_DEPTH 64
 // Used with modulo operator, so should be power of 2.
 _Static_assert(SAI_NUM_IS_POW2(DMA_QUEUE_DEPTH), "DMA queue depth != power of 2!");
@@ -27,17 +28,19 @@ struct DmaCmd
 	uint16_t src_2;
 	uint16_t src_3;
 	uint32_t ctrl;
-} __attribute__ ((aligned (0x10)));
+};
+
+_Static_assert(sizeof(DmaCmd) == 0x10);
 
 // Special high priority sprite list(s) queue.
 static uint16_t s_dma_prio_q_idx;
-static DmaCmd s_dma_prio_q_cmd[8];
+static DmaCmd s_dma_prio_q_cmd[DMA_QUEUE_PRIO_DEPTH];
 // DMA queue ring buffer.
 static uint16_t s_dma_q_write_idx;
 static uint16_t s_dma_q_read_idx;
 static DmaCmd s_dma_q[DMA_QUEUE_DEPTH];
 
-void md_dma_init(void)
+void sai_vdp_dma_init(void)
 {
 	s_dma_q_read_idx = 0;
 	s_dma_q_write_idx = 0;
@@ -100,7 +103,7 @@ static inline void enqueue_int(DmaOp op, uint32_t bus, uint16_t dest,
 	cmd->ctrl = VDP_CTRL_DMA_BIT | VDP_CTRL_ADDR(dest) | bus;
 }
 
-static inline void md_dma_enqueue(DmaOp op, uint32_t bus, uint16_t dest,
+static inline void sai_vdp_dma_enqueue(DmaOp op, uint32_t bus, uint16_t dest,
                                   uint32_t src, uint16_t n, uint16_t stride)
 {
 	if (op != DMA_OP_TRANSFER && op != DMA_OP_SPR_TRANSFER)
@@ -127,49 +130,49 @@ static inline void md_dma_enqueue(DmaOp op, uint32_t bus, uint16_t dest,
 
 
 // Schedule a DMA for next vblank from 68K mem to VRAM
-void md_dma_transfer_vram(uint16_t dest, const void *src, uint16_t words,
+void sai_vdp_dma_transfer_vram(uint16_t dest, const void *src, uint16_t words,
                           uint16_t stride)
 {
-	md_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VRAM_WRITE,
+	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VRAM_WRITE,
 	              dest, (uint32_t)src, words, stride);
 }
 
-void md_dma_transfer_cram(uint16_t dest, const void *src, uint16_t words,
+void sai_vdp_dma_transfer_cram(uint16_t dest, const void *src, uint16_t words,
                           uint16_t stride)
 {
-	md_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_CRAM_WRITE,
+	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_CRAM_WRITE,
 	              dest, (uint32_t)src, words, stride);
 }
 
-void md_dma_transfer_vsram(uint16_t dest, const void *src, uint16_t words,
+void sai_vdp_dma_transfer_vsram(uint16_t dest, const void *src, uint16_t words,
                            uint16_t stride)
 {
-	md_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VSRAM_WRITE,
+	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VSRAM_WRITE,
 	              dest, (uint32_t)src, words, stride);
 }
 
-void md_dma_transfer_spr_vram(uint16_t dest, const void *src, uint16_t words,
+void sai_vdp_dma_transfer_spr_vram(uint16_t dest, const void *src, uint16_t words,
                               uint16_t stride)
 {
-	md_dma_enqueue(DMA_OP_SPR_TRANSFER, VDP_CTRL_VRAM_WRITE,
+	sai_vdp_dma_enqueue(DMA_OP_SPR_TRANSFER, VDP_CTRL_VRAM_WRITE,
 	              dest, (uint32_t)src, words, stride);
 }
 
 // Schedule a DMA for next vblank to fill specified bytes at dest with val.
-void md_dma_fill_vram(uint16_t dest, uint16_t val, uint16_t bytes, uint16_t stride)
+void sai_vdp_dma_fill_vram(uint16_t dest, uint16_t val, uint16_t bytes, uint16_t stride)
 {
-	md_dma_enqueue(DMA_OP_FILL, VDP_CTRL_VRAM_WRITE, dest, val, bytes, stride);
+	sai_vdp_dma_enqueue(DMA_OP_FILL, VDP_CTRL_VRAM_WRITE, dest, val, bytes, stride);
 }
 
 // Schedule a DMA for next vblank to copy specified bytes from VRAM src to VRAM dest.
-void md_dma_copy_vram(uint16_t dest, uint16_t src, uint16_t bytes, uint16_t stride)
+void sai_vdp_dma_copy_vram(uint16_t dest, uint16_t src, uint16_t bytes, uint16_t stride)
 {
-	md_dma_enqueue(DMA_OP_COPY, VDP_CTRL_VRAM_WRITE, dest, src, bytes, stride);
+	sai_vdp_dma_enqueue(DMA_OP_COPY, VDP_CTRL_VRAM_WRITE, dest, src, bytes, stride);
 }
 
-void md_dma_process_cmd(DmaCmd *cmd);  // dma_process.a68
+void sai_vdp_dma_process_cmd(DmaCmd *cmd);  // dma_process.a68
 
-void md_dma_process(void)
+void sai_vdp_dma_flush(void)
 {
 	md_vdp_wait_dma();
 
@@ -181,8 +184,8 @@ void md_dma_process(void)
 	for (uint16_t i = 0; i < SAI_ARRAYSIZE(s_dma_prio_q_cmd); i++)
 	{
 		if (s_dma_prio_q_cmd[i].stride == 0) break;
-		register u16 *a0 asm ("a0") = &s_dma_prio_q_cmd[i];
-		asm volatile ("bsr.w md_dma_process_cmd"
+		register void *a0 asm ("a0") = &s_dma_prio_q_cmd[i];
+		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
 		              :
 		              : "a" (a0)
 		              :  "d0", "a0", "a1", "memory", "cc" );
@@ -193,8 +196,12 @@ void md_dma_process(void)
 	while (s_dma_q_read_idx != s_dma_q_write_idx)
 	{
 		DmaCmd *cmd = &s_dma_q[s_dma_q_read_idx];
+		register void *a0 asm ("a0") = cmd;
+		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
+		              :
+		              : "a" (a0)
+		              :  "d0", "a0", "a1", "memory", "cc" );
 		s_dma_q_read_idx = (s_dma_q_read_idx + 1) % DMA_QUEUE_DEPTH;
-		md_dma_process_cmd(cmd);
 	}
 
 	sai_vdp_set_hint_en(hint_en);

@@ -7,6 +7,7 @@
 #define WRAM_BASE              (0xFF0000)
 #define WRAM_SIZE              (0x010000)
 #define VRAM_SIZE              (0x010000)
+#define VRAM_SIZE_128K         (0x020000)
 #define SRAM_BASE              (0x200000)
 #define SRAM_CTRL              (0xA130F1)
 

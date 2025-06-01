@@ -1,5 +1,5 @@
-
-#include "sai/sai.h"
+#include "sai/memmap.h
+#include "sai/vdp.h"
 
 	.global	sai_vdp_update_scroll_base
 
@@ -84,9 +84,10 @@ sai_min_vdp_clear_vram:
 	move.l	#VDP_CTRL_ADDR(0)|VDP_VRAM_ADDR_CMD, VDP_CTRL_OFFS(a1)  ; Start at zero
 	move.w	#VDP_REGST(VDP_AUTOINC, $02), VDP_CTRL_OFFS(a1)  ; Word increment
 	moveq	#0, d0
-	move.w	#($10000 / (4*4)), d1
+	; Rept of 2 is used because IIRC the FIFO is four words long.
+	move.w	#(VRAM_SIZE_128K / (4*2)), d1
 0:
-	rept	4
+	rept	2
 	move.l	d0, VDP_DATA_OFFS(a1)
 	endr
 	dbf	d1, 0b

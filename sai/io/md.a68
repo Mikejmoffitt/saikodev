@@ -1,0 +1,127 @@
+#include	"sai/io/md.h"
+
+; "Time" to allow TH pin to settle
+#define SAI_MD_PAD_NOP_COUNT 3
+
+	.section	.bss
+
+	.global	g_md_pad
+g_md_pad:	ds.b SaiMdPad.len * SAI_MD_PAD_COUNT
+
+	.section	.text
+
+	.global	sai_md_pad_init
+sai_md_pad_init:
+	lea	g_md_pad, a0
+	moveq	#0, d0
+	moveq	#((SaiMdPad.len*SAI_MD_PAD_COUNT)/4)-1, d1
+0:
+	move.l	d0, (a0)+
+	dbf	d1, 0b
+	rts
+	
+
+; a0 = SaiMdPad
+; a1 points to the pad data port (byte address).
+	.global	update_pad_sub
+update_pad_sub:
+	; Get old data in there
+	move.w	SaiMdPad.now(a0), SaiMdPad.prev(a0)
+	; First step - x1CBRLDU into d0
+	move.b	#$40, (a1)  ; TH hi
+	.rept	SAI_MD_PAD_NOP_COUNT
+	nop
+	.endr
+	move.b	(a1), d0
+	; Second step - x0SA00DU into d1
+	move.b	#$00, (a1)  ; TH low
+	ori.w	#$FFC0, d0
+	nop
+	move.b	(a1), d1
+	; If the pad doesn't positively identify as an MD pad (bits 2 and 3
+	; cleared), then don't proceed to read later phases.
+	; TODO: Gracefully handle peripherals like Mega Mouse, etc.
+	btst.b	#2, d1
+	bne	store_pad_unplugged
+	btst.b	#3, d1
+	bne	store_pad_unplugged
+	; Proceed to use the second phase data.
+	lsl.b	#2, d1
+	ori.w	#$FF3F, d1
+	and.w	d1, d0
+	; d0 contains a full 3-button controller's worth now.
+	; Third step - write TH high and disregard data.
+	move.b	#$40, (a1)  ; TH hi
+	.rept	SAI_MD_PAD_NOP_COUNT
+	nop
+	.endr
+	; Sixth step - write TH low, and use lower nybble to check pad type.
+	move.b	#$00, (a1)  ; TH low
+	.rept	SAI_MD_PAD_NOP_COUNT
+	nop
+	.endr
+	move.b	(a1), d1
+	; If the lower four bits are non-zero, it's not a 6-button pad.
+	; final step - write TH high, read extra buttons
+	move.b	#$40, (a1)  ; TH hi
+	andi.b	#$0F, d1
+	bne.s	store_pad
+	move.b	(a1), d1
+	; Shift buttons into place in upper byte and mask off other bits
+	lsl.w	#8, d1
+	ori.w	#$F0FF, d1
+	and.w	d1, d0
+	; Mark highest bit to indicate a 6-button controller.
+	bclr	#15, d0
+	bra.s	store_pad
+
+store_pad_unplugged:
+	; Mark second-highest bit for "unplugged/maybe sms" status.
+	bclr	#14, d0
+	; Fall-through intended.
+store_pad:
+	; Invert buttons for easier use with the C MdButton enum.
+	not.w	d0
+	move.w	d0, SaiMdPad.now(a0)
+	move.b	#$00, (a1)  ; TH back to low
+	rts
+
+	.global	sai_md_pad_poll
+sai_md_pad_poll:
+	; Pause Z80 before we touch the ports.
+	move.w	#$100, SYS_Z80_BUSREQ
+0:
+	btst	#0, SYS_Z80_BUSREQ
+	bne.s	0b
+
+	lea	g_md_pad, a0
+	lea	MD_IO_DATA1, a1
+	.rept	SAI_MD_PAD_COUNT
+	bsr.w	update_pad_sub
+	addq.w	#2, a0
+	lea	SaiMdPad.len(a0), a0
+	.endr
+
+	; Done with the ports, so release the Z80.
+	move.w	#$000, SYS_Z80_BUSREQ
+
+	; Generate edges for all inputs.
+	lea	g_md_pad, a0
+	.rept	SAI_MD_PAD_COUNT
+	bsr.b	generate_edges_sub
+	lea	SaiMdPad.len(a0), a0
+	.endr
+	rts
+
+generate_edges_sub:
+	move.w	SaiMdPad.now(a0), d0
+	move.w	SaiMdPad.prev(a0), d1
+	not.w	d1
+	and.w	d1, d0
+	move.w	d0, SaiMdPad.pos(a0)
+	move.w	SaiMdPad.prev(a0), d0
+	move.w	SaiMdPad.now(a0), d1
+	not.w	d1
+	and.w	d1, d0
+	move.w	d0, SaiMdPad.neg(a0)
+	rts
