@@ -2,6 +2,7 @@
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>
+#include <stdbool.h>
 #endif  // __ASSEMBLER__
 #include "sai/memmap.h"
 #include "sai/macro.h"
@@ -61,8 +62,53 @@ typedef struct SaiMdPad
 
 extern SaiMdPad g_md_pad[SAI_MD_PAD_COUNT];
 
+// Gamepad functions
 void sai_md_pad_init(void);
 void sai_md_pad_poll(void);
+
+// Sub-cpu functions
+static inline bool sai_md_z80_bus_taken(void);
+static inline void sai_md_z80_bus_release(void);
+static inline void sai_md_z80_reset_assert(void);
+static inline void sai_md_z80_reset_deassert(void);
+static inline void sai_md_z80_bus_req(bool wait);
+
+//
+// Static implementations
+//
+
+static inline bool sai_md_z80_bus_taken(void)
+{
+	volatile uint8_t *z80_bus = (volatile uint8_t *)MD_Z80_BUSREQ;
+	return !(*z80_bus & 0x01);
+}
+
+static inline void sai_md_z80_bus_req(bool wait)
+{
+	volatile uint8_t *z80_bus = (volatile uint8_t *)MD_Z80_BUSREQ;
+
+	*z80_bus = 0x01;
+	if (!wait) return;
+	while (*z80_bus & 0x01) __asm__("nop");
+}
+
+static inline void sai_md_z80_bus_release(void)
+{
+	volatile uint8_t *z80_bus = (volatile uint8_t *)MD_Z80_BUSREQ;
+	*z80_bus = 0x00;
+}
+
+static inline void sai_md_z80_reset_deassert(void)
+{
+	volatile uint8_t *z80_reset = (volatile uint8_t *)MD_Z80_RESET;
+	*z80_reset = 0x01;
+}
+
+static inline void sai_md_z80_reset_assert(void)
+{
+	volatile uint8_t *z80_reset = (volatile uint8_t *)MD_Z80_RESET;
+	*z80_reset = 0x00;
+}
 
 #else
 	.struct 0
@@ -74,5 +120,44 @@ SaiMdPad.prev:	ds.w 1
 SaiMdPad.len:
 
 	.extern sai_min_md_pad_init
+	.extern sai_min_md_z80_init
+
+.macro	SAI_MD_Z80_RESET_ASSERT
+	move.w	#0x000, MD_Z80_RESET
+.endm
+
+.macro	SAI_MD_Z80_RESET_DEASSERT
+	move.w	#0x100, MD_Z80_RESET
+.endm
+
+.macro	SAI_MD_Z80_RESET_WAIT
+	SAI_MD_Z80_RESET_ASSERT
+	moveq	#20, d0
+9:
+	dbf	d0, 9b
+.endm
+
+.macro	SAI_MD_Z80_BUSREQ
+	move.w	#0x100, MD_Z80_BUSREQ
+.endm
+
+.macro	SAI_MD_Z80_BUSREQ_WAIT
+	SAI_MD_Z80_BUSREQ
+9:
+	btst	#0, MD_Z80_BUSREQ
+	bne.s	9b
+.endm
+
+.macro	SAI_MD_Z80_BUSREL
+	move.w	#0x000, MD_Z80_BUSREQ
+.endm
+
+.macro	SAI_MD_Z80_PAUSE
+	SAI_MD_Z80_BUSREQ
+9:
+	btst.b	#0, #MD_Z80_BUSREQ
+	bne.s	9b
+.endm
 
 #endif  // __ASSEMBLER__
+

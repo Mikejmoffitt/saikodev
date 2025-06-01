@@ -12,7 +12,8 @@ SAI_SOURCES_ASM := \
 	$(SAI)/irq/md.a68 \
 	$(SAI)/video/vdp_dma.a68 \
 	$(SAI)/sound/psg.a68 \
-	$(SAI)/pal/md.a68
+	$(SAI)/pal/md.a68 \
+	$(SAI)/sai.a68 \
 
 SAI_SOURCES_C := \
 	$(SAI)/video/vdp_dma_queue.c

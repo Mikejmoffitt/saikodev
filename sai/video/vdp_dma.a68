@@ -1,6 +1,7 @@
 #include "sai/memmap.h"
 #include "sai/target.h"
 #include "sai/video/vdp.h"
+#include "sai/io/md.h"
 ;
 	
 	.struct	0
@@ -38,14 +39,11 @@ sai_vdp_dma_process_cmd:
 	move.w	d0, (a1)  ; src3
 
 #if SAI_TARGET==SAI_TARGET_MD
-	move.w	#$100, SYS_Z80_BUSREQ
-0:
-	btst	#0, SYS_Z80_BUSREQ
-	bne.s	0b
+	SAI_MD_Z80_BUSREQ_WAIT
 #endif  // SAI_TARGET
 	move.l	(a0), (a1)   ; DmaCmd.ctrl32
 #if SAI_TARGET==SAI_TARGET_MD
-	move.w	#$000, SYS_Z80_BUSREQ
+	SAI_MD_Z80_BUSREL
 #endif  // SAI_TARGET
 	rts
 
@@ -54,16 +52,13 @@ dma_fill:
 	move.w	d0, (a1)  ; PRM_SRC3
 
 #if SAI_TARGET==SAI_TARGET_MD
-	move.w	#$100, SYS_Z80_BUSREQ
-0:
-	btst	#0, SYS_Z80_BUSREQ
-	bne.s	0b
+	SAI_MD_Z80_BUSREQ_WAIT
 #endif  // SAI_TARGET
 
 	move.l	DmaCmd.ctrl32(a0), (a1)
 	move.w	DmaCmd.src1(a0), VDP_OFFS_DATA-VDP_OFFS_CTRL(a1)  ; data
 #if SAI_TARGET==SAI_TARGET_MD
-	move.w	#$000, SYS_Z80_BUSREQ
+	SAI_MD_Z80_BUSREL
 #endif  // SAI_TARGET
 0:
 	btst	#1, 1(a1)

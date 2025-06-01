@@ -115,8 +115,8 @@ start:
 	lea	__stack, sp
 
 #if SAI_TARGET == SAI_TARGET_MD
-	move.w	#$0100, (SYS_Z80_BUSREQ).l  ; Halt Z80
 	calla6	sai_min_tmss_init
+	calla6	sai_min_md_z80_init
 	calla6	sai_min_md_pad_init
 #elif SAI_TARGET==SAI_TARGET_C2
 	calla6	sai_c2_min_init

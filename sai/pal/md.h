@@ -20,10 +20,11 @@ extern "C"
 #define SAI_PAL333(r, g, b) (((r) << 1) | ((g) << 5) | ((b) << 9))
 #define SAI_PAL_DIRTY_MASK_FULL 0x000F
 
+#ifndef __ASSEMBLER__
+
 extern uint16_t g_sai_pal[16*4];
 extern uint16_t g_sai_pal_dirty;
 
-#ifndef __ASSEMBLER__
 // Set a single palette color.
 static inline void sai_pal_set(uint16_t idx, uint16_t val);
 
@@ -32,10 +33,6 @@ static inline void sai_pal_set(uint16_t idx, uint16_t val);
 // Source: Pointer to data to copy from. Data is copied immediately to a cache.
 // Count: Number of palette entries to copy (1 = one word = one color).
 static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t count);
-
-// Select between banks 0 - 3 for sprites and backgrounds. (System C/C2 only).
-void sai_pal_set_bg_bank(uint16_t bank);
-void sai_pal_set_spr_bank(uint16_t bank);
 
 // Direct palette cache access. After modifying the palette, make sure to mark
 // the range as dirty! Otherwise, it may not be uploaded.
@@ -79,6 +76,13 @@ static inline void sai_pal_mark_dirty(uint16_t first_index, uint16_t count)
 		dirty_mask = dirty_mask << 1;
 	}
 }
+
+#else
+
+	.extern	g_sai_pal
+	.extern	g_sai_pal_dirty
+	.extern	sai_pal_poll
+	.extern	sai_pal_init
 
 #endif  // __ASSEMBLER__
 

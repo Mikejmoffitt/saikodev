@@ -10,7 +10,40 @@ g_md_pad:	ds.b SaiMdPad.len * SAI_MD_PAD_COUNT
 
 	.section	.text
 
-	.global	sai_min_md_pad_init
+	.global	sai_min_md_z80_init
+sai_min_md_z80_init:
+	lea	MD_Z80_WRAM, a0
+
+	SAI_MD_Z80_RESET_ASSERT
+	SAI_MD_Z80_BUSREQ
+	SAI_MD_Z80_RESET_DEASSERT
+
+	moveq	#0, d0
+	move.w	#(MD_Z80_WRAM_SIZE/4)-1, d1
+0:
+	.rept	4
+	move.b	d0, (a0)+
+	.endr
+	dbf	d1, 0b
+
+	lea	MD_Z80_WRAM, a0
+	lea	z80_stub(pc), a1
+	.rept	3
+	move.b	(a1)+, (a0)+
+	.endr
+
+	SAI_MD_Z80_RESET_WAIT
+	SAI_MD_Z80_RESET_DEASSERT
+	SAI_MD_Z80_BUSREL
+
+	jmp	(a6)
+
+z80_stub:
+	dc.b	$F3       ; di
+	dc.b	$18, $FE  ; jr $
+
+	.align	2
+
 	.global	sai_md_pad_init
 sai_md_pad_init:
 	move.l	a6, -(sp)
@@ -20,6 +53,7 @@ sai_md_pad_init:
 	move.l	(sp)+, a6
 	rts
 
+	.global	sai_min_md_pad_init
 ; a6.l = return
 sai_min_md_pad_init:
 	lea	g_md_pad, a0
@@ -106,7 +140,7 @@ store_pad:
 	.global	sai_md_pad_poll
 sai_md_pad_poll:
 	; Pause Z80 before we touch the ports.
-	move.w	#$100, SYS_Z80_BUSREQ
+	SAI_MD_Z80_BUSREQ
 
 	lea	g_md_pad, a0
 	lea	MD_IO_DATA1, a1
@@ -116,8 +150,7 @@ sai_md_pad_poll:
 	addq.l	#2, a1  ; next pad
 	.endr
 
-	; Done with the ports, so release the Z80.
-	move.w	#$000, SYS_Z80_BUSREQ
+	SAI_MD_Z80_BUSREL
 
 	; Generate edges for all inputs.
 	lea	g_md_pad, a0

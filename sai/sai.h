@@ -25,3 +25,13 @@
 #elif SAI_TARGET=SAI_TARGET_CPS2
 #error "TODO"
 #endif
+
+#ifndef __ASSEMBLER__
+// Call at the end of the main loop to handle
+// * finalization of sprite list(s)
+// * palette management / transfer preparation
+// * frame synchronization
+// * schedule transfers
+// * input polling
+void sai_finish(void);
+#endif  // __ASSEMBLER__

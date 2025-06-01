@@ -1,0 +1,15 @@
+	.global	sai_finish
+
+#include "sai/sai.h"
+
+	.section	.text
+
+#if SAI_TARGET==SAI_TARGET_MD
+sai_finish:
+	bsr.w	sai_vdp_wait_vbl
+	bsr.w	sai_pal_poll
+	bsr.w	sai_vdp_dma_flush
+	bra.w	sai_md_pad_poll
+#else
+#error "SAI_TARGET NOT SET!"
+#endif  // SAI_TARGET

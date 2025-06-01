@@ -5,5 +5,8 @@ $(MEGALOADER): $(UTILDIR)/debug/megaloader.c
 flash: $(OUTDIR)/$(PROJECT_NAME).bin $(MEGALOADER)
 	$(MEGALOADER) md $< /dev/ttyUSB0 2> /dev/null
 
-mame: $(OUTDIR)/$(PROJECT_NAME).bin
-	exec mame megadrij -cart $< -debug -r 1280x960 -prescale 2
+blastem: $(PROJECT_OUTPUT)
+	blastem $<
+
+mame: $(PROJECT_OUTPUT)
+	mame megadrij -debug -r 1280x960 -prescale 4 -cart $<

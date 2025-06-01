@@ -9,6 +9,8 @@ OBJDIR := $(WRKDIR)/obj
 SAIOBJDIR := $(WRKDIR)/saiobj
 OUTDIR := out
 
+PROJECT_OUTPUT := $(OUTDIR)/$(PROJECT_NAME).bin
+
 .PHONY: all vars clean
 
 # Saikodev sources and default flags come from here.
@@ -38,8 +40,10 @@ OBJECTS_ASM := $(patsubst $(SRCDIR)/%.a68,$(OBJDIR)/%.o,$(SOURCES_ASM))
 OBJECTS_C   := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES_C))
 OBJECTS_CPP := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SOURCES_CPP))
 
-all: $(OUTDIR)/$(PROJECT_NAME).bin
+all: $(PROJECT_OUTPUT)
 .DEFAULT_GOAL := all
+
+
 
 # Debug output for manual sanity check.
 vars:
@@ -89,7 +93,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.a68
 
 
 # Final output
-$(OUTDIR)/$(PROJECT_NAME).bin: $(OUTDIR)/$(PROJECT_NAME).elf $(BINPAD)
+$(PROJECT_OUTPUT): $(OUTDIR)/$(PROJECT_NAME).elf $(BINPAD)
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[36m[ PAD ]\e[0m ... --> $@\n"'
 	$(OBJCOPY) -O binary $< $@

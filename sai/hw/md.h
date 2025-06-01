@@ -19,9 +19,10 @@
 
 /* SYS and TMSS */
 #if SAI_TARGET == SAI_TARGET_MD
-#define SYS_Z80_PRG            (0xA00000)
-#define SYS_Z80_BUSREQ         (0xA11100)
-#define SYS_Z80_RESET          (0xA11200)
+#define MD_Z80_WRAM_SIZE       (0x2000)
+#define MD_Z80_WRAM            (0xA00000)
+#define MD_Z80_BUSREQ          (0xA11100)
+#define MD_Z80_RESET           (0xA11200)
 #define TMSS_PORT              (0xA14000)
 #endif  // SAI_TARGET
 
