@@ -22,7 +22,7 @@
        _a < _b ? _a : _b; })
 
 /* Macro used for calling subroutines without RAM in startup code. */
-#ifdef__ASSEMBLER__
+#ifdef __ASSEMBLER__
 
 .macro	calla6	routine
 	lea	(. + 12).l, a6

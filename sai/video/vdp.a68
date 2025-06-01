@@ -1,43 +1,44 @@
-#include "sai/memmap.h
-#include "sai/vdp.h"
+#include "sai/memmap.h"
+#include "sai/video/vdp.h"
 
 	.global	sai_vdp_update_scroll_base
+
+	.global	g_sai_vdp_ntbase
+	.global	g_sai_vdp_sprbase
+	.global	g_sai_vdp_hsbase
+	.global	g_sai_vdp_reg_mode
+	.global	g_sai_vdp_reg_spcga
+	.global	g_sai_vdp_reg_bg_color
+	.global	g_sai_vdp_reg_planesize
+
+	.global	g_vbl_wait_flag
 
 //
 // Storage
 //
 	.section	.bss
 
-	.global	g_sai_vdp_ntbase
-	.global	g_sai_vdp_sprbase
-	.global	g_sai_vdp_hsbase
-// VRAM locations for tables (name, sprite, scroll).
-g_sai_vdp_ntbase:             ds.l 3
-g_sai_vdp_sprbase:            ds.l 1
-g_sai_vdp_hsbase:             ds.l 1
-
-	.global	g_sai_vdp_reg_mode
-	.global	g_sai_vdp_reg_spcga
-	.global	g_sai_vdp_reg_bg_color
-	.global	g_sai_vdp_reg_planesize
-
-// Registers bits.
-g_sai_vdp_reg_mode:           ds.b 4; // $80, $81, $8B, $8C modeset bits.
-
-	.global	g_vbl_wait_flag
 g_vbl_wait_flag:              ds.b 1
+
+	.section	.data
+g_sai_vdp_reg_mode:
+	dc.w VDP_REGST(VDP_MODESET1, VDP_MODESET1_DEFAULT)
+	dc.w VDP_REGST(VDP_MODESET2, VDP_MODESET2_DEFAULT)
+	dc.w VDP_REGST(VDP_MODESET3, VDP_MODESET3_DEFAULT)
+	dc.w VDP_REGST(VDP_MODESET4, VDP_MODESET4_DEFAULT)
+g_sai_vdp_ntbase:
+	dc.l VRAM_SCRA_BASE_DEFAULT
+	dc.l VRAM_SCRB_BASE_DEFAULT
+	dc.l VRAM_SCRW_BASE_DEFAULT
+g_sai_vdp_sprbase:
+	dc.l VRAM_SPR_BASE_DEFAULT
+g_sai_vdp_hsbase:
+	dc.l VRAM_HSCR_BASE_DEFAULT
 
 //
 // Startup
 //
 	.section	.text
-
-	.global	sai_vdp_init
-sai_vdp_init:
-	move.l	a6, -(sp)
-	calla6	sai_min_vdp_init
-	move.l	(sp)+, a6
-	rts
 
 ; a6.l = return
 	.global	sai_min_vdp_init
@@ -47,7 +48,7 @@ sai_min_vdp_init:
 0:
 	move.w	(a0)+, d1
 	bpl.s	1f
-	move.w	d1, VDP_OFFS_CTRL(a4)
+	move.w	d1, VDP_OFFS_CTRL(a1)
 	bra.s	0b
 1:
 	jmp	(a6)
@@ -81,15 +82,15 @@ sai_vdp_clear_vram:
 	.global	sai_min_vdp_clear_vram
 sai_min_vdp_clear_vram:
 	lea	VDP_BASE, a1
-	move.l	#VDP_CTRL_ADDR(0)|VDP_VRAM_ADDR_CMD, VDP_CTRL_OFFS(a1)  ; Start at zero
-	move.w	#VDP_REGST(VDP_AUTOINC, $02), VDP_CTRL_OFFS(a1)  ; Word increment
+	move.l	#VDP_CTRL_ADDR(0)|VDP_VRAM_ADDR_CMD, VDP_OFFS_CTRL(a1)  ; Start at zero
+	move.w	#VDP_REGST(VDP_AUTOINC, $02), VDP_OFFS_CTRL(a1)  ; Word increment
 	moveq	#0, d0
 	; Rept of 2 is used because IIRC the FIFO is four words long.
 	move.w	#(VRAM_SIZE_128K / (4*2)), d1
 0:
-	rept	2
-	move.l	d0, VDP_DATA_OFFS(a1)
-	endr
+	.rept	2
+	move.l	d0, VDP_OFFS_DATA(a1)
+	.endr
 	dbf	d1, 0b
 	jmp	(a6)
 
@@ -99,11 +100,13 @@ sai_vdp_update_scroll_base:
 	lea	g_sai_vdp_ntbase, a0
 	; Scroll A
 	move.w	(a0)+, d1  ; Keep for 128k mode bits
-	move.w	(a0)+, d0  ; lower bits for SCRA
-	lsr.w	#VDP_SCRA_SHIFT-3, d0  ; Shift into place, offset weirdly
+	moveq	#0, d0
+	move.b	(a0), d0  ; lower bits for SCRA, read this way to shift by 8
+	addq.l	#2, a0  ; 
+	lsr.w	#VDP_SCRA_SHIFT-8-3, d0  ; Shift into place, offset weirdly
 	andi.w	#$FFF8, d0  ; Mask off lower 3 bits
 	ori.w	#VDP_REGST(VDP_SCRABASE, 0), d0
-	move.w	d0, VDP_CTRL_OFFS(a1)
+	move.w	d0, VDP_OFFS_CTRL(a1)
 	; Scroll A and B's 16th bit for 128kB VRAM mode
 	andi.w	#$0001, d1  ; PA0 in place
 	move.w	(a0)+, d0  ; check for PB4
@@ -111,19 +114,23 @@ sai_vdp_update_scroll_base:
 	beq.s	0f
 	ori.w	#(1<<4), d1  ; PB4
 0:
-	ori.w	#VDP_REGST(VDP_128_BPCGA), d1
-	move.w	d1, VDP_CTRL_OFFS(a1)
+	ori.w	#VDP_REGST(VDP_128_BPCGA, 0), d1
+	move.w	d1, VDP_OFFS_CTRL(a1)
 	; Scroll B
-	move.w	(a0)+, d0
-	lsr.w	#VDP_SCRB_SHIFT, d0  ; Shift into place, offset weirdly
+	moveq	#0, d0
+	move.b	(a0), d0  ; another byte read into place for -8 shift
+	addq.l	#2, a0
+	lsr.w	#VDP_SCRB_SHIFT-8, d0  ; Shift into place, offset weirdly
 	ori.w	#VDP_REGST(VDP_SCRBBASE, 0), d0
-	move.w	d0, VDP_CTRL_OFFS(a1)
+	move.w	d0, VDP_OFFS_CTRL(a1)
 	; Window
-	move.l	(a0)+, d0  ; we can ignore that upper half
-	lsr.w	#VDP_SCRW_SHIFT-1, d0  ; Shift into place, offset weirdly
+	moveq	#0, d0
+	move.b	2(a0), d0
+	addq.l	#4, a0
+	lsr.w	#VDP_SCRW_SHIFT-8-1, d0  ; Shift into place, offset weirdly
 	andi.w	#$FFFE, d0
 	ori.w	#VDP_REGST(VDP_SCRWBASE, 0), d0
-	move.w	d0, VDP_CTRL_OFFS(a1)
+	move.w	d0, VDP_OFFS_CTRL(a1)
 	; Sprite
 	move.l	(a0)+, d0
 	andi.w	#$0001, d0
@@ -131,20 +138,16 @@ sai_vdp_update_scroll_base:
 	andi.w	#(1<<5), d0  ; SP5, bit 16 of sprite table addr for 128k mode.
 0:
 	ori.w	#VDP_REGST(VDP_128_SPCGA, 0), d0
-	move.w	d0, VDP_CTRL_OFFS(a1)
+	move.w	d0, VDP_OFFS_CTRL(a1)
 	; Horizontal scroll
 	move.l	(a0)+, d0
-	lsr.l	#VDP_HSCR_SHIFT, d0
+	moveq	#VDP_HSCR_SHIFT, d1
+	lsr.l	d1, d0
 	ori.w	#VDP_REGST(VDP_HSCRBASE, 0), d0
-	move.w	d0, VDP_CTRL_OFFS(a1)
+	move.w	d0, VDP_OFFS_CTRL(a1)
 	rts
 
-	.global	sai_vdp_on_vbl
-sai_vdp_on_vbl:
-	sf	g_vbl_wait_flag
-	rts
-
-	.global	sai_vdp_wait_for_vbl
+	.global	sai_vdp_wait_vbl
 sai_vdp_wait_vbl:
 	st	g_vbl_wait_flag
 0:

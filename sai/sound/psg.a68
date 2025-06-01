@@ -1,6 +1,6 @@
 	.section	.text
 
-#include "sai/sai.h"
+#include "sai/memmap.h"
 
 ; a6.l = return
 	.global	sai_min_psg_init

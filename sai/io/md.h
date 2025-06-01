@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef __ASSEMBLER__
 #include <stdint.h>
+#endif  // __ASSEMBLER__
 #include "sai/memmap.h"
 #include "sai/macro.h"
 
@@ -8,7 +10,7 @@
 #define SAI_MD_PAD_COUNT 2
 #endif  // SAI_MD_PAD_COUNT
 
-#if SAI_MD_PAD_COUNT > 3)
+#if SAI_MD_PAD_COUNT > 3
 #error "SAI_MD_PAD_COUNT > 3!"
 #endif  // SAI_MD_PAD_COUNT
 
@@ -47,6 +49,7 @@
 #define MD_PAD_UNPLUGGED       (SAI_BITVAL(15))
 
 #ifndef __ASSEMBLER__
+
 // Struct representing the state of a gamepad.
 typedef struct SaiMdPad
 {
@@ -60,6 +63,7 @@ extern SaiMdPad g_md_pad[SAI_MD_PAD_COUNT];
 
 void sai_md_pad_init(void);
 void sai_md_pad_poll(void);
+
 #else
 	.struct 0
 
@@ -68,5 +72,7 @@ SaiMdPad.pos:	ds.w 1
 SaiMdPad.neg:	ds.w 1
 SaiMdPad.prev:	ds.w 1
 SaiMdPad.len:
+
+	.extern sai_min_md_pad_init
 
 #endif  // __ASSEMBLER__

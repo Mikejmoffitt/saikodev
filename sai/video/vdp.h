@@ -12,6 +12,7 @@ extern "C"
 #include <stdint.h>
 #endif  // __ASSEMBLER__
 
+#include "sai/target.h"
 #include "sai/macro.h"
 #include "sai/memmap.h"
 
@@ -127,10 +128,10 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_MODESET4_LSM1      SAI_BITVAL(2)
 #define VDP_MODESET4_LSM0      SAI_BITVAL(1)
 #define VDP_MODESET4_RS0       SAI_BITVAL(0)
-#ifndef SAI_TARGET_C2
-#define VDP_MODESET4_DEFAULT   (VDP_MODESET4_RS0 | VDP_MODESET4_RS1)
-#else
+#if SAI_TARGET == SAI_TARGET_C2
 #define VDP_MODESET4_DEFAULT   (VDP_MODESET4_RS0 | VDP_MODESET4_SPAEN | VDP_MODESET4_VSCLK)
+#else
+#define VDP_MODESET4_DEFAULT   (VDP_MODESET4_RS0 | VDP_MODESET4_RS1)
 #endif  // SAI_TARGET_C2
 
 //
@@ -147,7 +148,7 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 
 #define VDP_DATA               (VDP_BASE+VDP_OFFS_DATA)
 #define VDP_CTRL               (VDP_BASE+VDP_OFFS_CTRL)
-#define VDP_STATUs             (VDP_BASE+VDP_OFFS_STATUS)
+#define VDP_STATUS             (VDP_BASE+VDP_OFFS_STATUS)
 #define VDP_HVCOUNT            (VDP_BASE+VDP_OFFS_HVCOUNT)
 #define VDP_DBG_SEL            (VDP_BASE+VDP_OFFS_DBG_SEL)
 #define VDP_DBG_DATA           (VDP_BASE+VDP_OFFS_DBG_DATA)
@@ -223,8 +224,12 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_CRAM_ADDR_CMD      (0xC0000000)
 #define VDP_VSRAM_ADDR_CMD     (0x40000010)
 
+#ifndef __ASSEMBLER__
 #define VDP_CTRL_ADDR(_addr) ((((uint32_t)(_addr) & 0x3FFF) << 16) | \
                              (((uint32_t)(_addr) & 0xC000) >> 14))
+#else
+#define VDP_CTRL_ADDR(_addr) ((((_addr) & 0x3FFF) << 16) | (((_addr) & 0xC000) >> 14))
+#endif  // __ASSEMBLER__
 #define VDP_REGST(regno, value) (((regno << 8) | 0x8000) | (value & 0xFF))
 
 // Indices into NT array and/or args into layer functions
@@ -249,8 +254,8 @@ extern uint32_t g_sai_vdp_ntbase[3];     // Nametable base addresses (A, B, W).
 extern uint32_t g_sai_vdp_sprbase;       // Sprite base address.
 extern uint32_t g_sai_vdp_hsbase;        // Horizontal scroll address.
 
-// Registers bits.
-extern uint8_t g_sai_vdp_reg_mode[4];  // $80, $81, $8B, $8C modeset bits.
+// Registers bits. The command is baked in as well.
+extern uint16_t g_sai_vdp_reg_mode[4];  // $80, $81, $8B, $8C modeset bits.
 
 // Vertical blank synchronization flag
 extern uint8_t g_vbl_wait_flag;
@@ -268,9 +273,7 @@ extern uint8_t g_vbl_wait_flag;
 //
 // Initialization and system functions
 //
-void sai_vdp_init(void);        // Initializes VDP to default values.
 void sai_vdp_clear_vram(void);  // Zeroes out VRAM.
-void sai_vdp_on_vbl(void);      // Called by vertical IRQ.
 void sai_vdp_wait_vbl(void);    // Waits until vertical IRQ is hit.
 
 //
@@ -296,7 +299,7 @@ static inline bool sai_vdp_set_hint_en(bool enabled);
 static inline void sai_vdp_set_hint_line(uint8_t line);
 
 // Scroll planes.
-static inline void sai_vdp_set_plane_size(uin86_t size);  // VDP_PLANESIZE
+static inline void sai_vdp_set_plane_size(uint8_t size);  // VDP_PLANESIZE
 static inline void sai_vdp_set_hscroll_mode(uint8_t mode);  // VDP_HSCROLL
 static inline void sai_vdp_set_vscroll_mode(uint8_t mode);  // VDP_VSCROLL
 static inline uint8_t sai_vdp_get_hscroll_mode(void);
@@ -315,15 +318,9 @@ static inline uint16_t md_vdp_get_hcount(void);
 static inline uint16_t md_vdp_get_vcount(void);
 
 // Scroll planes
-
-// Sets the size of the scroll planes (they are set together).
-// Not all values are valid and respected by the VDP, so please use a value
-// from the VdpPlaneSize enum only.
-static inline void md_vdp_set_plane_size(VdpPlaneSize size);
-
-// Sets the horizontal and vertical scroll modes.
-static inline void md_vdp_set_hscroll_mode(VdpHscrollMode mode);
-static inline void md_vdp_set_vscroll_mode(VdpVscrollMode mode);
+static inline void md_vdp_set_plane_size(uint8_t size);
+static inline void md_vdp_set_hscroll_mode(uint8_t mode);
+static inline void md_vdp_set_vscroll_mode(uint8_t mode);
 
 // Get the current plane dimensions in cells (pixels / 8).
 static inline uint16_t md_vdp_get_plane_width(void);
@@ -342,10 +339,17 @@ static inline void md_vdp_set_window_left(uint8_t width);
 //
 // -----------------------------------------------------------------------------
 
-static inline void sai_vdp_set_reg(uint8_t reg, uint8_t val)
+static inline void sai_vdp_write_ctrl(uint16_t val)
 {
 	volatile uint16_t *port_ctrl = (volatile uint16_t *)(VDP_CTRL);
-	*ctrl = 0x8000 | (reg << 8) | val;
+	*port_ctrl = val;
+}
+
+static inline void sai_vdp_set_reg(uint8_t reg, uint8_t val)
+{
+	uint16_t write_val = 0x8000 | (reg << 8);
+	write_val |= val;
+	sai_vdp_write_ctrl(write_val);
 }
 
 static inline uint16_t sai_vdp_get_status(void)
@@ -375,7 +379,7 @@ static inline void sai_vdp_set_spr_base(uint32_t addr)
 
 static inline void sai_vdp_set_hscroll_base(uint32_t addr)
 {
-	g_sai_vdp_hscbase = addr;
+	g_sai_vdp_hsbase = addr;
 }
 
 static inline uint32_t md_vdp_get_plane_base(uint16_t plane)
@@ -385,12 +389,12 @@ static inline uint32_t md_vdp_get_plane_base(uint16_t plane)
 
 static inline uint32_t md_vdp_get_sprite_base(void)
 {
-	return g_sai_vdp_sprbase
+	return g_sai_vdp_sprbase;
 }
 
 static inline uint32_t md_vdp_get_hscroll_base(void)
 {
-	return g_sai_vdp_hscbase;
+	return g_sai_vdp_hsbase;
 }
 
 // Interrupt config
@@ -399,7 +403,7 @@ static inline bool sai_vdp_set_hint_en(bool enabled)
 	const bool ret = g_sai_vdp_reg_mode[0] & VDP_MODESET1_IE1;
 	if (enabled) g_sai_vdp_reg_mode[0] |= VDP_MODESET1_IE1;
 	else g_sai_vdp_reg_mode[0] &= ~(VDP_MODESET1_IE1);
-	sai_vdp_set_reg(VDP_MODESET1, line);
+	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[0]);
 	return ret;
 }
 
@@ -408,7 +412,7 @@ static inline bool sai_vdp_set_vint_en(bool enabled)
 	const bool ret = g_sai_vdp_reg_mode[1] & VDP_MODESET2_IE0;
 	if (enabled) g_sai_vdp_reg_mode[1] |= VDP_MODESET2_IE0;
 	else g_sai_vdp_reg_mode[1] &= ~(VDP_MODESET2_IE0);
-	sai_vdp_set_reg(VDP_MODESET2, line);
+	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[1]);
 	return ret;
 }
 
@@ -417,7 +421,7 @@ static inline bool sai_vdp_set_thint_en(bool enabled)
 	const bool ret = g_sai_vdp_reg_mode[2] & VDP_MODESET3_IE2;
 	if (enabled) g_sai_vdp_reg_mode[2] |= VDP_MODESET3_IE2;
 	else g_sai_vdp_reg_mode[2] &= ~(VDP_MODESET3_IE2);
-	sai_vdp_set_reg(VDP_MODESET3, line);
+	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[2]);
 	return ret;
 }
 
@@ -431,14 +435,14 @@ static inline void sai_vdp_set_hscroll_mode(uint8_t mode)
 {
 	g_sai_vdp_reg_mode[2] &= 0xFC;
 	g_sai_vdp_reg_mode[2] |= mode;
-	sai_vdp_set_reg(VDP_MODESET3, g_sai_vdp_reg_mode[2]);
+	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[2]);
 }
 
 static inline void sai_vdp_set_vscroll_mode(uint8_t mode)
 {
 	if (mode) g_sai_vdp_reg_mode[2] |= VDP_MODESET3_VCELL;
 	else g_sai_vdp_reg_mode[2] &= ~(VDP_MODESET3_VCELL);
-	sai_vdp_set_reg(VDP_MODESET3, g_sai_vdp_reg_mode[2]);
+	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[2]);
 }
 
 static inline void sai_vdp_set_plane_size(uint8_t size)
@@ -482,13 +486,13 @@ static inline void md_vdp_set_blank(bool blank)
 {
 	if (blank) g_sai_vdp_reg_mode[0] |= VDP_MODESET1_DE;
 	else g_sai_vdp_reg_mode[0] &= ~(VDP_MODESET1_DE);
-	sai_vdp_set_reg(VDP_MODESET1, g_sai_vdp_reg_mode[0]);
+	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[0]);
 }
 
 static inline uint16_t md_vdp_get_hvcount(void)
 {
 	volatile uint16_t *port_hv = (volatile uint16_t *)(VDP_HVCOUNT);
-	retrun *port_hv;
+	return *port_hv;
 }
 
 static inline uint16_t md_vdp_get_hcount(void)

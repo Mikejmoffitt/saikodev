@@ -24,9 +24,11 @@ COMMON_FLAGS += -fwrapv
 COMMON_FLAGS += -fno-gcse
 COMMON_FLAGS += -fms-extensions
 COMMON_FLAGS += -fno-web -fno-unit-at-a-time
+COMMON_FLAGS += -falign-functions=2
+COMMON_FLAGS += -flimit-function-alignment
 # TODO: investigate lto breaking some asm interop.
 #COMMON_FLAGS += -flto
-COMMON_FLAGS += -I$(SRCDIR) -I$(SAI)
+COMMON_FLAGS += -I$(SRCDIR) -I$(shell pwd) -I$(SAI)/..
 COMMON_FLAGS += -DSAI_TARGET=$(SAI_TARGET)
 
 # For C.
@@ -40,7 +42,7 @@ CPPFLAGS += -std=gnu++2b
 
 # For ASM.
 ASFLAGS := $(COMMON_FLAGS) -I$(OBJDIR)
-ASFLAGS += -Wa,-I$(SRCDIR) -Wa,-I$(OBJDIR) -Wa,-I$(SAI)
+ASFLAGS += -Wa,-I$(SRCDIR) -Wa,-I$(OBJDIR) -Wa,-I$(shell pwd) -Wa,-I$(SAI)/..
 ASFLAGS += -mcpu=68000 -Wa,--bitwise-or
 ASFLAGS += -Wa,--register-prefix-optional
 ASFLAGS += -x assembler-with-cpp
@@ -48,9 +50,8 @@ ASFLAGS += -x assembler-with-cpp
 # Linker.
 GCC_VER := $(shell $(CC) -dumpversion)
 LDFLAGS += -nostartfiles
-LDFLAGS += -T $(LDSCRIPT)
 LDFLAGS += -Wl,--gc-sections
-LDFLAGS += -Wl,-Map $(PROJECT_NAME).map
+LDFLAGS += -Wl,-Map $(OUTDIR)/$(PROJECT_NAME).map
 
 LIBS := -L $(SAI_ENV)/m68k-elf/lib -lnosys
 LIBS += -L $(SAI_ENV)/lib/gcc/m68k-elf/$(GCC_VER) -lgcc

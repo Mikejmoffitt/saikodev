@@ -1,0 +1,75 @@
+
+#include "sai/video/vdp.h"
+#include "sai/target.h"
+
+#if SAI_TARGET == SAI_TARGET_C2
+	.global g_irq_fm_callback
+#else
+	.global g_irq_th_callback
+#endif  // SAI_TARGET
+	.global	g_irq_hbl_callback
+	.global	g_irq_vbl_callback
+
+	.global	_v_irq1
+	.global	_v_irq2
+	.global	_v_irq3
+	.global	_v_irq4
+	.global	_v_irq5
+	.global	_v_irq6
+	.global	_v_irq7
+
+	.global	sai_default_irq_callback
+
+	.section	.data
+
+#if SAI_TARGET == SAI_TARGET_C2
+g_irq_fm_callback:	dc.l $68000000
+#else
+g_irq_th_callback:	dc.l $68000000
+#endif  // SAI_TARGET
+g_irq_hbl_callback:	dc.l $68000000
+g_irq_vbl_callback:	dc.l $68000000
+
+	.section	.bss
+
+.macro	irq_handler cb
+	tst.b	\cb
+	bpl.s	0f
+	; Reduced protection case
+	move.l	a0, -(sp)
+	movea.l	\cb, a0
+	jsr	(a0)
+	move.l	(sp)+, a0
+	rte
+0:
+	bne.s	1f
+	movem.l	d0-d1/a0-a1, -(sp)
+	movea.l	\cb, a0
+	jsr	(a0)
+	movem.l	(sp)+, d0-d1/a0-a1
+1:
+	rte
+.endm
+
+	.section	.text
+_v_irq1:
+_v_irq3:
+_v_irq5:
+_v_irq7:
+	rte
+
+#if SAI_TARGET == SAI_TARGET_C2
+_v_irq2:
+	irq_handler g_irq_fm_callback
+#else
+_v_irq2:
+	irq_handler g_irq_th_callback
+#endif
+
+_v_irq4:
+	irq_handler g_irq_hbl_callback
+
+_v_irq6:
+	sf	g_vbl_wait_flag
+	irq_handler g_irq_vbl_callback
+

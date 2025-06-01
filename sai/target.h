@@ -1,9 +1,10 @@
 #pragma once
 
-#define SAI_TARGET_MD 0
-#define SAI_TARGET_C2 1
-#define SAI_TARGET_SYS18 2
-#define SAI_TARGET_SYS16A 3
-#define SAI_TARGET_SYS16B 4
+#define SIA_TARGET_UNDEFINED 0
+#define SAI_TARGET_MD 1
+#define SAI_TARGET_C2 2
+#define SAI_TARGET_SYS18 3
+#define SAI_TARGET_SYS16A 4
+#define SAI_TARGET_SYS16B 5
 
-#define SAI_TARGET_CPS2 6
+#define SAI_TARGET_CPS2 7

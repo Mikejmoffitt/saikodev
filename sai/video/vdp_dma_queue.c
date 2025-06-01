@@ -1,6 +1,17 @@
-#include "video/vdp_dma_queue.h"
+#include "sai/video/vdp_dma_queue.h"
+#include "sai/video/vdp.h"
 #include "sai/macro.h"
-#include "sai/vdp.h"
+
+#define VDP_CTRL_DMA_BIT     0x00000080
+#define VDP_CTRL_VRAM_READ   0x00000000
+#define VDP_CTRL_VRAM_WRITE  0x40000000
+#define VDP_CTRL_VSRAM_READ  0x00000010
+#define VDP_CTRL_VSRAM_WRITE 0x40000010
+#define VDP_CTRL_CRAM_READ   0x00000020
+#define VDP_CTRL_CRAM_WRITE  0xC0000000
+
+#define VDP_DMA_SRC_FILL 0x80
+#define VDP_DMA_SRC_COPY 0xC0
 
 #define DMA_QUEUE_PRIO_DEPTH 8
 #define DMA_QUEUE_DEPTH 64
@@ -128,34 +139,33 @@ static inline void sai_vdp_dma_enqueue(DmaOp op, uint32_t bus, uint16_t dest,
 	enqueue_int(op, bus, dest, src, n, stride);
 }
 
-
 // Schedule a DMA for next vblank from 68K mem to VRAM
 void sai_vdp_dma_transfer_vram(uint16_t dest, const void *src, uint16_t words,
                           uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VRAM_WRITE,
-	              dest, (uint32_t)src, words, stride);
+	                    dest, (uint32_t)src, words, stride);
 }
 
 void sai_vdp_dma_transfer_cram(uint16_t dest, const void *src, uint16_t words,
                           uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_CRAM_WRITE,
-	              dest, (uint32_t)src, words, stride);
+	                    dest, (uint32_t)src, words, stride);
 }
 
 void sai_vdp_dma_transfer_vsram(uint16_t dest, const void *src, uint16_t words,
                            uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VSRAM_WRITE,
-	              dest, (uint32_t)src, words, stride);
+	                    dest, (uint32_t)src, words, stride);
 }
 
 void sai_vdp_dma_transfer_spr_vram(uint16_t dest, const void *src, uint16_t words,
                               uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_SPR_TRANSFER, VDP_CTRL_VRAM_WRITE,
-	              dest, (uint32_t)src, words, stride);
+	                    dest, (uint32_t)src, words, stride);
 }
 
 // Schedule a DMA for next vblank to fill specified bytes at dest with val.
@@ -174,8 +184,6 @@ void sai_vdp_dma_process_cmd(DmaCmd *cmd);  // dma_process.a68
 
 void sai_vdp_dma_flush(void)
 {
-	md_vdp_wait_dma();
-
 	const bool hint_en = sai_vdp_set_hint_en(false);
 	const bool vint_en = sai_vdp_set_vint_en(false);
 	const bool thint_en = sai_vdp_set_thint_en(false);
@@ -188,7 +196,7 @@ void sai_vdp_dma_flush(void)
 		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
 		              :
 		              : "a" (a0)
-		              :  "d0", "a0", "a1", "memory", "cc" );
+		              :  "d0", "a1", "memory", "cc" );
 	}
 	s_dma_prio_q_idx = 0;
 
@@ -200,7 +208,7 @@ void sai_vdp_dma_flush(void)
 		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
 		              :
 		              : "a" (a0)
-		              :  "d0", "a0", "a1", "memory", "cc" );
+		              :  "d0", "a1", "memory", "cc" );
 		s_dma_q_read_idx = (s_dma_q_read_idx + 1) % DMA_QUEUE_DEPTH;
 	}
 

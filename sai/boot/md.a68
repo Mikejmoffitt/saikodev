@@ -1,5 +1,8 @@
 ; saikodev megadrive and C2 startup
-#include	"sai/memmap.h"
+#include "sai/macro.h"
+#include "sai/memmap.h"
+#include "sai/target.h"
+#include "sai/io/md.h"
 
 ;
 ; Vector table
@@ -45,11 +48,11 @@ _v_table:
 	.long	_v_reserved
 	.long	_v_spurious
 	.long	_v_irq1
-	.long	_v_irq2
+	.long	_v_irq2  ; TH pin / OPN IRQ
 	.long	_v_irq3
-	.long	_v_irq4
+	.long	_v_irq4  ; H-IRQ
 	.long	_v_irq5
-	.long	_v_irq6
+	.long	_v_irq6  ; V-IRQ
 	.long	_v_irq7
 	.long	_v_trap0x0
 	.long	_v_trap0x1
@@ -87,8 +90,15 @@ _v_table:
 	.long	_v_unimp
 	.long	_v_unimp
 
-	.extern	sai_min_vdp_init
 	.extern	sai_crt0_begin
+
+#include "sai/video/vdp.h"
+
+#if SAI_TARGET == SAI_TARGET_C2
+#include "sai/io/c2.h"
+#else
+#include "sai/io/md.h"
+#endif  // SAI_TARGET
 
 	; TODO: Header
 ;
@@ -104,12 +114,12 @@ start:
 	move.w	#$2700, sr
 	lea	__stack, sp
 
-
-#if SAI_TARGET==SAI_TARGET_MD
+#if SAI_TARGET == SAI_TARGET_MD
 	move.w	#$0100, (SYS_Z80_BUSREQ).l  ; Halt Z80
 	calla6	sai_min_tmss_init
+	calla6	sai_min_md_pad_init
 #elif SAI_TARGET==SAI_TARGET_C2
-	calla6	md_c2_min_init
+	calla6	sai_c2_min_init
 #endif  // MDK_TARGET_C2
 
 	calla6	sai_min_psg_init
@@ -118,41 +128,25 @@ start:
 softreset:
 	jmp	sai_crt0_begin
 
-
-; ==============================================================================
-;
-; Test Subroutines
-;
-; ==============================================================================
-
-#ifdef MDK_TARGET_C2
-md_c2_min_init:
-	; Set up I/O
-	sf	(SYSC_IO_LOC_CTRL0).l
-	sf	(SYSC_IO_LOC_CTRL1).l
-	sf	(SYSC_IO_LOC_CTRL2).l
-;	move.b	#$F0, (SYSC_IO_LOC_CTRL2).l
-	move.b	#$88, (SYSC_IO_LOC_CTRL3).l  ; Ports D and H become outputs.
-	move.b	#$B0, (SYSC_IO_LOC_PORTD).l
-	move.b	#$30, (SYSC_IO_LOC_PORTH).l
-	; Enable display
-	move.b	#$00, (SYSC_PROTECTION_LOC_SECURITY).l
-	move.b	#$06, (SYSC_PROTECTION_LOC_VCTRL).l
-	jmp	(a6)
+startup_forever:
+#if SAI_TARGET == SAI_TARGET_C2
+	; TODO: Start button to recovery from error or something
+	bra.w	start
+#else
+	move.l	#$00400040, (MD_IO_CTRL1-1).l  ; Set TH pin as an output
+	move.b	#$00, (MD_IO_DATA1).l  ; TH low
+	btst	#5, (MD_IO_DATA1).l  ; Check start button
+	bne.s	startup_forever
+startup_forever_wait_start_release:
+	btst	#5, (MD_IO_DATA1).l  ; Check start button
+	beq.s	startup_forever_wait_start_release
 #endif
+	bra.w	start
 
-#ifndef MDK_TARGET_C2
-tmss_init:
-	; Halt Z80
-	move.w	#$0100, (SYS_Z80_PORT_BUS_LOC).l
-	; TMSS
-	move.b	IO_LOC_VERSION, d0
-	andi.b	#$0F, d0
-	beq.s	0f
-	move.l	#$53454741, TMSS_PORT  ; "SEGA"
-0:
-	jmp	(a6)
-#endif
+
+;
+; Init and test Subroutines
+;
 
 ; d0 = test word
 ; a6 = return
@@ -168,31 +162,16 @@ wram_test_loop:
 
 wram_test_failed:
 	; knowingly stomping on the a6 return pointer.
-	calla6	md_error_startup_wram_ng_display
+	; TODO
+;	calla6	md_error_startup_wram_ng_display
 	bra.w	startup_forever
 
-startup_forever:
-#ifdef MDK_TARGET_C2
-	; Arcade target hangs on the error indefinitely
-	bra.s	startup_forever
-	; TODO: Start button, or eventual restart.
-#else
-	move.l	#$00400040, (IO_LOC_BASE + 8).l  ; Set TH pin as an output
-	move.b	#$00, (IO_LOC_BASE + 3).l  ; TH low
-	btst	#5, (IO_LOC_BASE + 3).l  ; Check start button
-	bne.s	startup_forever
-startup_forever_wait_start_release:
-	btst	#5, (IO_LOC_BASE + 3).l  ; Check start button
-	beq.s	startup_forever_wait_start_release
-#endif
-	bra.w	start
-
-#if SAI_TARGET==SAI_TARGET_MD
+#if SAI_TARGET == SAI_TARGET_MD
 	.global	sai_min_tmss_init
 ; a6.l = return
 sai_min_tmss_init:
 	; TMSS
-	move.b	IO_LOC_VERSION, d0
+	move.b	MD_IO_VERSION, d0
 	andi.b	#$0F, d0
 	beq.s	0f
 	move.l	#$53454741, TMSS_PORT  ; "SEGA"
@@ -201,74 +180,82 @@ sai_min_tmss_init:
 #endif
 
 
-; ==============================================================================
 ;
 ; Exception Vectors
 ;
-; ==============================================================================
+
+; TODO
+
 _v_bus_error:
-	showerr	MD_ERRMSG_BUS_ERROR
+;	showerr	MD_ERRMSG_BUS_ERROR
 _v_address_error:
-	showerr	MD_ERRMSG_ADDRESS_ERROR
+;	showerr	MD_ERRMSG_ADDRESS_ERROR
 _v_illegal_instruction:
-	showerr	MD_ERRMSG_ILLEGAL_INSTRUCTION
+;	showerr	MD_ERRMSG_ILLEGAL_INSTRUCTION
 _v_div_zero:
-	showerr	MD_ERRMSG_DIV_ZERO
+;	showerr	MD_ERRMSG_DIV_ZERO
 _v_chk:
-	showerr	MD_ERRMSG_CHK
+;	showerr	MD_ERRMSG_CHK
 _v_trapv:
-	showerr	MD_ERRMSG_TRAPV
+;	showerr	MD_ERRMSG_TRAPV
 _v_privelege:
-	showerr	MD_ERRMSG_PRIVELEGE
+;	showerr	MD_ERRMSG_PRIVELEGE
 _v_trace:
-	showerr	MD_ERRMSG_TRACE
+;	showerr	MD_ERRMSG_TRACE
 _v_unused_irq:
-	showerr	MD_ERRMSG_UNUSED_IRQ
+;	showerr	MD_ERRMSG_UNUSED_IRQ
 _v_aline_emu:
-	showerr	MD_ERRMSG_ALINE_EMU
+;	showerr	MD_ERRMSG_ALINE_EMU
 _v_fline_emu:
-	showerr	MD_ERRMSG_FLINE_EMU
+;	showerr	MD_ERRMSG_FLINE_EMU
 _v_reserved:
-	showerr	MD_ERRMSG_RESERVED
+;	showerr	MD_ERRMSG_RESERVED
 _v_coproc_violation:
-	showerr	MD_ERRMSG_COPROC_VIOLATION
+;	showerr	MD_ERRMSG_COPROC_VIOLATION
 _v_format:
-	showerr	MD_ERRMSG_FORMAT
+;	showerr	MD_ERRMSG_FORMAT
 _v_uninit:
-	showerr	MD_ERRMSG_UNINIT
+;	showerr	MD_ERRMSG_UNINIT
 _v_spurious:
-	showerr	MD_ERRMSG_SPURIOUS
+;	showerr	MD_ERRMSG_SPURIOUS
 _v_trap0x0:
-	showerr	MD_ERRMSG_TRAP0X0
+;	showerr	MD_ERRMSG_TRAP0X0
 _v_trap0x1:
-	showerr	MD_ERRMSG_TRAP0X1
+;	showerr	MD_ERRMSG_TRAP0X1
 _v_trap0x2:
-	showerr	MD_ERRMSG_TRAP0X2
+;	showerr	MD_ERRMSG_TRAP0X2
 _v_trap0x3:
-	showerr	MD_ERRMSG_TRAP0X3
+;	showerr	MD_ERRMSG_TRAP0X3
 _v_trap0x4:
-	showerr	MD_ERRMSG_TRAP0X4
+;	showerr	MD_ERRMSG_TRAP0X4
 _v_trap0x5:
-	showerr	MD_ERRMSG_TRAP0X5
+;	showerr	MD_ERRMSG_TRAP0X5
 _v_trap0x6:
-	showerr	MD_ERRMSG_TRAP0X6
+;	showerr	MD_ERRMSG_TRAP0X6
 _v_trap0x7:
-	showerr	MD_ERRMSG_TRAP0X7
+;	showerr	MD_ERRMSG_TRAP0X7
 _v_trap0x8:
-	showerr	MD_ERRMSG_TRAP0X8
+;	showerr	MD_ERRMSG_TRAP0X8
 _v_trap0x9:
-	showerr	MD_ERRMSG_TRAP0X9
+;	showerr	MD_ERRMSG_TRAP0X9
 _v_trap0xa:
-	showerr	MD_ERRMSG_TRAP0XA
+;	showerr	MD_ERRMSG_TRAP0XA
 _v_trap0xb:
-	showerr	MD_ERRMSG_TRAP0XB
+;	showerr	MD_ERRMSG_TRAP0XB
 _v_trap0xc:
-	showerr	MD_ERRMSG_TRAP0XC
+;	showerr	MD_ERRMSG_TRAP0XC
 _v_trap0xd:
-	showerr	MD_ERRMSG_TRAP0XD
+;	showerr	MD_ERRMSG_TRAP0XD
 _v_trap0xe:
-	showerr	MD_ERRMSG_TRAP0XE
+;	showerr	MD_ERRMSG_TRAP0XE
 _v_trap0xf:
-	showerr	MD_ERRMSG_TRAP0XF
+;	showerr	MD_ERRMSG_TRAP0XF
 _v_unimp:
-	showerr	MD_ERRMSG_UNIMP
+;	showerr	MD_ERRMSG_UNIMP
+	rte
+
+_v_irq1:
+_v_irq3:
+_v_irq5:
+_v_irq7:
+	rte

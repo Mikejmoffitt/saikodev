@@ -3,16 +3,18 @@
 #include "sai/target.h"
 
 #ifndef SAI_TARGET
-#error "SAI_TARGET must be defined using a value from sai/target.h!"
+#error "SAI_TARGET must be defined using a value from target.h!"
 #endif  // SAI_TARGET
 
 #include "sai/macro.h"
+#include "sai/memmap.h"
 #if SAI_TARGET==SAI_TARGET_MD
+#include "sai/io/md.h"
+#include "sai/irq/md.h"
 #include "sai/video/vdp.h"
-#include "sai/io/mdpad.h"
+#include "sai/video/vdp_dma_queue.h"
 #elif SAI_TARGET==SAI_TARGET_C2
-#include "sai/io/c2.h"
-#include "sai/megadrive.h"
+#error "TODO"
 #elif SAI_TARGET=SAI_TARGET_SYS18
 #error "TODO"
 #elif SAI_TARGET=SAI_TARGET_SYS16A

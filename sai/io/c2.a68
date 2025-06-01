@@ -1,6 +1,6 @@
 	.section	.text
 
-#include "sai/sai.h"
+#include "sai/memmap.h"
 
 	.global	sai_min_c2_init
 ; a6.l = return
@@ -15,3 +15,5 @@ sai_min_c2_init:
 	move.b	#$30, (SYSC_IO_PORTH).l
 
 	jmp	(a6)
+
+	.extern	sai_min_c2_io_init

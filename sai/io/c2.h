@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef __ASSEMBLER__
 #include <stdint.h>
+#endif  // __ASSEMBLER__
 #include "sai/macro.h"
 #include "sai/memmap.h"
 
@@ -48,3 +50,7 @@
 #define SYSC_SYS_TEST          SAI_BITVAL(2)
 #define SYSC_SYS_COIN1         SAI_BITVAL(1)
 #define SYSC_SYS_COIN2         SAI_BITVAL(0)
+
+#ifdef __ASSEMBLER__
+	.extern	sai_min_c2_io_init
+#endif  // __ASEMBLER__

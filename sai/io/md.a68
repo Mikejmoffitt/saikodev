@@ -10,15 +10,32 @@ g_md_pad:	ds.b SaiMdPad.len * SAI_MD_PAD_COUNT
 
 	.section	.text
 
+	.global	sai_min_md_pad_init
 	.global	sai_md_pad_init
 sai_md_pad_init:
+	move.l	a6, -(sp)
+	lea	0f, a6
+	bra.b	sai_min_md_pad_init
+0:
+	move.l	(sp)+, a6
+	rts
+
+; a6.l = return
+sai_min_md_pad_init:
 	lea	g_md_pad, a0
 	moveq	#0, d0
 	moveq	#((SaiMdPad.len*SAI_MD_PAD_COUNT)/4)-1, d1
 0:
 	move.l	d0, (a0)+
 	dbf	d1, 0b
-	rts
+	lea	MD_IO_DATA1, a0
+	moveq	#0, d0
+	.rept	SAI_MD_PAD_COUNT
+	move.b	d0, (a0)  ; Clear output registers
+	move.b	#$40, (MD_IO_CTRL1-MD_IO_DATA1)(a0)  ; Set TH pin as output
+	addq.l	#2, a0
+	.endr
+	jmp	(a6)
 	
 
 ; a0 = SaiMdPad
@@ -90,16 +107,13 @@ store_pad:
 sai_md_pad_poll:
 	; Pause Z80 before we touch the ports.
 	move.w	#$100, SYS_Z80_BUSREQ
-0:
-	btst	#0, SYS_Z80_BUSREQ
-	bne.s	0b
 
 	lea	g_md_pad, a0
 	lea	MD_IO_DATA1, a1
 	.rept	SAI_MD_PAD_COUNT
 	bsr.w	update_pad_sub
-	addq.w	#2, a0
 	lea	SaiMdPad.len(a0), a0
+	addq.l	#2, a1  ; next pad
 	.endr
 
 	; Done with the ports, so release the Z80.
@@ -109,7 +123,7 @@ sai_md_pad_poll:
 	lea	g_md_pad, a0
 	.rept	SAI_MD_PAD_COUNT
 	bsr.b	generate_edges_sub
-	lea	SaiMdPad.len(a0), a0
+	lea	SaiMdPad.len(a0), a0  ; next player struct
 	.endr
 	rts
 

@@ -1,12 +1,12 @@
-#include	"sai/memmap.h"
-#include	"sai/vdp.h"
+#include "sai/memmap.h"
+#include "sai/target.h"
+#include "sai/video/vdp.h"
 ;
 	
 	.struct	0
 
 ; Parameters in DmaCmd struct
 DmaCmd.stride:	ds.w 1
-DmaCmd.len:
 DmaCmd.len1:	ds.w 1
 DmaCmd.len2:	ds.w 1
 DmaCmd.src1:	ds.w 1
@@ -17,8 +17,8 @@ DmaCmd.len:
 	.section	.text
 
 ; a0.l = command
-	.global	sai_dma_process_cmd
-sai_dma_process_cmd:
+	.global	sai_vdp_dma_process_cmd
+sai_vdp_dma_process_cmd:
 	lea	VDP_BASE, a1
 	; Wait for another DMA to be done.
 0:
@@ -28,7 +28,7 @@ sai_dma_process_cmd:
 
 	lea	VDP_OFFS_CTRL(a1), a1
 	; A0 holds the DMA command, with precalculated register values.
-	move.w	PRM_SRC3(a0), d0
+	move.w	DmaCmd.src3(a0), d0
 	move.w	(a0)+, (a1)  ; DmaCmd.stride
 	move.l	(a0)+, (a1)  ; DmaCmd.len1/len2
 	tst.b	d0

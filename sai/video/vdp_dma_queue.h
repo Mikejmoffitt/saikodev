@@ -12,8 +12,8 @@ extern "C"
 #include <stdint.h>
 #endif  // __ASSEMBLER__
 
+#include "sai/video/vdp.h"
 #include "sai/memmap.h"
-#include "sai/vdp.h"
 
 #ifndef __ASSEMBLER__
 void md_dma_init(void);
