@@ -11,6 +11,7 @@
 #if SAI_TARGET==SAI_TARGET_MD
 #include "sai/io/md.h"
 #include "sai/irq/md.h"
+#include "sai/pal/md.h"
 #include "sai/video/vdp.h"
 #include "sai/video/vdp_dma_queue.h"
 #elif SAI_TARGET==SAI_TARGET_C2

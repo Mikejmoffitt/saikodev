@@ -16,25 +16,21 @@ extern "C"
 #include "sai/memmap.h"
 
 #ifndef __ASSEMBLER__
-void md_dma_init(void);
+void sai_vdp_dma_init(void);
 
 // Schedule a DMA for next vblank from 68K mem to VRAM
-void md_dma_transfer_vram(uint16_t dest, const void *src, uint16_t words,
-                          uint16_t stride);
-void md_dma_transfer_cram(uint16_t dest, const void *src, uint16_t words,
-                          uint16_t stride);
-void md_dma_transfer_vsram(uint16_t dest, const void *src, uint16_t words,
-                           uint16_t stride);
+void sai_vdp_dma_transfer_vram(uint16_t dest, const void *src, uint16_t words, uint16_t stride);
+void sai_vdp_dma_transfer_cram(uint16_t dest, const void *src, uint16_t words, uint16_t stride);
+void sai_vdp_dma_transfer_vsram(uint16_t dest, const void *src, uint16_t words, uint16_t stride);
 // Special high-priority DMA for sprite tables. Schedules transfers that will
 // run before any others.
-void md_dma_transfer_spr_vram(uint16_t dest, const void *src, uint16_t words,
-                              uint16_t stride);
+void sai_vdp_dma_transfer_spr_vram(uint16_t dest, const void *src, uint16_t words, uint16_t stride);
 
 // Schedule a DMA for next vblank to fill n words at dest with val.
-void md_dma_fill_vram(uint16_t dest, uint16_t val, uint16_t bytes, uint16_t stride);
+void sai_vdp_dma_fill_vram(uint16_t dest, uint16_t val, uint16_t bytes, uint16_t stride);
 
 // Schedule a DMA for next vblank to copy n words from VRAM src to VRAM dest.
-void md_dma_copy_vram(uint16_t dest, uint16_t src, uint16_t bytes, uint16_t stride);
+void sai_vdp_dma_copy_vram(uint16_t dest, uint16_t src, uint16_t bytes, uint16_t stride);
 
 // Execute DMA commands sitting in the queue.
 void sai_vdp_dma_flush(void);
