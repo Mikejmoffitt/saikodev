@@ -1,4 +1,16 @@
 
+SAI_ENV ?= /opt/toolchains/m68k-elf/bin
+# Cross compilation toolchain
+CC := $(SAI_ENV)/m68k-elf-gcc
+CPPC := $(SAI_ENV)/m68k-elf-g++
+AS := $(SAI_ENV)/m68k-elf-gcc
+LD := $(SAI_ENV)/m68k-elf-gcc
+NM := $(SAI_ENV)/m68k-elf-nm
+OBJCOPY := $(SAI_ENV)/m68k-elf-objcopy
+
+# Misc utilities expected from the environment
+SPLIT := split
+
 # Flags shared by both C and C++.
 COMMON_FLAGS := -mcpu=68000
 COMMON_FLAGS += -O2
@@ -14,7 +26,7 @@ COMMON_FLAGS += -fms-extensions
 COMMON_FLAGS += -fno-web -fno-unit-at-a-time
 # TODO: investigate lto breaking some asm interop.
 #COMMON_FLAGS += -flto
-COMMON_FLAGS += -I$(SRCDIR) -I$(SAI_ROOT)
+COMMON_FLAGS += -I$(SRCDIR) -I$(SAI)
 COMMON_FLAGS += -DSAI_TARGET=$(SAI_TARGET)
 
 # For C.
@@ -28,14 +40,10 @@ CPPFLAGS += -std=gnu++2b
 
 # For ASM.
 ASFLAGS := $(COMMON_FLAGS) -I$(OBJDIR)
-ASFLAGS += -Wa,-I$(SRCDIR) -Wa,-I$(OBJDIR) -Wa,-I$(SAI_ROOT)
+ASFLAGS += -Wa,-I$(SRCDIR) -Wa,-I$(OBJDIR) -Wa,-I$(SAI)
 ASFLAGS += -mcpu=68000 -Wa,--bitwise-or
 ASFLAGS += -Wa,--register-prefix-optional
 ASFLAGS += -x assembler-with-cpp
-
-ifeq ($(TARGET_SYSTEM),MDK_TARGET_C2)
-ASFLAGS += -Wa,--def -Wa,MDK_TARGET_C2=1
-endif
 
 # Linker.
 GCC_VER := $(shell $(CC) -dumpversion)
@@ -46,6 +54,3 @@ LDFLAGS += -Wl,-Map $(PROJECT_NAME).map
 
 LIBS := -L $(SAI_ENV)/m68k-elf/lib -lnosys
 LIBS += -L $(SAI_ENV)/lib/gcc/m68k-elf/$(GCC_VER) -lgcc
-
-# C (on the host, for tools, etc)
-HOSTCFLAGS := -O3 -std=gnu11

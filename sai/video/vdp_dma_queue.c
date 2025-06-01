@@ -1,4 +1,4 @@
-#include "sai/vdp_dma_queue.h"
+#include "video/vdp_dma_queue.h"
 #include "sai/macro.h"
 #include "sai/vdp.h"
 
