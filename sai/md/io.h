@@ -7,14 +7,6 @@
 #include "sai/memmap.h"
 #include "sai/macro.h"
 
-#ifndef SAI_MD_PAD_COUNT
-#define SAI_MD_PAD_COUNT 2
-#endif  // SAI_MD_PAD_COUNT
-
-#if SAI_MD_PAD_COUNT > 3
-#error "SAI_MD_PAD_COUNT > 3!"
-#endif  // SAI_MD_PAD_COUNT
-
 // Memory map.
 #define MD_IO_VERSION          (MD_IO_BASE + 0x01)
 #define MD_IO_DATA1            (MD_IO_BASE + 0x03)
@@ -33,51 +25,38 @@
 #define MD_IO_RXD3             (MD_IO_BASE + 0x1D)
 #define MD_IO_SERIO3           (MD_IO_BASE + 0x1F)
 
-// Button state values.
-#define MD_PAD_UP              (SAI_BITVAL(0))
-#define MD_PAD_DOWN            (SAI_BITVAL(1))
-#define MD_PAD_LEFT            (SAI_BITVAL(2))
-#define MD_PAD_RIGHT           (SAI_BITVAL(3))
-#define MD_PAD_B               (SAI_BITVAL(4))
-#define MD_PAD_C               (SAI_BITVAL(5))
-#define MD_PAD_A               (SAI_BITVAL(6))
-#define MD_PAD_START           (SAI_BITVAL(7))
-#define MD_PAD_Z               (SAI_BITVAL(8))
-#define MD_PAD_Y               (SAI_BITVAL(9))
-#define MD_PAD_X               (SAI_BITVAL(10))
-#define MD_PAD_MODE            (SAI_BITVAL(11))
-#define MD_PAD_6B              (SAI_BITVAL(14))
-#define MD_PAD_UNPLUGGED       (SAI_BITVAL(15))
-
 #ifndef __ASSEMBLER__
 
-// Struct representing the state of a gamepad.
-typedef struct SaiMdPad
-{
-	uint16_t now;
-	uint16_t pos;
-	uint16_t neg;
-	uint16_t prev;
-} SaiMdPad;
-
-extern SaiMdPad g_md_pad[SAI_MD_PAD_COUNT];
-
+//
 // Gamepad functions
+//
+
+// Sets up I/O pins for pad use.
 void sai_md_pad_init(void);
+// Reads inputs from pads and places them in g_sai_in.
 void sai_md_pad_poll(void);
 
+//
 // Sub-cpu functions
+//
 void sai_md_z80_init(void);
 
+// Returns true if the Z80 bus request has completed.
 static inline bool sai_md_z80_bus_taken(void);
+// Releases the Z80 bus and unpauses the Z80.
 static inline void sai_md_z80_bus_release(void);
+// Pulls down the reset line on the Z80.
 static inline void sai_md_z80_reset_assert(void);
+// Releases the reset line on the Z80.
 static inline void sai_md_z80_reset_deassert(void);
+// Requests the Z80 bus and optionally waits for confirmation.
 static inline void sai_md_z80_bus_req(bool wait);
 
+// -----------------------------------------------------------------------------
 //
 // Static implementations
 //
+// -----------------------------------------------------------------------------
 
 static inline bool sai_md_z80_bus_taken(void)
 {
@@ -113,15 +92,14 @@ static inline void sai_md_z80_reset_assert(void)
 }
 
 #else
-	.struct 0
 
-SaiMdPad.now:	ds.w 1
-SaiMdPad.pos:	ds.w 1
-SaiMdPad.neg:	ds.w 1
-SaiMdPad.prev:	ds.w 1
-SaiMdPad.len:
+//
+// Gamepad functions
+//
 
+// Sets up I/O pins for pad use (uses no RAM).
 	.extern sai_min_md_pad_init
+// Gives Z80 inactive stub program (uses no work RAM).
 	.extern sai_min_md_z80_init
 
 .macro	SAI_MD_Z80_RESET_ASSERT

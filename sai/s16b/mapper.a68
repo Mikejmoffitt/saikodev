@@ -1,0 +1,29 @@
+
+#include "sai/macro.h"
+#include "sai/memmap.h"
+#include "sai/target.h"
+#include "sai/io/s16b.h"
+
+	.section	.text
+
+	.global	sai_min_s16_mapper_init
+
+sai_min_s16_mapper_init:
+	lea	mapper_cfg_tbl(pc), a0
+	lea	S16_MAPPER_BASE+1, a1
+	.rept	4
+	move.l	(a0)+, d0
+	movep.l	d0, (a1)
+	lea	8(a1), a1
+	.endr
+	jmp	(a6)
+
+mapper_cfg_table:
+	dc.b	$03, S16_ROM0_BASE>>16
+	dc.b	$03, S16_ROM1_BASE>>16
+	dc.b	$03, S16_ROM2_BASE>>16
+	dc.b	$02, S16_WRAM_BASE>>16
+	dc.b	$04, S16_VRAM_BASE>>16
+	dc.b	$0D, S16_SPR_BASE>>16
+	dc.b	$00, S16_CRAM_BASE>>16
+	dc.b	$00, S16_IO_BASE>>16

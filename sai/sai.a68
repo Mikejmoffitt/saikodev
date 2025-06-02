@@ -1,15 +1,47 @@
 	.global	sai_finish
 
 #include "sai/sai.h"
+#include "sai/input.h"
 
 	.section	.text
 
-#if SAI_TARGET==SAI_TARGET_MD
 sai_finish:
-	bsr.w	sai_vdp_wait_vbl
+;
+; Terminate sprites and prepare transfer(s) before vbl
+;
+#if SAI_TARGET==SAI_TARGET_MD
 	bsr.w	sai_pal_poll
+#endif
+
+;
+; Synchronize to VBL
+;
+#if SAI_TARGET==SAI_TARGET_MD
+	bsr.w	sai_vdp_wait_vbl
+#elif SAI_TARGET==SAI_TARGET_C2
+	bsr.w	sai_vdp_wait_vbl
+#endif
+
+;
+; Execute transfers at start of vbl
+;
+#if SAI_TARGET==SAI_TARGET_MD
 	bsr.w	sai_vdp_dma_flush
-	bra.w	sai_md_pad_poll
-#else
-#error "SAI_TARGET NOT SET!"
-#endif  // SAI_TARGET
+#elif SAI_TARGET==SAI_TARGET_C2
+	bsr.w	sai_vdp_dma_flush
+#endif
+
+
+;
+; I/O Poll
+;
+#if SAI_TARGET==SAI_TARGET_MD
+	bsr.w	sai_md_pad_poll
+#elif SAI_TARGET==SAI_TARGET_CPS
+	bsr.w	sai_cps_io_poll
+#elif SAI_TARGET==SAI_TARGET_CPS2
+	bsr.w	sai_cps2_io_poll
+#endif
+
+	bsr.w	sai_input_update_edges
+	rts

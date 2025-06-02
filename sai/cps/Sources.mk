@@ -6,19 +6,16 @@ SAI_TARGET=SAI_TARGET_MD
 
 SAI_SOURCES_ASM := \
 	$(SAI)/boot/vectors.a68 \
-	$(SAI)/boot/md.a68 \
+	$(SAI)/md/boot.a68 \
 	$(SAI)/boot/crt0.a68 \
 	$(SAI)/boot/exceptions.a68 \
-	$(SAI)/video/vdp.a68 \
-	$(SAI)/io/md.a68 \
-	$(SAI)/irq/md.a68 \
-	$(SAI)/video/vdp_dma.a68 \
-	$(SAI)/sound/psg.a68 \
-	$(SAI)/pal/md.a68 \
+	$(SAI)/boot/memcheck.a68 \
+	$(SAI)/cps/io_cps2.a68 \
 	$(SAI)/sai.a68 \
+	$(SAI)/input.a68 \
 
 SAI_SOURCES_C := \
-	$(SAI)/video/vdp_dma_queue.c
+	$(SAI)/md/vdp_dma_queue.c
 
 SAI_SOURCES_CPP := 
 

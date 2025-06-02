@@ -1,5 +1,5 @@
 #include "sai/memmap.h"
-#include "sai/video/vdp.h"
+#include "sai/md/vdp.h"
 
 	.global	sai_vdp_update_scroll_base
 

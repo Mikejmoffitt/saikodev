@@ -12,7 +12,7 @@ extern "C"
 #include <stdint.h>
 #endif  // __ASSEMBLER__
 
-#include "sai/video/vdp.h"
+#include "sai/md/vdp.h"
 #include "sai/memmap.h"
 
 #ifndef __ASSEMBLER__

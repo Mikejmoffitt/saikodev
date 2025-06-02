@@ -1,0 +1,49 @@
+#include	"sai/input.h"
+#include	"sai/macro.h"
+
+	.section	.bss
+
+	.global	g_sai_in
+g_sai_in:	ds.b SaiInput.len * SAI_PLAYER_COUNT
+
+	.section	.text
+	.global	sai_input_init
+sai_input_init:
+	calla6	sai_min_input_init
+	rts
+
+	.global	sai_min_input_init
+sai_min_input_init:
+	lea	g_sai_in, a0
+	moveq	#0, d0
+	moveq	#((SaiInput.len * SAI_PLAYER_COUNT)/4)-1, d1
+0:
+	move.l	d0, (a0)+
+	dbf	d1, 0b
+	jmp	(a6)
+
+; a0.l = SaiInput
+	.global	sai_input_update_edges
+sai_input_update_edges:
+	lea	g_sai_in, a0
+
+	.rept	SAI_PLAYER_COUNT-1
+	bsr.b	edge_update_sub
+	lea	SaiInput.len(a0), a0
+	.endr
+	; fall-through to the sub
+edge_update_sub:
+	move.l	SaiInput.now(a0), d0
+	move.l	d0, d1
+	swap	d1
+	not.w	d1
+	and.w	d1, d0
+	move.w	d0, SaiInput.pos(a0)
+
+	move.l	SaiInput.now(a0), d0
+	move.l	d0, d1
+	swap	d0
+	not.w	d1
+	and.w	d1, d0
+	move.w	d0, SaiInput.neg(a0)
+	rts

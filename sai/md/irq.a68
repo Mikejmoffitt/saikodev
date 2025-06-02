@@ -1,5 +1,5 @@
 
-#include "sai/video/vdp.h"
+#include "sai/md/vdp.h"
 #include "sai/target.h"
 
 #if SAI_TARGET == SAI_TARGET_C2

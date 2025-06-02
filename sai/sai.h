@@ -7,20 +7,21 @@
 #endif  // SAI_TARGET
 
 #include "sai/macro.h"
+#include "sai/input.h"
 #include "sai/memmap.h"
 #if SAI_TARGET==SAI_TARGET_MD
-#include "sai/io/md.h"
-#include "sai/irq/md.h"
-#include "sai/pal/md.h"
-#include "sai/video/vdp.h"
-#include "sai/video/vdp_dma_queue.h"
+#include "sai/md/io.h"
+#include "sai/md/irq.h"
+#include "sai/md/pal.h"
+#include "sai/md/vdp.h"
+#include "sai/md/vdp_dma_queue.h"
 #elif SAI_TARGET==SAI_TARGET_C2
+#error "TODO"
+#elif SAI_TARGET=SAI_TARGET_SYS16B
 #error "TODO"
 #elif SAI_TARGET=SAI_TARGET_SYS18
 #error "TODO"
-#elif SAI_TARGET=SAI_TARGET_SYS16A
-#error "TODO"
-#elif SAI_TARGET=SAI_TARGET_SYS16B
+#elif SAI_TARGET=SAI_TARGET_CPS
 #error "TODO"
 #elif SAI_TARGET=SAI_TARGET_CPS2
 #error "TODO"

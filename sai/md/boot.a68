@@ -1,43 +1,28 @@
 ; saikodev megadrive and C2 startup
+#include "sai/boot/memcheck.h"
+#include "sai/input.h"
 #include "sai/macro.h"
 #include "sai/memmap.h"
 #include "sai/target.h"
-#include "sai/io/md.h"
+#include "sai/md/io.h"
+#include "sai/md/vdp.h"
 
-;
-; Vector table
-;
-	.section	.text.keepboot
-
-	.global	start
-
-	.extern	_etext
-	.extern	_stext
-	.extern	_edata
-	.extern	_sdata
-	.extern	main
-
-	.extern	md_vdp_min_init
-
-	.global	_v_table
-	.global	_start
-	.global	startup_forever
+#if SAI_TARGET == SAI_TARGET_C2
+#include "sai/c2/io.h"
+#else
+#include "sai/md/io.h"
+#endif  // SAI_TARGET
 
 	.extern	sai_crt0_begin
 
-#include "sai/video/vdp.h"
+	.section	.text.keepboot
 
-#if SAI_TARGET == SAI_TARGET_C2
-#include "sai/io/c2.h"
-#else
-#include "sai/io/md.h"
-#endif  // SAI_TARGET
+	.global	start
+	.global	_start
 
-	; TODO: Header
-;
+	.global	startup_err
+
 ; Entry point
-;
-
 ; Routines here do not use a call stack, but instead store the return address in
 ; the a6 register; until the WRAM test has completed it is not assumed that the
 ; RAM actually works.
@@ -57,11 +42,24 @@ start:
 
 	calla6	sai_min_psg_init
 	calla6	sai_min_vdp_init
+	calla6	sai_min_input_init
+	
+	move.w	#$5555, d0
+	move.w	#(WRAM_SIZE/2), d1
+	lea	WRAM_BASE, a0
+	calla6	sai_min_memcheck
+	bne.w	startup_err
+
+	move.w	#$AAAA, d0
+	move.w	#(WRAM_SIZE/2), d1
+	lea	WRAM_BASE, a0
+	calla6	sai_min_memcheck
+	bne.w	startup_err
 
 softreset:
 	jmp	sai_crt0_begin
 
-startup_forever:
+startup_err:
 #if SAI_TARGET == SAI_TARGET_C2
 	; TODO: Start button to recovery from error or something
 	bra.w	start
@@ -69,35 +67,12 @@ startup_forever:
 	move.l	#$00400040, (MD_IO_CTRL1-1).l  ; Set TH pin as an output
 	move.b	#$00, (MD_IO_DATA1).l  ; TH low
 	btst	#5, (MD_IO_DATA1).l  ; Check start button
-	bne.s	startup_forever
-startup_forever_wait_start_release:
+	bne.s	startup_err
+startup_err_wait_start_release:
 	btst	#5, (MD_IO_DATA1).l  ; Check start button
-	beq.s	startup_forever_wait_start_release
+	beq.s	startup_err_wait_start_release
 #endif
 	bra.w	start
-
-
-;
-; Init and test Subroutines
-;
-
-; d0 = test word
-; a6 = return
-startup_wram_test_sub:
-	lea	WRAM_BASE, a4
-	move.w	#(WRAM_SIZE/2) - 1, d7
-wram_test_loop:
-	move.w	d0, (a4)
-	cmp.w	(a4)+, d0
-	bne.s	wram_test_failed
-	dbra	d7, wram_test_loop
-	jmp	(a6)
-
-wram_test_failed:
-	; knowingly stomping on the a6 return pointer.
-	; TODO
-;	calla6	md_error_startup_wram_ng_display
-	bra.w	startup_forever
 
 #if SAI_TARGET == SAI_TARGET_MD
 	.global	sai_min_tmss_init

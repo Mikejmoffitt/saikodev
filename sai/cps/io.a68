@@ -1,0 +1,147 @@
+#include	"sai/cps/io.h"
+
+#if SAI_TARGET == SAI_TARGET_CPS2
+
+#if SAI_PLAYER_COUNT > 2
+#error "CPS2 4-player input polling not yet implemented!"
+#endif  // SAI_PLAYER_COUNT
+
+	.global	sai_cps2_io_poll
+sai_cps2_io_poll:
+;
+; Player 1
+;
+	moveq	#-1, d0
+	move.b	SAI_CPS2_IO_BASE + CPS2_IO_PL0 + 1, d0  ; This is left as-is
+	; Get P1 kicks
+	move.w	SAI_CPS2_IO_BASE + CPS2_IO_PL1, d1
+	lsl.w	#8, d1  ; they just slide into place fortunately
+	ori.w	#$F8FF, d1  ; only want the kick inputs from PL1
+	and.w	d1, d0
+	
+
+	rts
+
+; Player input block bit definitions
+#define INPUT_SW_RIGHT_BIT   0
+#define INPUT_SW_LEFT_BIT    1
+#define INPUT_SW_DOWN_BIT    2
+#define INPUT_SW_UP_BIT      3
+#define INPUT_SW_BTN1_BIT    4
+#define INPUT_SW_BTN2_BIT    5
+#define INPUT_SW_BTN3_BIT    6
+#define INPUT_SW_BTN4_BIT    7
+#define INPUT_SW_KICK1_BIT   8
+#define INPUT_SW_KICK2_BIT   9
+#define INPUT_SW_KICK3_BIT   10
+#define INPUT_SW_START_BIT   11
+#define INPUT_SW_COIN_BIT    12
+
+; System input block bit definitions
+#define INPUT_SW_TEST_BIT    0
+#define INPUT_SW_SERVICE_BIT 1
+
+; Offsets into an input block
+Input_raw  = 0
+Input_prev = 2
+Input_pos  = 4
+Input_neg  = 6
+
+input_poll:
+	; Capture new input
+	moveq	#-1, d0
+	move.b	SAI_CPS2_IO_BASE + CPS2_IO_PL0 + 1, d0  ; This is left as-is
+	; Get P1 kicks
+	move.w	SAI_CPS2_IO_BASE + CPS2_IO_PL1, d1
+	lsl.w	#8, d1  ; they just slide into place fortunately
+	ori.w	#$F8FF, d1  ; only want the kick inputs from PL1
+	and.w	d1, d0
+	; Start and coin
+	move.w	SAI_CPS2_IO_BASE + CPS2_IO_SYS, d1
+	btst	#CPS2_IO_SW_START1_BIT, d1
+	bne	+
+	bclr	#INPUT_SW_START_BIT, d0
++
+	btst	#CPS2_IO_SW_COIN1_BIT, d1
+	bne	+
+	bclr	#INPUT_SW_COIN_BIT, d0
++
+	; Convert to active high and pass it off to be processed
+	not.w	d0
+	lea	InputP1, a0
+	bsr	input_edge_gen_sub
+
+	; Now for player two
+	moveq	#-1, d0
+	move.b	SAI_CPS2_IO_BASE + CPS2_IO_PL0, d0  ; P2 data as-is
+	; Get P2 kicks (they are spread out everywhere)
+	move.w	SAI_CPS2_IO_BASE + CPS2_IO_PL1, d1
+	btst	#CPS2_IO_SW_PL2_KICK1_BIT, d1
+	bne	+
+	bclr	#INPUT_SW_KICK1_BIT, d0
++
+	btst	#CPS2_IO_SW_PL2_KICK2_BIT, d1
+	bne	+
+	bclr	#INPUT_SW_KICK2_BIT, d0
++
+	move.w	SAI_CPS2_IO_BASE + CPS2_IO_SYS, d1
+	btst	#CPS2_IO_SW_PL2_KICK3_BIT, d1
+	bne	+
+	bclr	#INPUT_SW_KICK3_BIT, d0
++
+	; Start and coin
+	; D1 still contains CPS2_IO_SYS from before
+	btst	#CPS2_IO_SW_START2_BIT, d1
+	bne	+
+	bclr	#INPUT_SW_START_BIT, d0
++
+	btst	#CPS2_IO_SW_COIN2_BIT, d1
+	bne	+
+	bclr	#INPUT_SW_COIN_BIT, d0
++
+	; Convert to active high and pass it off to be processed
+	not.w	d0
+	lea	InputP2, a0
+	bsr	input_edge_gen_sub
+
+	rts
+
+; a0 = Input block address
+; d0 = new input data (word, active high)
+input_edge_gen_sub:
+	; Store history
+	move.w	Input_raw(a0), Input_prev(a0)
+	; Capture new input
+	move.w	d0, Input_raw(a0)
+	; Generate posedge
+	move.w	Input_prev(a0), d1
+	not.w	d1
+	and.w	d1, d0
+	move.w	d0, Input_pos(a0)
+	; Generate negedge
+	move.w	Input_prev(a0), d0
+	move.w	Input_raw(a0), d1
+	not.w	d1
+	and.w	d1, d0
+	move.w	d0, Input_neg(a0)
+	rts
+
+
+
+
+
+
+
+
+
+#elif SAI_TARGET == SAI_TARGET_CPS
+	.global	sai_cps_io_poll
+sai_cps_io_poll:
+	rts
+
+
+
+
+
+
+#endif  // SAI_TARGET

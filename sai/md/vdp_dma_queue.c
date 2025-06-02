@@ -1,5 +1,5 @@
-#include "sai/video/vdp_dma_queue.h"
-#include "sai/video/vdp.h"
+#include "sai/md/vdp_dma_queue.h"
+#include "sai/md/vdp.h"
 #include "sai/macro.h"
 
 #define VDP_CTRL_DMA_BIT     0x00000080

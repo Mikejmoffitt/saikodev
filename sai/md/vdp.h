@@ -15,7 +15,7 @@ extern "C"
 #include "sai/target.h"
 #include "sai/macro.h"
 #include "sai/memmap.h"
-#include "sai/video/vdp_regs.h"
+#include "sai/md/vdp_regs.h"
 
 #ifndef __ASSEMBLER__
 

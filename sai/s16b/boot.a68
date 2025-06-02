@@ -1,0 +1,56 @@
+; saikodev System 16B / 18 startup
+#include "sai/boot/memcheck.h"
+#include "sai/input.h"
+#include "sai/macro.h"
+#include "sai/memmap.h"
+#include "sai/target.h"
+#include "sai/s16b/io.h"
+
+#if SAI_TARGET == SAI_TARGET_S18
+#include "sai/md/vdp.h"
+#endif  // SAI_TARGET
+
+	.extern	sai_crt0_begin
+
+	.section	.text.keepboot
+
+	.global	start
+	.global	_start
+
+	.global	startup_err
+
+; Entry point
+; Routines here do not use a call stack, but instead store the return address in
+; the a6 register; until the WRAM test has completed it is not assumed that the
+; RAM actually works.
+	.org	$200
+_start:
+start:
+	move.w	#$2700, sr
+	lea	__stack, sp
+
+	calla6	sai_min_s16_mapper_init
+
+#if SAI_TARGET == SAI_TARGET_S18
+	calla6	sai_min_vdp_init
+#endif  // SAI_TARGET
+
+	calla6	sai_min_input_init
+	
+	move.w	#$5555, d0
+	move.w	#(WRAM_SIZE/2), d1
+	lea	WRAM_BASE, a0
+	calla6	sai_min_memcheck
+	bne.w	startup_err
+
+	move.w	#$AAAA, d0
+	move.w	#(WRAM_SIZE/2), d1
+	lea	WRAM_BASE, a0
+	calla6	sai_min_memcheck
+	bne.w	startup_err
+
+softreset:
+	jmp	sai_crt0_begin
+
+startup_err:
+	bra.w	start

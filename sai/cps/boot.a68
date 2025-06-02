@@ -1,0 +1,42 @@
+; saikodev CPS/CPS2 boot code.
+#include "sai/boot/memcheck.h"
+#include "sai/input.h"
+#include "sai/macro.h"
+#include "sai/memmap.h"
+#include "sai/target.h"
+#include "sai/cps2/io.h"
+
+	.extern	sai_crt0_begin
+
+	.section	.text.keepboot
+
+	.global	start
+	.global	_start
+
+	.global	startup_err
+
+	.org	$200
+_start:
+start:
+	move.w	#$2700, sr
+	lea	__stack, sp
+
+	calla6	sai_min_input_init
+	
+	move.w	#$5555, d0
+	move.w	#(WRAM_SIZE/2), d1
+	lea	WRAM_BASE, a0
+	calla6	sai_min_memcheck
+	bne.w	startup_err
+
+	move.w	#$AAAA, d0
+	move.w	#(WRAM_SIZE/2), d1
+	lea	WRAM_BASE, a0
+	calla6	sai_min_memcheck
+	bne.w	startup_err
+
+softreset:
+	jmp	sai_crt0_begin
+
+startup_err:
+	bra.w	start

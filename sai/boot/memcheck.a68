@@ -1,0 +1,21 @@
+
+	.section	.text.keepboot
+	
+	.global	sai_min_memcheck
+sai_min_memcheck:
+	subq.w	#1, d1
+	bmi.w	memcheck_ok
+0:
+	move.w	d0, (a0)
+	cmp.w	(a0)+, d0
+	bne.s	memcheck_ng
+	dbra	d1, 0b
+memcheck_ok:
+	moveq	#0, d1
+	bra.s	memcheck_ret
+memcheck_ng:
+	move.w	-2(a0), d0
+	moveq	#1, d1
+memcheck_ret:
+	tst.w	d1
+	jmp	(a6)

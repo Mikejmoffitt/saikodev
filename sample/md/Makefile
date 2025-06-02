@@ -14,7 +14,7 @@ PROJECT_OUTPUT := $(OUTDIR)/$(PROJECT_NAME).bin
 .PHONY: all vars clean
 
 # Saikodev sources and default flags come from here.
-include $(SAI)/mk/md.mk
+include $(SAI)/md/Sources.mk
 include $(SAI)/mk/m68k-flags.mk
 include $(SAI)/mk/utils.mk
 include $(SAI)/mk/utils-md.mk

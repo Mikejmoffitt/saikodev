@@ -1,7 +1,7 @@
 #include "sai/memmap.h"
 #include "sai/target.h"
-#include "sai/video/vdp.h"
-#include "sai/io/md.h"
+#include "sai/md/vdp.h"
+#include "sai/md/io.h"
 ;
 	
 	.struct	0
