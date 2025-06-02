@@ -89,7 +89,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.a68
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[33m[ ASM ]\e[0m $< --> $@\n"'
 # TODO: Put this obscenity in a script file or even just make a utility.
-	awk '{gsub(/;/,";#"); printf("%s", $$0 RT)}' RS='"[^"]*"' $< | awk '{gsub(/\$$/,"0x"); printf("%s", $$0 RT)}' RS='"[^"]*"' | $(AS) $(ASFLAGS) -o $@ -c -
+	gawk '{gsub(/;/,";#"); printf("%s", $$0 RT)}' RS='"[^"]*"' $< | gawk '{gsub(/\$$/,"0x"); printf("%s", $$0 RT)}' RS='"[^"]*"' | $(AS) $(ASFLAGS) -o $@ -c -
 
 
 # Final output
