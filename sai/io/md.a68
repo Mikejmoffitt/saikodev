@@ -10,6 +10,15 @@ g_md_pad:	ds.b SaiMdPad.len * SAI_MD_PAD_COUNT
 
 	.section	.text
 
+//
+// Z80 Functions
+//
+
+	.global	sai_md_z80_init
+sai_md_z80_init:
+	calla6_safe sai_min_md_z80_init
+	rts
+
 	.global	sai_min_md_z80_init
 sai_min_md_z80_init:
 	lea	MD_Z80_WRAM, a0
@@ -44,13 +53,13 @@ z80_stub:
 
 	.align	2
 
+//
+// Gamepad functions
+//
+
 	.global	sai_md_pad_init
 sai_md_pad_init:
-	move.l	a6, -(sp)
-	lea	0f, a6
-	bra.b	sai_min_md_pad_init
-0:
-	move.l	(sp)+, a6
+	calla6_safe sai_min_md_pad_init
 	rts
 
 	.global	sai_min_md_pad_init

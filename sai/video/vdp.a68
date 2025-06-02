@@ -40,6 +40,23 @@ g_sai_vdp_hsbase:
 //
 	.section	.text
 
+	.global	sai_vdp_init
+sai_vdp_init:
+	lea	vdp_init_reg_tbl(pc), a0
+	lea	g_sai_vdp_reg_mode, a1
+	.rept	4/2
+	move.l	(a0)+, (a1)+
+	.endr
+	move.l	#VRAM_SCRA_BASE_DEFAULT, g_sai_vdp_ntbase
+	move.l	#VRAM_SCRB_BASE_DEFAULT, g_sai_vdp_ntbase+4
+	move.l	#VRAM_SCRW_BASE_DEFAULT, g_sai_vdp_ntbase+8
+	move.l	#VRAM_SPR_BASE_DEFAULT, g_sai_vdp_sprbase
+	move.l	#VRAM_HSCR_BASE_DEFAULT, g_sai_vdp_hsbase
+
+	calla6_safe	sai_min_vdp_init
+
+	rts
+
 ; a6.l = return
 	.global	sai_min_vdp_init
 sai_min_vdp_init:
@@ -73,9 +90,7 @@ vdp_init_reg_tbl:
 
 	.global	sai_vdp_clear_vram
 sai_vdp_clear_vram:
-	move.l	a6, -(sp)
-	calla6	sai_min_vdp_clear_vram
-	move.l	(sp)+, a6
+	calla6_safe	sai_min_vdp_init
 	rts
 
 ; a6.l = return

@@ -28,4 +28,10 @@
 	lea	(. + 12).l, a6
 	jmp	(\routine).l
 .endm
+
+.macro	calla6_safe	routine
+	move.l	a6, -(sp)
+	calla6	\routine
+	move.l	(sp)+, a6
+.endm
 #endif

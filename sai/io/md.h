@@ -67,6 +67,8 @@ void sai_md_pad_init(void);
 void sai_md_pad_poll(void);
 
 // Sub-cpu functions
+void sai_md_z80_init(void);
+
 static inline bool sai_md_z80_bus_taken(void);
 static inline void sai_md_z80_bus_release(void);
 static inline void sai_md_z80_reset_assert(void);
