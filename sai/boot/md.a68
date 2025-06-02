@@ -9,6 +9,8 @@
 ;
 	.section	.text.keepboot
 
+	.global	start
+
 	.extern	_etext
 	.extern	_stext
 	.extern	_edata
@@ -20,75 +22,6 @@
 	.global	_v_table
 	.global	_start
 	.global	startup_forever
-	.org	$00000000
-_v_table:
-	.long	$00000000
-	.long	start
-	.long	_v_bus_error
-	.long	_v_address_error
-	.long	_v_illegal_instruction
-	.long	_v_div_zero
-	.long	_v_chk
-	.long	_v_trapv
-	.long	_v_privelege
-	.long	_v_trace
-	.long	_v_aline_emu
-	.long	_v_fline_emu
-	.long	_v_reserved
-	.long	_v_coproc_violation
-	.long	_v_format
-	.long	_v_uninit
-	.long	_v_reserved
-	.long	_v_reserved
-	.long	_v_reserved
-	.long	_v_reserved
-	.long	_v_reserved
-	.long	_v_reserved
-	.long	_v_reserved
-	.long	_v_reserved
-	.long	_v_spurious
-	.long	_v_irq1
-	.long	_v_irq2  ; TH pin / OPN IRQ
-	.long	_v_irq3
-	.long	_v_irq4  ; H-IRQ
-	.long	_v_irq5
-	.long	_v_irq6  ; V-IRQ
-	.long	_v_irq7
-	.long	_v_trap0x0
-	.long	_v_trap0x1
-	.long	_v_trap0x2
-	.long	_v_trap0x3
-	.long	_v_trap0x4
-	.long	_v_trap0x5
-	.long	_v_trap0x6
-	.long	_v_trap0x7
-	.long	_v_trap0x8
-	.long	_v_trap0x9
-	.long	_v_trap0xa
-	.long	_v_trap0xb
-	.long	_v_trap0xc
-	.long	_v_trap0xd
-	.long	_v_trap0xe
-	.long	_v_trap0xf
-	; Unimplemented (FPU)
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	; Unimplemented (MMU)
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	; Unimplemented (reserved)
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
-	.long	_v_unimp
 
 	.extern	sai_crt0_begin
 
@@ -181,81 +114,3 @@ sai_min_tmss_init:
 
 
 ;
-; Exception Vectors
-;
-
-; TODO
-
-_v_bus_error:
-;	showerr	MD_ERRMSG_BUS_ERROR
-_v_address_error:
-;	showerr	MD_ERRMSG_ADDRESS_ERROR
-_v_illegal_instruction:
-;	showerr	MD_ERRMSG_ILLEGAL_INSTRUCTION
-_v_div_zero:
-;	showerr	MD_ERRMSG_DIV_ZERO
-_v_chk:
-;	showerr	MD_ERRMSG_CHK
-_v_trapv:
-;	showerr	MD_ERRMSG_TRAPV
-_v_privelege:
-;	showerr	MD_ERRMSG_PRIVELEGE
-_v_trace:
-;	showerr	MD_ERRMSG_TRACE
-_v_unused_irq:
-;	showerr	MD_ERRMSG_UNUSED_IRQ
-_v_aline_emu:
-;	showerr	MD_ERRMSG_ALINE_EMU
-_v_fline_emu:
-;	showerr	MD_ERRMSG_FLINE_EMU
-_v_reserved:
-;	showerr	MD_ERRMSG_RESERVED
-_v_coproc_violation:
-;	showerr	MD_ERRMSG_COPROC_VIOLATION
-_v_format:
-;	showerr	MD_ERRMSG_FORMAT
-_v_uninit:
-;	showerr	MD_ERRMSG_UNINIT
-_v_spurious:
-;	showerr	MD_ERRMSG_SPURIOUS
-_v_trap0x0:
-;	showerr	MD_ERRMSG_TRAP0X0
-_v_trap0x1:
-;	showerr	MD_ERRMSG_TRAP0X1
-_v_trap0x2:
-;	showerr	MD_ERRMSG_TRAP0X2
-_v_trap0x3:
-;	showerr	MD_ERRMSG_TRAP0X3
-_v_trap0x4:
-;	showerr	MD_ERRMSG_TRAP0X4
-_v_trap0x5:
-;	showerr	MD_ERRMSG_TRAP0X5
-_v_trap0x6:
-;	showerr	MD_ERRMSG_TRAP0X6
-_v_trap0x7:
-;	showerr	MD_ERRMSG_TRAP0X7
-_v_trap0x8:
-;	showerr	MD_ERRMSG_TRAP0X8
-_v_trap0x9:
-;	showerr	MD_ERRMSG_TRAP0X9
-_v_trap0xa:
-;	showerr	MD_ERRMSG_TRAP0XA
-_v_trap0xb:
-;	showerr	MD_ERRMSG_TRAP0XB
-_v_trap0xc:
-;	showerr	MD_ERRMSG_TRAP0XC
-_v_trap0xd:
-;	showerr	MD_ERRMSG_TRAP0XD
-_v_trap0xe:
-;	showerr	MD_ERRMSG_TRAP0XE
-_v_trap0xf:
-;	showerr	MD_ERRMSG_TRAP0XF
-_v_unimp:
-;	showerr	MD_ERRMSG_UNIMP
-	rte
-
-_v_irq1:
-_v_irq3:
-_v_irq5:
-_v_irq7:
-	rte

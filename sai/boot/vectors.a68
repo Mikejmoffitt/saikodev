@@ -1,0 +1,143 @@
+	.extern	__stack
+	; From the platform boot code
+	.extern	start
+	; From exceptions.a68
+	.extern	_v_bus_error
+	.extern	_v_address_error
+	.extern	_v_illegal_instruction
+	.extern	_v_div_zero
+	.extern	_v_chk
+	.extern	_v_trapv
+	.extern	_v_privelege
+	.extern	_v_trace
+	.extern	_v_aline_emu
+	.extern	_v_fline_emu
+	.extern	_v_reserved
+	.extern	_v_coproc_violation
+	.extern	_v_format
+	.extern	_v_uninit
+	.extern	_v_reserved
+	.extern	_v_reserved
+	.extern	_v_reserved
+	.extern	_v_reserved
+	.extern	_v_reserved
+	.extern	_v_reserved
+	.extern	_v_reserved
+	.extern	_v_reserved
+	.extern	_v_spurious
+	; From platform irq code
+	.extern	_v_irq1
+	.extern	_v_irq2  ; TH pin / OPN IRQ
+	.extern	_v_irq3
+	.extern	_v_irq4  ; H-IRQ
+	.extern	_v_irq5
+	.extern	_v_irq6  ; V-IRQ
+	.extern	_v_irq7
+	; For now, from exceptions, but should be made possible to override
+	.extern	_v_trap0x0
+	.extern	_v_trap0x1
+	.extern	_v_trap0x2
+	.extern	_v_trap0x3
+	.extern	_v_trap0x4
+	.extern	_v_trap0x5
+	.extern	_v_trap0x6
+	.extern	_v_trap0x7
+	.extern	_v_trap0x8
+	.extern	_v_trap0x9
+	.extern	_v_trap0xa
+	.extern	_v_trap0xb
+	.extern	_v_trap0xc
+	.extern	_v_trap0xd
+	.extern	_v_trap0xe
+	.extern	_v_trap0xf
+	; From exceptions.a68
+	; Unimplemented (FPU)
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	; Unimplemented (MMU)
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	; Unimplemented (reserved)
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+	.extern	_v_unimp
+
+	.section	.text.keepboot
+	.global	_v_table
+_v_table:
+	.long	__stack
+	.long	start
+	.long	_v_bus_error
+	.long	_v_address_error
+	.long	_v_illegal_instruction
+	.long	_v_div_zero
+	.long	_v_chk
+	.long	_v_trapv
+	.long	_v_privelege
+	.long	_v_trace
+	.long	_v_aline_emu
+	.long	_v_fline_emu
+	.long	_v_reserved
+	.long	_v_coproc_violation
+	.long	_v_format
+	.long	_v_uninit
+	.long	_v_reserved
+	.long	_v_reserved
+	.long	_v_reserved
+	.long	_v_reserved
+	.long	_v_reserved
+	.long	_v_reserved
+	.long	_v_reserved
+	.long	_v_reserved
+	.long	_v_spurious
+	.long	_v_irq1
+	.long	_v_irq2  ; TH pin / OPN IRQ
+	.long	_v_irq3
+	.long	_v_irq4  ; H-IRQ
+	.long	_v_irq5
+	.long	_v_irq6  ; V-IRQ
+	.long	_v_irq7
+	.long	_v_trap0x0
+	.long	_v_trap0x1
+	.long	_v_trap0x2
+	.long	_v_trap0x3
+	.long	_v_trap0x4
+	.long	_v_trap0x5
+	.long	_v_trap0x6
+	.long	_v_trap0x7
+	.long	_v_trap0x8
+	.long	_v_trap0x9
+	.long	_v_trap0xa
+	.long	_v_trap0xb
+	.long	_v_trap0xc
+	.long	_v_trap0xd
+	.long	_v_trap0xe
+	.long	_v_trap0xf
+	; Unimplemented (FPU)
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	; Unimplemented (MMU)
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	; Unimplemented (reserved)
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp
+	.long	_v_unimp

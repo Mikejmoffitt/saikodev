@@ -1,0 +1,133 @@
+	.section	.text
+
+	.global	_v_bus_error
+	.global	_v_address_error
+	.global	_v_illegal_instruction
+	.global	_v_div_zero
+	.global	_v_chk
+	.global	_v_trapv
+	.global	_v_privelege
+	.global	_v_trace
+	.global	_v_aline_emu
+	.global	_v_fline_emu
+	.global	_v_reserved
+	.global	_v_coproc_violation
+	.global	_v_format
+	.global	_v_uninit
+	.global	_v_reserved
+	.global	_v_reserved
+	.global	_v_reserved
+	.global	_v_reserved
+	.global	_v_reserved
+	.global	_v_reserved
+	.global	_v_reserved
+	.global	_v_reserved
+	.global	_v_spurious
+	.global	_v_trap0x0
+	.global	_v_trap0x1
+	.global	_v_trap0x2
+	.global	_v_trap0x3
+	.global	_v_trap0x4
+	.global	_v_trap0x5
+	.global	_v_trap0x6
+	.global	_v_trap0x7
+	.global	_v_trap0x8
+	.global	_v_trap0x9
+	.global	_v_trap0xa
+	.global	_v_trap0xb
+	.global	_v_trap0xc
+	.global	_v_trap0xd
+	.global	_v_trap0xe
+	.global	_v_trap0xf
+	; Unimplemented (FPU)
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	; Unimplemented (MMU)
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	; Unimplemented (reserved)
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+	.global	_v_unimp
+
+; Exception Vectors
+;
+
+; TODO
+
+_v_bus_error:
+;	showerr	MD_ERRMSG_BUS_ERROR
+_v_address_error:
+;	showerr	MD_ERRMSG_ADDRESS_ERROR
+_v_illegal_instruction:
+;	showerr	MD_ERRMSG_ILLEGAL_INSTRUCTION
+_v_div_zero:
+;	showerr	MD_ERRMSG_DIV_ZERO
+_v_chk:
+;	showerr	MD_ERRMSG_CHK
+_v_trapv:
+;	showerr	MD_ERRMSG_TRAPV
+_v_privelege:
+;	showerr	MD_ERRMSG_PRIVELEGE
+_v_trace:
+;	showerr	MD_ERRMSG_TRACE
+_v_unused_irq:
+;	showerr	MD_ERRMSG_UNUSED_IRQ
+_v_aline_emu:
+;	showerr	MD_ERRMSG_ALINE_EMU
+_v_fline_emu:
+;	showerr	MD_ERRMSG_FLINE_EMU
+_v_reserved:
+;	showerr	MD_ERRMSG_RESERVED
+_v_coproc_violation:
+;	showerr	MD_ERRMSG_COPROC_VIOLATION
+_v_format:
+;	showerr	MD_ERRMSG_FORMAT
+_v_uninit:
+;	showerr	MD_ERRMSG_UNINIT
+_v_spurious:
+;	showerr	MD_ERRMSG_SPURIOUS
+_v_trap0x0:
+;	showerr	MD_ERRMSG_TRAP0X0
+_v_trap0x1:
+;	showerr	MD_ERRMSG_TRAP0X1
+_v_trap0x2:
+;	showerr	MD_ERRMSG_TRAP0X2
+_v_trap0x3:
+;	showerr	MD_ERRMSG_TRAP0X3
+_v_trap0x4:
+;	showerr	MD_ERRMSG_TRAP0X4
+_v_trap0x5:
+;	showerr	MD_ERRMSG_TRAP0X5
+_v_trap0x6:
+;	showerr	MD_ERRMSG_TRAP0X6
+_v_trap0x7:
+;	showerr	MD_ERRMSG_TRAP0X7
+_v_trap0x8:
+;	showerr	MD_ERRMSG_TRAP0X8
+_v_trap0x9:
+;	showerr	MD_ERRMSG_TRAP0X9
+_v_trap0xa:
+;	showerr	MD_ERRMSG_TRAP0XA
+_v_trap0xb:
+;	showerr	MD_ERRMSG_TRAP0XB
+_v_trap0xc:
+;	showerr	MD_ERRMSG_TRAP0XC
+_v_trap0xd:
+;	showerr	MD_ERRMSG_TRAP0XD
+_v_trap0xe:
+;	showerr	MD_ERRMSG_TRAP0XE
+_v_trap0xf:
+;	showerr	MD_ERRMSG_TRAP0XF
+_v_unimp:
+;	showerr	MD_ERRMSG_UNIMP
+	rte

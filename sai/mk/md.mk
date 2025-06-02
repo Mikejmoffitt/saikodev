@@ -5,8 +5,10 @@
 SAI_TARGET=SAI_TARGET_MD
 
 SAI_SOURCES_ASM := \
+	$(SAI)/boot/vectors.a68 \
 	$(SAI)/boot/md.a68 \
 	$(SAI)/boot/crt0.a68 \
+	$(SAI)/boot/exceptions.a68 \
 	$(SAI)/video/vdp.a68 \
 	$(SAI)/io/md.a68 \
 	$(SAI)/irq/md.a68 \
