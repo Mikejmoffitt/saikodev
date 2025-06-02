@@ -6,6 +6,5 @@ void __attribute__((noreturn)) main(void)
 	while (true)
 	{
 		sai_finish();
-:xa
 	}
 }
