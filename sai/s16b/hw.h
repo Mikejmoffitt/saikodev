@@ -48,10 +48,10 @@
 
 #define S16_MAPPER_BASE        (0xC00000)
 
-#define S16_IO_MISC_OFFS     1
-#define S16_IO_INPUT_1_OFFS  (0x1001)
-#define S16_IO_INPUT_2_OFFS  (0x1003)
-#define S16_IO_INPUT_3_OFFS  (0x1005)
-#define S16_IO_INPUT_4_OFFS  (0x1007)
-#define S16_IO_DIP2_OFFS     (0x2001)
-#define S16_IO_DIP1_OFFS     (0x2003)
+#define S16_IO_MISC_OFFS       1
+#define S16_IO_INPUT_1_OFFS    (0x1001)
+#define S16_IO_INPUT_2_OFFS    (0x1003)
+#define S16_IO_INPUT_3_OFFS    (0x1005)
+#define S16_IO_INPUT_4_OFFS    (0x1007)
+#define S16_IO_DIP2_OFFS       (0x2001)
+#define S16_IO_DIP1_OFFS       (0x2003)

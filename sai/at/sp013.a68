@@ -1,0 +1,94 @@
+#include	"at/sp038.h"
+#include	"at/macro.h"
+
+	.section	.bss
+g_sai_sp013_bank: ds.w 1
+
+	.section	.text
+
+sai_sp013_init:
+	move.l	a6, -(sp)
+	calla6	sai_min_sp013_init
+	move.l	(sp)+, a6
+
+	move.w	#$3F00, g_sai_sp013_cfg
+	clr.w	g_sai_sp013_bank
+
+	rts
+
+sai_min_sp013_init:
+	lea	format_data(pc), a0
+	lea	SP013_BASE, a1
+
+	moveq	#0, d0
+	moveq	#
+	moveq	#$C, d1
+	; zero out upper regs
+-:
+	move.w	d0, (a1)+
+	dbf	d1, -
+	moveq	#
+	; Default scroll values
+
+	; Zero out the sub-cpu control regs I don't yet know about
+	moveq	#0, d0
+	moveq	#$D-1, d1
+	lea	SP013_BASE+SP013_OFFS_UNK0C, a1
+0:
+	move.w	d0, (a1)+
+	dbf	d0, 0b
+
+	; Format setup
+	moveq	#0, d0
+	moveq	#$18-1, d1
+	lea	format_data(pc), a0
+	lea	SP013_BASE+SP013_OFFS_FORMAT, a1
+0:
+	move.b	(a0)+, d0
+	move.w	d0, (a1)
+	dbf	d1, 0b
+
+	; Unknown magic value, which I suspect is actually some sub bus control.
+	move.w	#$3F00, SP013_BASE+SP013_OFFS_SPRCTRL
+
+	; More magic, possibly resetting a sub CPU that doesn't exist.
+	move.w	#$1000, SP013_BASE+SP013_OFFS_UNK20
+	move.w	#$69, SP013_BASE+SP013_WDOG
+	move.w	#$0, SP013_BASE+SP013_OFFS_UNK20
+
+	; Sprite offset values
+	move.w	#$0185, SP013_BASE+SP013_OFFS_SPRDX
+	move.w	#$0001, SP013_BASE+SP013_OFFS_SPRDY
+
+	jmp	(a6)
+format_data:
+	dc.b $3f  ; 0
+	dc.b $3e  ; 1
+	dc.b $38  ; 2
+	dc.b $d   ; 3
+	dc.b $1d  ; 4
+	dc.b 8    ; 5
+	dc.b 2    ; 6
+	dc.b $3a  ; 7
+	dc.b $31  ; 8
+	dc.b $34  ; 9
+	dc.b $3f  ; $a
+	dc.b $a   ; $b
+	dc.b $1f  ; $c
+	dc.b $17  ; $d
+	dc.b $11  ; $e
+	dc.b $29  ; $f
+	dc.b $f   ; $10
+	dc.b $30  ; $11
+	dc.b $16  ; $12
+	dc.b $33  ; $13
+	dc.b $37  ; $14
+	dc.b $1c  ; $15
+	dc.b $20  ; $16
+	dc.b 4    ; $17
+
+sai_sp013_finish:
+	rts
+
+sai_sp013_wait_vbl:
+	rts
