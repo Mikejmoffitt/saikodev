@@ -200,9 +200,12 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_VF 0x1000
 #define VDP_PALSHIFT 13
 
+// Attributes and sprite props
 #define VDP_ATTR(_tile, _hflip, _vflip, _pal, _prio) (((_tile) & 0x7FF) | \
                  (((_hflip) ? VDP_HF : 0) | ((_vflip) ? VDP_VF : 0) | \
                   (((_pal) & 0x3) << VDP_PALSHIFT) | ((_prio) ? VDP_PRIO : 0)))
+#define VDP_SIZE(w, h) (((h-1) & 0x3) | (((w-1) & 0x3) << 2))
+#define VDP_SPR_COUNT 80
 
 // Register manipulation.
 #define VDP_VRAM_ADDR_CMD      (0x40000000)

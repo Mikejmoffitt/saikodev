@@ -6,51 +6,73 @@
 #include "sai/macro.h"
 #include "sai/memmap.h"
 
-/* I/O port data locations */
-#define SYSC_IO_PORTA          (SYSC_IO_BASE + 0x01)
-#define SYSC_IO_PORTB          (SYSC_IO_BASE + 0x03)
-#define SYSC_IO_PORTC          (SYSC_IO_BASE + 0x05)
-#define SYSC_IO_PORTD          (SYSC_IO_BASE + 0x07)
-#define SYSC_IO_PORTE          (SYSC_IO_BASE + 0x09)
-#define SYSC_IO_PORTF          (SYSC_IO_BASE + 0x0B)
-#define SYSC_IO_PORTG          (SYSC_IO_BASE + 0x0D)
-#define SYSC_IO_PORTH          (SYSC_IO_BASE + 0x0F)
-/* I/O protection registers (for reading the string "SEGA") */
-#define SYSC_IO_PROT0          (SYSC_IO_BASE + 0x11)
-#define SYSC_IO_PROT1          (SYSC_IO_BASE + 0x13)
-#define SYSC_IO_PROT2          (SYSC_IO_BASE + 0x15)
-#define SYSC_IO_PROT3          (SYSC_IO_BASE + 0x17)
-/* I/O control registers */
-#define SYSC_IO_CTRL0          (SYSC_IO_BASE + 0x19)
-#define SYSC_IO_CTRL1          (SYSC_IO_BASE + 0x1B)
-#define SYSC_IO_CTRL2          (SYSC_IO_BASE + 0x1D)
-#define SYSC_IO_CTRL3          (SYSC_IO_BASE + 0x1F)
-/* Protection register */
-#define SYSC_PROT_SECURITY     (SYSC_PROTECTION_BASE + 0x001)
-#define SYSC_PROT_VCTRL        (SYSC_PROTECTION_BASE + 0x201)
-#define SYSC_UPD7759_PHRASE    (SYSC_IO_UPD7759_BASE + 1)
+#if SAI_PLAYER_COUNT > 2
+#error "C2 does not support a player count greater than 2!"
+#endif  // SAI_PLAYER_COUNT
 
-// Definitions for the port bits
+// On C2, ports D and H are outputs.
+#define SYSC_IO_DIR_DEFAULT    0x88  // ports D and H as outputs
 
 // Ports A, B (P1 and P2 respectively)
-#define SYSC_PL_LEFT           SAI_BITVAL(7)
-#define SYSC_PL_RIGHT          SAI_BITVAL(6)
-#define SYSC_PL_UP             SAI_BITVAL(5)
-#define SYSC_PL_DOWN           SAI_BITVAL(4)
-#define SYSC_PL_D              SAI_BITVAL(3)
-#define SYSC_PL_C              SAI_BITVAL(2)
-#define SYSC_PL_B              SAI_BITVAL(1)
-#define SYSC_PL_A              SAI_BITVAL(0)
+#define SYSC_IO_PL_LEFT        SAI_BITVAL(7)
+#define SYSC_IO_PL_RIGHT       SAI_BITVAL(6)
+#define SYSC_IO_PL_UP          SAI_BITVAL(5)
+#define SYSC_IO_PL_DOWN        SAI_BITVAL(4)
+#define SYSC_IO_PL_D           SAI_BITVAL(3)
+#define SYSC_IO_PL_C           SAI_BITVAL(2)
+#define SYSC_IO_PL_B           SAI_BITVAL(1)
+#define SYSC_IO_PL_A           SAI_BITVAL(0)
 
-#define SYSC_SYS_UNUSED        SAI_BITVAL(7)
-#define SYSC_SYS_SELECT        SAI_BITVAL(6)
-#define SYSC_SYS_START2        SAI_BITVAL(5)
-#define SYSC_SYS_START1        SAI_BITVAL(4)
-#define SYSC_SYS_SERVICE       SAI_BITVAL(3)
-#define SYSC_SYS_TEST          SAI_BITVAL(2)
-#define SYSC_SYS_COIN1         SAI_BITVAL(1)
-#define SYSC_SYS_COIN2         SAI_BITVAL(0)
+// Port C - Misc in
+#define SYSC_IO_MI_RESET       SAI_BITVAL(7)
+#define SYSC_IO_MI_ADPCM_BUY   SAI_BITVAL(6)
+#define SYSC_IO_MI_CN2_PIN8    SAI_BITVAL(5)
+#define SYSC_IO_MI_CN2_PIN7    SAI_BITVAL(4)
+#define SYSC_IO_MI_CN2_PIN5    SAI_BITVAL(3)
+#define SYSC_IO_MI_CN2_PIN4    SAI_BITVAL(2)
+#define SYSC_IO_MI_CN2_PIN3    SAI_BITVAL(1)
+#define SYSC_IO_MI_CN2_PIN2    SAI_BITVAL(0)
 
-#ifdef __ASSEMBLER__
+// Port D - Misc out
+#define SYSC_IO_MO_WDOG_CTRL   SAI_BITVAL(7)
+#define SYSC_IO_MO_MUTE        SAI_BITVAL(6)
+#define SYSC_IO_MO_CN2_PIN10   SAI_BITVAL(5)
+#define SYSC_IO_MO_CN2_PIN11   SAI_BITVAL(4)
+#define SYSC_IO_MO_LOCKOUT2    SAI_BITVAL(3)
+#define SYSC_IO_MO_LOCKOUT1    SAI_BITVAL(2)
+#define SYSC_IO_MO_METER2      SAI_BITVAL(1)
+#define SYSC_IO_MO_METER1      SAI_BITVAL(0)
+#define SYSC_IO_MO_DEFAULT     (SYSC_MO_WDOG_CTRL \
+                                SYSC_MO_CN2_PIN10 \
+                                SYSC_MO_CN2_PIN11)
+
+// Port E - System
+#define SYSC_IO_SYS_UNUSED     SAI_BITVAL(7)
+#define SYSC_IO_SYS_SELECT     SAI_BITVAL(6)
+#define SYSC_IO_SYS_START2     SAI_BITVAL(5)
+#define SYSC_IO_SYS_START1     SAI_BITVAL(4)
+#define SYSC_IO_SYS_SERVICE    SAI_BITVAL(3)
+#define SYSC_IO_SYS_TEST       SAI_BITVAL(2)
+#define SYSC_IO_SYS_COIN1      SAI_BITVAL(1)
+#define SYSC_IO_SYS_COIN2      SAI_BITVAL(0)
+
+// Port F and G are DIP 1 and 2.
+
+// Port H - Misc out 2 / Banking control
+#define SYSC_IO_MO2_CN4_PINA19 SAI_BITVAL(7)
+#define SYSC_IO_MO2_CN4_PINB19 SAI_BITVAL(6)
+#define SYSC_IO_MO2_ADPCMBANK3 SIA_BITVAL(5)
+#define SYSC_IO_MO2_ADPCMBANK2 SIA_BITVAL(4)
+#define SYSC_IO_MO2_ADPCMBANK1 SIA_BITVAL(3)
+#define SYSC_IO_MO2_ADPCMBANK0 SIA_BITVAL(2)
+#define SYSC_IO_MO2_PALBANK1   SAI_BITVAL(1)
+#define SYSC_IO_MO2_PALBANK0   SAI_BITVAL(0)
+#define SYSC_IO_MO2_DEFAULT    (0)
+
+
+#ifndef __ASSEMBLER__
+void sai_c2_io_poll(void);
+#else
 	.extern	sai_min_c2_io_init
+	.extern	sai_c2_io_poll
 #endif  // __ASEMBLER__

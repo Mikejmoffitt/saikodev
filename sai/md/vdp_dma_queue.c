@@ -1,4 +1,5 @@
 #include "sai/md/vdp_dma_queue.h"
+#include "sai/md/vdp_spr.h"
 #include "sai/md/vdp.h"
 #include "sai/macro.h"
 
@@ -13,7 +14,7 @@
 #define VDP_DMA_SRC_FILL 0x80
 #define VDP_DMA_SRC_COPY 0xC0
 
-#define DMA_QUEUE_PRIO_DEPTH 8
+#define DMA_QUEUE_PRIO_DEPTH 2
 #define DMA_QUEUE_DEPTH 64
 // Used with modulo operator, so should be power of 2.
 _Static_assert(SAI_NUM_IS_POW2(DMA_QUEUE_DEPTH), "DMA queue depth != power of 2!");
@@ -59,7 +60,7 @@ void sai_vdp_dma_init(void)
 }
 
 // Calculate required register values for a transfer
-static inline void enqueue_int(DmaOp op, uint32_t bus, uint16_t dest, uint32_t src, uint16_t n, uint16_t stride)
+static inline void enqueue_int(DmaOp op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
 {
 	// A command slot is chosen from one of the two queues, based on the type.
 	DmaCmd *cmd;
@@ -113,7 +114,7 @@ static inline void enqueue_int(DmaOp op, uint32_t bus, uint16_t dest, uint32_t s
 	cmd->ctrl = VDP_CTRL_DMA_BIT | VDP_CTRL_ADDR(dest) | bus;
 }
 
-static inline void sai_vdp_dma_enqueue(DmaOp op, uint32_t bus, uint16_t dest, uint32_t src, uint16_t n, uint16_t stride)
+static inline void sai_vdp_dma_enqueue(DmaOp op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
 {
 	if (op != DMA_OP_TRANSFER && op != DMA_OP_SPR_TRANSFER)
 	{
@@ -138,38 +139,40 @@ static inline void sai_vdp_dma_enqueue(DmaOp op, uint32_t bus, uint16_t dest, ui
 }
 
 // Schedule a DMA for next vblank from 68K mem to VRAM
-void sai_vdp_dma_transfer_vram(uint16_t dest, const void *src, uint16_t words, uint16_t stride)
+void sai_vdp_dma_transfer_vram(uint32_t dest, const void *src, uint16_t words, uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VRAM_WRITE,
 	                    dest, (uint32_t)src, words, stride);
 }
 
-void sai_vdp_dma_transfer_cram(uint16_t dest, const void *src, uint16_t words, uint16_t stride)
+void sai_vdp_dma_transfer_cram(uint32_t dest, const void *src, uint16_t words, uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_CRAM_WRITE,
 	                    dest, (uint32_t)src, words, stride);
 }
 
-void sai_vdp_dma_transfer_vsram(uint16_t dest, const void *src, uint16_t words, uint16_t stride)
+void sai_vdp_dma_transfer_vsram(uint32_t dest, const void *src, uint16_t words, uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_TRANSFER, VDP_CTRL_VSRAM_WRITE,
 	                    dest, (uint32_t)src, words, stride);
 }
 
-void sai_vdp_dma_transfer_spr_vram(uint16_t dest, const void *src, uint16_t words, uint16_t stride)
+void sai_vdp_dma_transfer_spr_vram(uint16_t count)
 {
 	sai_vdp_dma_enqueue(DMA_OP_SPR_TRANSFER, VDP_CTRL_VRAM_WRITE,
-	                    dest, (uint32_t)src, words, stride);
+	                    g_sai_vdp_sprbase, (uint32_t)g_sai_vdp_spr,
+	                    count*(sizeof(SaiVdpSpr)/sizeof(uint16_t)),
+	                    sizeof(uint16_t));
 }
 
 // Schedule a DMA for next vblank to fill specified bytes at dest with val.
-void sai_vdp_dma_fill_vram(uint16_t dest, uint16_t val, uint16_t bytes, uint16_t stride)
+void sai_vdp_dma_fill_vram(uint32_t dest, uint16_t val, uint16_t bytes, uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_FILL, VDP_CTRL_VRAM_WRITE, dest, val, bytes, stride);
 }
 
 // Schedule a DMA for next vblank to copy specified bytes from VRAM src to VRAM dest.
-void sai_vdp_dma_copy_vram(uint16_t dest, uint16_t src, uint16_t bytes, uint16_t stride)
+void sai_vdp_dma_copy_vram(uint32_t dest, uint16_t src, uint16_t bytes, uint16_t stride)
 {
 	sai_vdp_dma_enqueue(DMA_OP_COPY, VDP_CTRL_VRAM_WRITE, dest, src, bytes, stride);
 }

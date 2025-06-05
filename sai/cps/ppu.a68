@@ -1,0 +1,26 @@
+#include	"sai/cps/ppu.h"
+#include	"sai/cps/hw.h"
+
+	.section	.text
+
+	.global	sai_min_cps_ppu_init
+sai_min_cps_ppu_init:
+	lea	SAI_CPSA_REG_BASE, a0
+	lea	SAI_CPSBA_REG_BASE, a1
+	move.w	#VRAM_OBJRAM>>8, SAI_CPSA_OFFS_OBJ_BASE(a0)
+	move.w	#VRAM_SCROLL1>>8, SAI_CPSA_OFFS_SCROLL1_BASE(a0)
+	move.w	#VRAM_SCROLL2>>8, SAI_CPSA_OFFS_SCROLL2_BASE(a0)
+	move.w	#VRAM_SCROLL3>>8, SAI_CPSA_OFFS_SCROLL3_BASE(a0)
+	move.w	#VRAM_ROWSCROLL>>8, SAI_CPSA_OFFS_ROWSCROLL_BASE(a0)
+	move.w	#SAI_CPSA_VIDEO_CTRL_DEFAULT, SAI_CPSA_OFFS_VIDEO_CTRL(a0)
+	move.l	#(SCROLL_X_DEFAULT<<16) | SCROLL_Y_DEFAULT, d0
+	move.l	d0, SAI_CPSA_SCROLL1_X(a0)
+	move.l	d0, SAI_CPSA_SCROLL2_X(a0)
+	move.l	d0, SAI_CPSA_SCROLL3_X(a0)
+	move.l	d0, SAI_CPSA_STAR1_X(a0)
+	move.l	d0, SAI_CPSA_STAR2_X(a0)
+
+	move.w	#SIA_CPSB_LAYER_ORDER_DEFAULT, SAI_CPSB_OFFS_LAYER_CTRL(a1)
+	move.w	#SAI_CPSB_PAL_CTRL_DEFAULT, SAI_CPSB_OFFS_PALETTE_CTRL(a1)
+
+	jmp	(a6)

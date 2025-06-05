@@ -1,6 +1,11 @@
 // Hardware definitions for Mega Drive / Genesis, and System C/C2.
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #endif  // __ASSEMBLER__
@@ -43,9 +48,13 @@
 /* Color RAM */
 #define CRAM_BASE              (0x8C0000)
 /* I/O ports (buttons, some peripheral control) */
-#define SYSC_IO_BASE           (0x840000)
+#define S5296_BASE             (0x840000)
 #define SYSC_PROT_BASE         (0x800000)
 /* ADPCM */
 #define SYSC_UPD7759_BASE      (0x880000)
 
 #endif  // SAI_TARGET
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

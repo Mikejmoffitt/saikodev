@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #include <stdbool.h>
@@ -141,3 +146,6 @@ static inline void sai_md_z80_reset_assert(void)
 
 #endif  // __ASSEMBLER__
 
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

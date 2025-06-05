@@ -26,9 +26,13 @@ sai_finish:
 ; Execute transfers at start of vbl
 ;
 #if SAI_TARGET==SAI_TARGET_MD
+	bsr.w	sai_vdp_spr_finish
 	bsr.w	sai_vdp_dma_flush
+	bsr.w	sai_vdp_spr_start
 #elif SAI_TARGET==SAI_TARGET_C2
+	bsr.w	sai_vdp_spr_finish
 	bsr.w	sai_vdp_dma_flush
+	bsr.w	sai_vdp_spr_start
 #endif
 
 
@@ -37,6 +41,8 @@ sai_finish:
 ;
 #if SAI_TARGET==SAI_TARGET_MD
 	bsr.w	sai_md_pad_poll
+#elif SAI_TARGET==SAI_TARGET_C2
+	bsr.w	sai_c2_io_poll
 #elif SAI_TARGET==SAI_TARGET_CPS
 	bsr.w	sai_cps_io_poll
 #elif SAI_TARGET==SAI_TARGET_CPS2

@@ -5,15 +5,63 @@
 	.global	sai_min_c2_init
 ; a6.l = return
 sai_min_c2_init:
-	; Set up I/O
-	sf	(SYSC_IO_CTRL0).l
-	sf	(SYSC_IO_CTRL1).l
-	sf	(SYSC_IO_CTRL2).l
-;	move.b	#$F0, (SYSC_IO_CTRL2).l  ; TODO: What are these? used by Puyo 2 for comms?
-	move.b	#$88, (SYSC_IO_CTRL3).l  ; Ports D and H become outputs.
-	move.b	#$B0, (SYSC_IO_PORTD).l
-	move.b	#$30, (SYSC_IO_PORTH).l
-
+	lea	SAI_S5296_BASE, a0
+	move.b	#SYSC_IO_DIR_DEFAULT, S5296_OFFS_DIR(a0)
+	move.b	#SYSC_IO_MO_DEFAULT, S5296_OFFS_PORTD(a0)
+	move.b	#SYSC_IO_MO2_DEFAULT, S5296_OFFS_PORTH(a0)
+	sf	S5206_OFFS_CNT(a0)  ; TODO: Puyo 2 sets to $F0...
 	jmp	(a6)
 
 	.extern	sai_min_c2_io_init
+
+	.global	sai_c2_io_poll
+sai_c2_io_poll:
+	lea	g_sai_in, a0
+	lea	SAI_S5296_BASE, a1
+
+	; Read P1 and P2 into d0.l
+	moveq	#0, d0
+	move.b	S5296_OFFS_PORTA(a1), d0
+	swap	d0
+	move.b	S5296_OFFS_PORTB(a1), d0
+	; Now we have P1 main inputs in the upper word, P2 in the lower.
+
+	; Read the system inputs
+	move.b	S5296_OFFS_PORTE(a1), d1
+
+	; P2 start/coin
+	btst	#SYSC_IO_SYS_START2, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	btst	#SYSC_IO_SYS_COIN2, d1
+	beq.s	1f
+	ori.w	#SAI_BTN_COIN, d0
+1:
+	; P1 start/coin
+	swap	d0
+	btst	#SYSC_IO_SYS_START1, d1
+	beq.s	2f
+	ori.w	#SAI_BTN_START, d0
+2:
+	btst	#SYSC_IO_SYS_COIN1, d1
+	beq.s	3f
+	ori.w	#SAI_BTN_COIN, d0
+3:
+	; Place test and service buttons in place for P1
+	andi.w	#(SYSC_IO_SYS_SELECT | SYSC_IO_SYS_SERVICE | SYSC_IO_SYS_TEST), d1
+	; fast shift by 8
+	move.b	d1, -(sp)
+	move.w	(sp)+, d1
+	sf	d1
+	; give special system inputs to P1
+	or.w	d1, d0
+	; Pass data to SaiInput P1
+	move.w	d0, SaiInput.now(a0)
+	swap	d0
+	; and to SaiInput P2
+	lea	SaiInput.len(a0), a0
+	move.w	d0, SaiInput.now(a0)
+	moveq	#0, d0
+	; and thus concludes our showing
+	rts

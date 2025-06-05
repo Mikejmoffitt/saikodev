@@ -1,0 +1,69 @@
+#include	"sai/md/vdp_spr.h"
+#include	"sai/md/vdp_dma_queue.h"
+
+	.section	.bss
+
+	.global	g_sai_vdp_spr
+	.global g_sai_vdp_spr_next
+	.global g_sai_vdp_spr_count
+
+g_sai_vdp_spr:       ds.b SaiVdpSpr.len * VDP_SPR_COUNT
+g_sai_vdp_spr_next:  ds.l 1
+g_sai_vdp_spr_count: ds.w 1
+
+	.section	.text
+
+	.global	sai_vdp_spr_init
+	.global	sai_min_vdp_spr_init
+	.global	sai_vdp_spr_start
+	.global	sai_vdp_spr_finish
+
+sai_vdp_spr_init:
+	move.l	a6, -(sp)
+	calla6	sai_min_vdp_spr_init
+	move.l	(sp)+, a6
+	rts
+
+sai_min_vdp_spr_init:
+	moveq	#0, d0
+	move.w	d0, g_sai_vdp_spr_count
+	lea	g_sai_vdp_spr, a0
+	move.l	a0, g_sai_vdp_spr_next
+	moveq	#VDP_SPR_COUNT-1, d1
+0:
+	addq.w	#1, d0
+	move.b	d0, SaiVdpSpr.link(a0)  ; Link points to the next.
+	move.w	#2, SaiVdpSpr.x(a0)  ; X is set to 2 to avoid the line mask.
+	move.w	d0, SaiVdpSpr.y(a0)  ; it's not zero, but it's offscreen, so eh
+	lea	SaiVdpSpr.len(a0), a0
+	dbf	d1, 0b
+	jmp	(a6)
+
+sai_vdp_spr_start:
+	lea	g_sai_vdp_spr, a0
+	move.l	a0, g_sai_vdp_spr_next
+	move.b	#1, SaiVdpSpr.link(a0)
+	; Restore the link parameter that the last frame terminated.
+	move.w	g_sai_vdp_spr_count, d0
+	beq.s	0f
+	move.w	d0, d1  ; link value to restore
+	subq.w	#1, d0
+	lsl.w	#3, d0  ; index into table
+	move.b	d1, SaiVdpSpr.link(a0, d0.w)
+	clr.w	g_sai_vdp_spr_count
+0:
+	rts
+
+sai_vdp_spr_finish:
+	lea	g_sai_vdp_spr, a0
+	moveq	#0, d0
+	move.w	g_sai_vdp_spr_count, d0  ; becomes transfer count parameter
+	bne.s	0f
+	; If no sprites were drawn, terminate the list.
+	move.l	d0, SaiVdpSpr.y(a0)  ; also covers link. d0 is 0!
+	moveq	#1, d0  ; Set transfer count to 1
+0:
+	move.l	d0, -(sp)
+	bsr.w	sai_vdp_dma_transfer_spr_vram
+	addq.w	#4, sp
+	rts

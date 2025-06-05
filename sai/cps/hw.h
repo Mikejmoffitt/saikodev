@@ -1,11 +1,6 @@
 // Hardware definitions for Capcom CPS1/2.
 #pragma once
 
-#ifndef __ASSEMBLER__
-#include <stdint.h>
-#endif  // __ASSEMBLER__
-#include "sai/target.h"
-
 #define ROM_BASE               (0x000000)
 #define WRAM_BASE              (0xFF0000)
 #define WRAM_SIZE              (0x10000)
@@ -14,21 +9,15 @@
 
 #define SAI_CPSA_REG_BASE      (0x804100)
 #define SAI_CPSB_REG_BASE      (0x804140)
+#define SAI_CPS_IO_BASE        (0x800000)
 
-#if SAI_PLATFORM == SAI_PLATFORM_CPS2
-#ifndef SAI_CPS2_GOOD_BATTERY
-#define SAI_CPS2_REG_BASE      (0xFFFFF0)
-#else
-#define SAI_CPS2_REG_BASE      (0x400000)
-#endif  // SAI_CPS2_GOOD_BATTERY
-#endif  // SAI_PLATFORM
+// VRAM layout
+#define VRAM_OBJRAM            (VRAM_BASE+0x18000)
+#define VRAM_SCROLL1           (VRAM_BASE+0x0C000)
+#define VRAM_SCROLL2           (VRAM_BASE+0x04000)
+#define VRAM_SCROLL3           (VRAM_BASE+0x08000)
+#define VRAM_ROWSCROLL         (VRAM_BASE+0x02000)
+#define VRAM_PALETTE           (VRAM_BASE+0x00000)
 
-#if SAI_PLATFORM == SAI_PLATFORM_CPS2
-#define SAI_CPS2_IO_BASE       (0x804000)
-#define SAI_CPS2_OBJRAM_BASE   (0x700000)
-#define SAI_CPS2_OBJRAM_SIZE   (0x2000)
-#define SAI_CPS2_QSOUND_BASE   (0x618000)
-#define SAI_CPS2_QSOUND_BYTES  (0x2000)
-#else
-#define SAI_CPS2_IO_BASE       (0x800000)
-#endif  // SAI_PLATFORM
+#define SAI_CPS_SCROLL_X_DEFAULT -64
+#define SAI_CPS_SCROLL_Y_DEFAULT -16

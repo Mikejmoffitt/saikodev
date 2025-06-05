@@ -15,6 +15,12 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
+
 #include "sai/target.h"
 
 #ifndef __ASSEMBLER__
@@ -44,3 +50,7 @@ extern void (*g_irq_hbl_callback)(void);
 	.extern	_v_irq6
 	.extern	_v_irq7
 #endif  // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

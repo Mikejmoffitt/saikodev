@@ -1,4 +1,8 @@
-#include	"sai/cps/io.h"
+//
+// I/O code for CPS2
+//
+#include	"sai/cps2/hw.h"
+#include	"sai/cps2/io.h"
 
 ; CPS2 I/O
 ;
@@ -69,20 +73,23 @@
 
 	.global	sai_cps2_io_poll
 sai_cps2_io_poll:
+	cps2_wdog_pet
+
 	lea	g_sai_in, a0
+	lea	SAI_CPS2_IO_BASE, a1
 ;
 ; Player 1
 ;
 	moveq	#-1, d0
-	move.b	SAI_CPS2_IO_BASE + CPS2_IO_PL0 + 1, d0  ; This is left as-is
+	move.b	(CPS2_IO_PL0 + 1)(a1), d0  ; This is left as-is
 	; Get P1 kicks
-	move.w	SAI_CPS2_IO_BASE + CPS2_IO_PL1, d1
+	move.w	CPS2_IO_PL1(a1), d1
 	lsl.w	#8, d1  ; they just slide into place fortunately
 	ori.w	#$F8FF, d1  ; only want the kick inputs from PL1
 	and.w	d1, d0
 
 	; Start and coin
-	move.w	SAI_CPS2_IO_BASE + CPS2_IO_SYS, d1
+	move.w	CPS2_IO_SYS(a1), d1
 	btst	#CPS2_IO_SW_START1_BIT, d1
 	bne.s	+
 	bclr	#INPUT_SW_START_BIT, d0
@@ -93,17 +100,17 @@ sai_cps2_io_poll:
 +
 	not.w	d0
 	move.w	d0, SaiInput.now(a0)
-	lea	SaiInput.len(a0), a0
 
 	; TODO: Test and Service
 
 ;
 ; Player 2
 ;
+	lea	SaiInput.len(a0), a0
 	moveq	#-1, d0
-	move.b	SAI_CPS2_IO_BASE + CPS2_IO_PL0, d0  ; P2 data as-is
+	move.b	CPS2_IO_PL0(a1), d0  ; P2 data as-is
 	; Get P2 kicks (they are spread out everywhere)
-	move.w	SAI_CPS2_IO_BASE + CPS2_IO_PL1, d1
+	move.w	CPS2_IO_PL1(a1), d1
 	btst	#CPS2_IO_SW_PL2_KICK1_BIT, d1
 	bne.s	+
 	bclr	#INPUT_SW_KICK1_BIT, d0
@@ -112,7 +119,7 @@ sai_cps2_io_poll:
 	bne.s	+
 	bclr	#INPUT_SW_KICK2_BIT, d0
 +
-	move.w	SAI_CPS2_IO_BASE + CPS2_IO_SYS, d1
+	move.w	CPS2_IO_SYS(a1), d1
 	btst	#CPS2_IO_SW_PL2_KICK3_BIT, d1
 	bne.s	+
 	bclr	#INPUT_SW_KICK3_BIT, d0

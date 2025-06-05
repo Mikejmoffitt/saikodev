@@ -1,0 +1,15 @@
+#include	"sai/cps2/obj.h"
+
+	.section	.text
+
+	.global	sai_min_cps2_obj_init
+
+sai_min_cps2_obj_init:
+	lea	SAI_CPS2_REG_BASE, a0
+	move.w	#SAI_CPS2_OBJRAM_BASE>>8, SAI_CPS2_OBJ_OFFS_BASE(a0)
+	move.w	#$807D, SAI_CPS2_OBJ_OFFS_UNK1(a0)  ; TODO: wtf is this
+	move.w	#$1234, SAI_CPS2_OBJ_OFFS_PRIO(a0)
+	move.w	#$0000, SAI_CPS2_OBJ_OFFS_UNK2(a0)
+	move.w	#$0040, SAI_CPS2_OBJ_OFFS_XOFF(a0)
+	move.w	#$0010, SAI_CPS2_OBJ_OFFS_YOFF(a0)
+	jmp	(a6)
