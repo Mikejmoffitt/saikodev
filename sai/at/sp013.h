@@ -21,11 +21,11 @@ extern "C"
 // .... .... .... .b.. in vertical blanking period
 // .... .... .... ..h. horizontal IRQ source
 // .... .... .... ...v vertical IRQ source
-#define SP013_OFFS_STATUS      0x00
+#define SAI_SP013_OFFS_STATUS      0x00
 // Read to ack a vertical blank interrupt.
-#define SIA_SP013_OFFS_VIRQ_ACK    0x04
+#define SAI_SP013_OFFS_VIRQ_ACK    0x04
 // Read to ack a horizontal blank interrupt.
-#define SIA_SP013_OFFS_HIRQ_ACK    0x06
+#define SAI_SP013_OFFS_HIRQ_ACK    0x06
 
 
 #define SP013_OFFS_SPRDX       0x00
