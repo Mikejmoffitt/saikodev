@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #endif  // __ASSEMBLER__
@@ -148,3 +153,7 @@ Sp013Spr.len:
 .endm
 
 #endif  // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

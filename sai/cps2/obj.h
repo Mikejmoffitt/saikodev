@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #endif  // __ASSEMBLER__
@@ -16,9 +21,12 @@
 // Generally $0010
 #define SAI_CPS2_OBJ_OFFS_YOFF $0A
 
-
 #ifndef __ASSEMBLER__
 
 #else
 	.extern	sai_min_cps2_obj_init(void);
 #endif  // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

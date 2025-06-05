@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #include "sai/target.h"
 #include "sai/macro.h"
 
@@ -166,3 +171,7 @@
 #else
 	.extern	sai_min_cps_ppu_init
 #endif  // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

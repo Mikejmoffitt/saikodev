@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #include "sai/cps/hw.h"
 
 #ifndef SAI_CPS2_GOOD_BATTERY
@@ -16,6 +21,10 @@
 
 #ifndef __ASEMBLER__
 .macro	cps2_wdog_pet
-	move.l	#$FFFFFFFF,($FFFFFFFC).l
+	move.l	#0xFFFFFFFF,(0xFFFFFFFC).l
 .endm
 #endif  // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

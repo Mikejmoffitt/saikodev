@@ -20,7 +20,6 @@ extern "C"
 {
 #endif  // __cplusplus
 
-
 #include "sai/target.h"
 
 #ifndef __ASSEMBLER__
