@@ -27,6 +27,8 @@ sai_crt0_begin:
 	dbra	d0, .copy_data
 
 .no_data_copy:
+	move.l	__stack, sp
+	bsr.w	sai_init
 	moveq	#0, d0
 	move.l	d0, d1
 	move.l	d0, d2
@@ -42,6 +44,5 @@ sai_crt0_begin:
 	move.l	d0, a4
 	move.l	d0, a5
 	move.l	d0, a6
-	move.l	__stack, sp
 	andi.w	#$F8FF, sr  ; Enable interrupts
 	jmp	(main).l

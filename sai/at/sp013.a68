@@ -2,9 +2,15 @@
 #include	"at/macro.h"
 
 	.section	.bss
+	.global	g_sai_sp013_bank
 g_sai_sp013_bank: ds.w 1
 
 	.section	.text
+
+	.global	sai_sp013_init
+	.global	sai_min_sp013_init
+	.global	sai_sp013_finish
+	.global	sai_sp013_wait_vbl
 
 sai_sp013_init:
 	move.l	a6, -(sp)

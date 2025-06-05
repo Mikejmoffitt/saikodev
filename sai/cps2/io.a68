@@ -6,66 +6,6 @@
 
 ; CPS2 I/O
 ;
-; Offsets from SAI_CPS2_IO_BASE.
-#define SAI_CPS2_IO_PL0 $00  ; P1 and P2
-#define SAI_CPS2_IO_PL1 $10  ; Kick inputs, or P3 and P4
-#define SAI_CPS2_IO_SYS $20  ; starts, coins, EEPROM read
-#define SAI_CPS2_IO_VOL $30  ; Volume, and bit flags for B board expansions.
-#define SAI_CPS2_IO_EEP $40  ; EEPROM signals, Z80 control
-#define SAI_CPS2_IO_OU1 $80  ; Output port of unknown purpose.
-#define SAI_CPS2_IO_OU2 $90  ; Output port of unknown purpose.
-#define SAI_CPS2_IO_SRM $A0  ; SRAM control. Bit 0 is set to 1 to enble DRAM refresh.
-#define SAI_CPS2_IO_BNK $E0  ; Object RAM bank (swaps in what's at $700000 by twiddling bit 14)
-
-; Enums for SAI_CPS2_IO_PL0/1 bits. These match CPS1 fortunately.
-#define SAI_CPS2_IO_SW_PL_RIGHT_BIT 0
-#define SAI_CPS2_IO_SW_PL_LEFT_BIT  1
-#define SAI_CPS2_IO_SW_PL_DOWN_BIT  2
-#define SAI_CPS2_IO_SW_PL_UP_BIT    3
-#define SAI_CPS2_IO_SW_PL_SW1_BIT   4
-#define SAI_CPS2_IO_SW_PL_SW2_BIT   5
-#define SAI_CPS2_IO_SW_PL_SW3_BIT   6
-#define SAI_CPS2_IO_SW_PL_SW4_BIT   7
-
-; Enums for SAI_CPS2_IO_PL1 bits, when used as kick inputs.
-#define SAI_CPS2_IO_SW_PL1_KICK1_BIT 0
-#define SAI_CPS2_IO_SW_PL1_KICK2_BIT 1
-#define SAI_CPS2_IO_SW_PL1_KICK3_BIT 2
-#define SAI_CPS2_IO_SW_PL2_KICK1_BIT 4
-#define SAI_CPS2_IO_SW_PL2_KICK2_BIT 5
-; P2 kick 3 is located on SAI_CPS2_IO_SYS, for some reason.
-
-; Enums for SAI_CPS2_IO_SYS bits. This also contains P2 strong kick.
-#define SAI_CPS2_IO_SYS_EEP_DO_BIT    0
-#define SAI_CPS2_IO_SW_TEST_BIT       1
-#define SAI_CPS2_IO_SW_SERVICE_BIT    2
-#define SAI_CPS2_IO_SW_START1_BIT     8
-#define SAI_CPS2_IO_SW_START2_BIT     9
-#define SAI_CPS2_IO_SW_START3_BIT    10
-#define SAI_CPS2_IO_SW_START4_BIT    11
-#define SAI_CPS2_IO_SW_COIN1_BIT     12
-#define SAI_CPS2_IO_SW_COIN2_BIT     13
-#define SAI_CPS2_IO_SW_COIN3_BIT     14
-#define SAI_CPS2_IO_SW_COIN4_BIT     15
-#define SAI_CPS2_IO_SW_PL2_KICK3_BIT 14  ; P2 kick3 sits on the P3 coin bit.
-
-; Enums for SAI_CPS2_IO_VOL bits.
-#define SAI_CPS2_IO_SW_VOL_DOWN     1
-#define SAI_CPS2_IO_SW_VOL_UP       2
-
-; Enums for SAI_CPS2_IO_EEP bits. Remember that DO is on the SYS port.
-#define SAI_CPS2_IO_EEP_COINC1_BIT  0
-#define SAI_CPS2_IO_EEP_COINC2_BIT  1
-
-#define SAI_CPS2_IO_EEP_Z80_RESET   4  ; Bring high before accessing Z80 memory!
-#define SAI_CPS2_IO_EEP_LOCK1_BIT   5
-#define SAI_CPS2_IO_EEP_LOCK2_BIT   6
-#define SAI_CPS2_IO_EEP_CN5_PIN7    7
-#define SAI_CPS2_IO_EEP_CN5_PIN8    8
-
-#define SAI_CPS2_IO_EEP_DI_BIT     12
-#define SAI_CPS2_IO_EEP_CLK_BIT    13
-#define SAI_CPS2_IO_EEP_CS_BIT     14
 
 #if SAI_PLAYER_COUNT > 2
 #error "CPS2 4-player input polling not yet implemented!"
@@ -80,62 +20,81 @@ sai_cps2_io_poll:
 ;
 ; Player 1
 ;
-	moveq	#-1, d0
+	moveq	#0, d0
 	move.b	(CPS2_IO_PL0 + 1)(a1), d0  ; This is left as-is
-	; Get P1 kicks
-	move.w	CPS2_IO_PL1(a1), d1
-	lsl.w	#8, d1  ; they just slide into place fortunately
-	ori.w	#$F8FF, d1  ; only want the kick inputs from PL1
-	and.w	d1, d0
+	not.b	d0
 
-	; Start and coin
+	; Get kick input
+	move.w	CPS2_IO_PL1(a1), d1
+
+	btst	#CPS2_IO_SW_PL1_KICK1_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_D, d0
+0:
+	btst	#CPS2_IO_SW_PL1_KICK2_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_E, d0
+0:
+	btst	#CPS2_IO_SW_PL1_KICK3_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_F, d0
+0:
+	; Start, con, test, and service
 	move.w	CPS2_IO_SYS(a1), d1
 	btst	#CPS2_IO_SW_START1_BIT, d1
-	bne.s	+
-	bclr	#INPUT_SW_START_BIT, d0
-+
+	bne.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
 	btst	#CPS2_IO_SW_COIN1_BIT, d1
-	bne.s	+
-	bclr	#INPUT_SW_COIN_BIT, d0
-+
-	not.w	d0
+	bne.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
+	; Test and Service
+	btst	#SAI_CPS2_IO_SW_TEST_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_TEST, d0
+0:
+	btst	#SAI_CPS2_IO_SW_SERVICE_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_SERVICE, d0
+0:
 	move.w	d0, SaiInput.now(a0)
-
-	; TODO: Test and Service
 
 ;
 ; Player 2
 ;
 	lea	SaiInput.len(a0), a0
-	moveq	#-1, d0
+	moveq	#0, d0
 	move.b	CPS2_IO_PL0(a1), d0  ; P2 data as-is
+	not.b	d0
+
 	; Get P2 kicks (they are spread out everywhere)
 	move.w	CPS2_IO_PL1(a1), d1
+
 	btst	#CPS2_IO_SW_PL2_KICK1_BIT, d1
-	bne.s	+
-	bclr	#INPUT_SW_KICK1_BIT, d0
-+
+	bne.s	0f
+	ori.w	#SAI_BTN_D, d0
+0:
 	btst	#CPS2_IO_SW_PL2_KICK2_BIT, d1
-	bne.s	+
-	bclr	#INPUT_SW_KICK2_BIT, d0
-+
+	bne.s	0f
+	ori.w	#SAI_BTN_E, d0
+0:
+	; P2 kick 3 is on the system input...?!
 	move.w	CPS2_IO_SYS(a1), d1
 	btst	#CPS2_IO_SW_PL2_KICK3_BIT, d1
-	bne.s	+
-	bclr	#INPUT_SW_KICK3_BIT, d0
-+
+	bne.s	0f
+	ori.w	#SAI_BTN_F, d0
+0:
 	; Start and coin
 	; D1 still contains CPS2_IO_SYS from before
 	btst	#CPS2_IO_SW_START2_BIT, d1
-	bne.s	+
-	bclr	#INPUT_SW_START_BIT, d0
-+
+	bne.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
 	btst	#CPS2_IO_SW_COIN2_BIT, d1
-	bne.s	+
-	bclr	#INPUT_SW_COIN_BIT, d0
-+
-	not.w	d0
+	bne.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
 	move.w	d0, SaiInput.now(a0)
 
-	; TODO: Test and Service
 	rts

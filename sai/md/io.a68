@@ -8,6 +8,12 @@
 #error "SAI_PLAYER_COUNT cannot exceed 3 for MD target!"
 #endif  // SAI_PLAYER_COUNT
 
+.macro	th_wait
+	.rept	SAI_MD_PAD_NOP_COUNT
+	nop
+	.endr
+.endm
+
 	.section	.text
 
 //
@@ -85,22 +91,20 @@ update_pad_sub:
 	SAI_MD_Z80_BUSREQ
 	; First step - x1CBRLDU into d0
 	move.b	#$40, (a1)  ; TH hi
-	.rept	SAI_MD_PAD_NOP_COUNT
-	nop
-	.endr
+	th_wait
 	move.b	(a1), d0
 	; Second step - x0SA00DU into d1
 	move.b	#$00, (a1)  ; TH low
+	th_wait
 	ori.w	#$FFC0, d0
-	nop
 	move.b	(a1), d1
 	; If the pad doesn't positively identify as an MD pad (bits 2 and 3
 	; cleared), then don't proceed to read later phases.
 	; TODO: Gracefully handle peripherals like Mega Mouse, etc.
 	btst.b	#2, d1
-	bne	store_pad_unplugged
+	bne.s	store_pad_unplugged
 	btst.b	#3, d1
-	bne	store_pad_unplugged
+	bne.s	store_pad_unplugged
 	; Proceed to use the second phase data.
 	lsl.b	#2, d1
 	ori.w	#$FF3F, d1
@@ -108,18 +112,15 @@ update_pad_sub:
 	; d0 contains a full 3-button controller's worth now.
 	; Third step - write TH high and disregard data.
 	move.b	#$40, (a1)  ; TH hi
-	.rept	SAI_MD_PAD_NOP_COUNT
-	nop
-	.endr
+	th_wait
 	; Sixth step - write TH low, and use lower nybble to check pad type.
 	move.b	#$00, (a1)  ; TH low
-	.rept	SAI_MD_PAD_NOP_COUNT
-	nop
-	.endr
+	th_wait
 	move.b	(a1), d1
 	; If the lower four bits are non-zero, it's not a 6-button pad.
 	; final step - write TH high, read extra buttons
 	move.b	#$40, (a1)  ; TH hi
+	th_wait
 	andi.b	#$0F, d1
 	bne.s	store_pad
 	move.b	(a1), d1
@@ -128,12 +129,12 @@ update_pad_sub:
 	ori.w	#$F0FF, d1
 	and.w	d1, d0
 	; Mark highest bit to indicate a 6-button controller.
-	bclr	#15, d0
+	andi.w	#~(SAI_BITVAL(15)), d0
 	bra.s	store_pad
 
 store_pad_unplugged:
 	; Mark second-highest bit for "unplugged/maybe sms" status.
-	bclr	#14, d0
+	andi.w	#~(SAI_BITVAL(14)), d0
 	; Fall-through intended.
 store_pad:
 	move.b	#$00, (a1)  ; TH back to low

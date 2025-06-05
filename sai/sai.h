@@ -37,6 +37,10 @@
 #endif
 
 #ifndef __ASSEMBLER__
+
+// Called after C runtime initialization.
+void sai_init(void);
+
 // Call at the end of the main loop to handle
 // * finalization of sprite list(s)
 // * palette management / transfer preparation

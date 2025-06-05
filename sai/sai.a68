@@ -1,26 +1,41 @@
-	.global	sai_finish
 
 #include "sai/sai.h"
 #include "sai/input.h"
 
 	.section	.text
 
-sai_finish:
-;
-; Terminate sprites and prepare transfer(s) before vbl
-;
-#if SAI_TARGET==SAI_TARGET_MD
-	bsr.w	sai_pal_poll
-#endif
+	.global	sai_init
+	.global	sai_finish
 
+; As the C runtime startup clears work RAM and bss, some memory related to
+; hardware will need initialization once more.
+sai_init:
+#if SAI_TARGET==SAI_TARGET_MD
+	bsr.w	sai_vdp_init
+	bsr.w	sai_pal_init
+	bsr.w	sai_vdp_dma_init
+	bsr.w	sai_vdp_spr_init
+#elif SAI_TARGET==SAI_TARGET_C2
+	bsr.w	sai_vdp_init
+	bsr.w	sai_pal_init
+	bsr.w	sai_vdp_dma_init
+	bsr.w	sai_vdp_spr_init
+#elif SAI_TARGET==SAI_TARGET_CPS
+#elif SAI_TARGET==SAI_TARGET_CPS2
+#endif  // SAI_TARGET
+	rts
+
+sai_finish:
 ;
 ; Synchronize to VBL
 ;
 #if SAI_TARGET==SAI_TARGET_MD
+	bsr.w	sai_pal_poll
 	bsr.w	sai_vdp_wait_vbl
 #elif SAI_TARGET==SAI_TARGET_C2
+	bsr.w	sai_pal_poll
 	bsr.w	sai_vdp_wait_vbl
-#endif
+#endif  // SAI_TARGET
 
 ;
 ; Execute transfers at start of vbl
@@ -33,7 +48,7 @@ sai_finish:
 	bsr.w	sai_vdp_spr_finish
 	bsr.w	sai_vdp_dma_flush
 	bsr.w	sai_vdp_spr_start
-#endif
+#endif  // SAI_TARGET
 
 
 ;
@@ -47,7 +62,7 @@ sai_finish:
 	bsr.w	sai_cps_io_poll
 #elif SAI_TARGET==SAI_TARGET_CPS2
 	bsr.w	sai_cps2_io_poll
-#endif
+#endif  // SAI_TARGET
 
 	bsr.w	sai_input_update_edges
 	rts

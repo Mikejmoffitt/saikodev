@@ -181,13 +181,11 @@ Bg038State.flagy:    ds.w 1
 Bg038State.ctrl:     ds.w 1
 Bg038State.len:
 
-	.extern	g_sai_bg038;
+	.extern	g_sai_bg038
 
 	.extern	sai_bg038_init
 	.extern	sai_min_bg038_init
 	.extern	sai_bg038_on_vbl
-
-
 
 #endif  // __ASSEMBLER__
 

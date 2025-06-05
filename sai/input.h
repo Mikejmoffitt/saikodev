@@ -21,9 +21,9 @@
 typedef struct SaiInput
 {
 	uint16_t now;
+	uint16_t prev;
 	uint16_t pos;
 	uint16_t neg;
-	uint16_t prev;
 } SaiInput;
 
 extern SaiInput g_sai_in[SAI_PLAYER_COUNT];
@@ -37,9 +37,9 @@ void sai_input_update_edges(void);
 
 	.struct	0
 SaiInput.now:	ds.w 1
+SaiInput.prev:	ds.w 1
 SaiInput.pos:	ds.w 1
 SaiInput.neg:	ds.w 1
-SaiInput.prev:	ds.w 1
 SaiInput.len:
 
 	.extern	sai_min_input_init

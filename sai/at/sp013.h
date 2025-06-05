@@ -116,6 +116,7 @@ void sai_sp013_wait_vbl(void);
 	.extern	g_sai_sp013_bank
 
 	.extern sai_sp013_init
+	.extern sai_min_sp013_init
 	.extern sai_sp013_finish
 	.extern sai_sp013_wait_vbl
 

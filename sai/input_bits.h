@@ -49,9 +49,9 @@
 #define SAI_BTN_SELECT         (SAI_BITVAL(12))
 
 //
-// CPS2
+// CPS
 //
-#elif SAI_TARGET == SAI_TARGET_CPS2
+#elif SAI_TARGET == SAI_TARGET_CPS
 
 #define SAI_BTN_RIGHT          (SAI_BITVAL(0))
 #define SAI_BTN_LEFT           (SAI_BITVAL(1))
@@ -64,6 +64,26 @@
 #define SAI_BTN_KICK1          (SAI_BITVAL(8))
 #define SAI_BTN_KICK2          (SAI_BITVAL(9))
 #define SAI_BTN_KICK3          (SAI_BITVAL(10))
+#define SAI_BTN_START          (SAI_BITVAL(11))
+#define SAI_BTN_COIN           (SAI_BITVAL(12))
+#define SAI_BTN_TEST           (SAI_BITVAL(13))
+#define SAI_BTN_SERVICE        (SAI_BITVAL(14))
+
+//
+// CPS2
+//
+#elif SAI_TARGET == SAI_TARGET_CPS2
+
+#define SAI_BTN_RIGHT          (SAI_BITVAL(0))
+#define SAI_BTN_LEFT           (SAI_BITVAL(1))
+#define SAI_BTN_DOWN           (SAI_BITVAL(2))
+#define SAI_BTN_UP             (SAI_BITVAL(3))
+#define SAI_BTN_A              (SAI_BITVAL(4))
+#define SAI_BTN_B              (SAI_BITVAL(5))
+#define SAI_BTN_C              (SAI_BITVAL(6))
+#define SAI_BTN_D              (SAI_BITVAL(8))
+#define SAI_BTN_E              (SAI_BITVAL(9))
+#define SAI_BTN_F              (SAI_BITVAL(10))
 #define SAI_BTN_START          (SAI_BITVAL(11))
 #define SAI_BTN_COIN           (SAI_BITVAL(12))
 #define SAI_BTN_TEST           (SAI_BITVAL(13))
