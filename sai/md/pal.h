@@ -18,6 +18,9 @@ extern "C"
 #include "sai/memmap.h"
 
 #define SAI_PAL333(r, g, b) (((r) << 1) | ((g) << 5) | ((b) << 9))
+#define SAI_PAL444(r, g, b) (((r)) | ((g) << 4) | ((b) << 8))
+#define SAI_PAL888(r, g, b) (((r) >> 4) | ((g) & 0x00F0) | (((b) << 4) & 0x0F00))
+#define SAI_PALHEX(x) SAI_PAL888((((x) >> 16) & 0xFF), (((x) >> 8) & 0xFF), ((x) & 0xFF))
 #define SAI_PAL_DIRTY_MASK_FULL 0x000F
 
 #ifndef __ASSEMBLER__
