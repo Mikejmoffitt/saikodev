@@ -1,0 +1,29 @@
+#include	"sai/c2/prot.h"
+#include	"sai/macro.h"
+#include	"sai/memmap.h"
+
+	.section	.bss
+
+	.global	g_sai_sysc_vctrl
+g_sai_sysc_vctrl: ds.w 1
+
+	.section	.text
+
+	.global	sai_sysc_vctrl_init
+sai_sysc_vctrl_init:
+	move.l	a6, -(sp)
+	calla6	sai_min_sysc_vctrl_init
+	move.l	(sp)+. a6
+	rts
+
+	.global	sai_min_sysc_vctrl_init
+sai_min_sysc_vctrl_init:
+	moveq	#SYSC_PROT_VCTRL_DEFAULT, d0
+	move.w	d0, g_sai_sysc_vctrl
+	move.b	d0, SYSC_PROT_BASE+SYSC_PROT_OFFS_VCTRL
+	jmp	(a6)
+
+	.global	sai_sysc_vctrl_on_vbl
+sai_sysc_vctrl_on_vbl:
+	move.b	g_sai_sysc_vctrl+1, SYSC_PROT_BASE+SYSC_PROT_OFFS_VCTRL
+	rts

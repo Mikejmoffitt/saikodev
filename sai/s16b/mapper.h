@@ -1,5 +1,11 @@
-#pragma once
 // Enormous thanks to Charles McDonald for documenting these registers.
+#pragma once
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -32,3 +38,7 @@
 #ifdef __ASSEMBLER__
 	.extern	sai_min_s16_mapper_init
 #endif   // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

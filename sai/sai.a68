@@ -30,26 +30,19 @@ sai_finish:
 ; Synchronize to VBL
 ;
 #if SAI_TARGET==SAI_TARGET_MD
-	bsr.w	sai_pal_poll
-	bsr.w	sai_vdp_wait_vbl
-#elif SAI_TARGET==SAI_TARGET_C2
-	bsr.w	sai_pal_poll
-	bsr.w	sai_vdp_wait_vbl
-#endif  // SAI_TARGET
-
-;
-; Execute transfers at start of vbl
-;
-#if SAI_TARGET==SAI_TARGET_MD
 	bsr.w	sai_vdp_spr_finish
+	bsr.w	sai_pal_poll
+	bsr.w	sai_vdp_wait_vbl
 	bsr.w	sai_vdp_dma_flush
 	bsr.w	sai_vdp_spr_start
 #elif SAI_TARGET==SAI_TARGET_C2
 	bsr.w	sai_vdp_spr_finish
+	bsr.w	sai_vdp_wait_vbl
+	bsr.w	sai_sysc_vctrl_on_vbl
+	bsr.w	sai_pal_poll
 	bsr.w	sai_vdp_dma_flush
 	bsr.w	sai_vdp_spr_start
 #endif  // SAI_TARGET
-
 
 ;
 ; I/O Poll
