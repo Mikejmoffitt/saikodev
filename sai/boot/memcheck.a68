@@ -3,12 +3,15 @@
 	
 	.global	sai_min_memcheck
 sai_min_memcheck:
+	lsr.w	#2, d1
 	subq.w	#1, d1
 	bmi.w	memcheck_ok
 0:
+	.rept	4
 	move.w	d0, (a0)
 	cmp.w	(a0)+, d0
 	bne.s	memcheck_ng
+	.endr
 	dbra	d1, 0b
 memcheck_ok:
 	moveq	#0, d1
