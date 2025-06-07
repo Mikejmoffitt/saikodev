@@ -1,0 +1,13 @@
+#include	"sai/md/tmss.h"
+#include	"sai/macro.h"
+#include	"sai/memmap.h"
+#include	"sai/md/io.h"
+
+	.global	sai_min_md_tmss_init
+sai_min_md_tmss_init:
+	move.b	MD_IO_VERSION, d0
+	andi.b	#$0F, d0
+	beq.s	0f
+	move.l	#$53454741, TMSS_PORT  ; "SEGA"
+0:
+	jmp	(a6)

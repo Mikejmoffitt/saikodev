@@ -4,11 +4,11 @@ __DYNAMIC = 0;
 
 MEMORY
 {
-	rom :	ORIGIN = 0x00000000, LENGTH = 0x00400000
-	ram :	ORIGIN = 0xFFFF0000, LENGTH = 0x00010000
+	rom :	ORIGIN = 0x00000000, LENGTH = 0x00200000
+	ram :	ORIGIN = 0xFFFFC000, LENGTH = 0x00004000
 }
 
-PROVIDE (__stack = 0x00FFFFF0);
+PROVIDE (__stack = 0x00000000);
 
 SECTIONS
 {
@@ -25,7 +25,7 @@ SECTIONS
 
 	_stext = SIZEOF (.text);
 
-	.data 0xFFFF0000 :
+	.data 0xFFFFC000 :
 	AT ( ADDR (.text) + SIZEOF (.text) )
 	{
 		. = ALIGN(0x2);
@@ -35,7 +35,7 @@ SECTIONS
 	} > ram
 	_sdata = SIZEOF (.data);
 
-	.bss 0xFFFF0000 + SIZEOF (.data) :
+	.bss 0xFFFFC000 + SIZEOF (.data) :
 	{
 		. = ALIGN(0x2);
 		_start = . ;

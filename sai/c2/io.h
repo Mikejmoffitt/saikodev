@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #endif  // __ASSEMBLER__
@@ -42,9 +47,9 @@
 #define SYSC_IO_MO_LOCKOUT1    SAI_BITVAL(2)
 #define SYSC_IO_MO_METER2      SAI_BITVAL(1)
 #define SYSC_IO_MO_METER1      SAI_BITVAL(0)
-#define SYSC_IO_MO_DEFAULT     (SYSC_MO_WDOG_CTRL \
-                                SYSC_MO_CN2_PIN10 \
-                                SYSC_MO_CN2_PIN11)
+#define SYSC_IO_MO_DEFAULT     (SYSC_IO_MO_WDOG_CTRL | \
+                                SYSC_IO_MO_CN2_PIN10 | \
+                                SYSC_IO_MO_CN2_PIN11)
 
 // Port E - System
 #define SYSC_IO_SYS_UNUSED     SAI_BITVAL(7)
@@ -71,8 +76,14 @@
 
 
 #ifndef __ASSEMBLER__
+void sai_c2_io_init(void);
 void sai_c2_io_poll(void);
 #else
+	.extern	sai_c2_io_init
 	.extern	sai_min_c2_io_init
 	.extern	sai_c2_io_poll
 #endif  // __ASEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

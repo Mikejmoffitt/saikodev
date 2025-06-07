@@ -29,6 +29,11 @@
 	jmp	(\routine).l
 .endm
 
+.macro	calla1	routine
+	lea	(. + 12).l, a1
+	jmp	(\routine).l
+.endm
+
 .macro	calla6_safe	routine
 	move.l	a6, -(sp)
 	calla6	\routine

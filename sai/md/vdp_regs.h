@@ -76,7 +76,7 @@ v... .... VR128 - VRAM 128K mode. Enables bus for second set of VRAM.
 #define VDP_MODESET2_M5        SAI_BITVAL(2)
 #define VDP_MODESET2_SMSSZ     SAI_BITVAL(1)
 #define VDP_MODESET2_SMSMG     SAI_BITVAL(0)
-#define VDP_MODESET2_DEFAULT   (VDP_MODESET2_M5 | VDP_MODESET2_M1 | VDP_MODESET2_IE0)
+#define VDP_MODESET2_DEFAULT   (VDP_MODESET2_M5 | VDP_MODESET2_M1)
 /*
 $8B - Mode Set Register 3
 a... .... ADMUX - Drives color bus with pixel data when set, else CPU address.

@@ -17,6 +17,7 @@ SAI_SOURCES_ASM := \
 	$(SAI)/md/irq.a68 \
 	$(SAI)/md/psg.a68 \
 	$(SAI)/md/pal.a68 \
+	$(SAI)/md/tmss.a68 \
 	$(SAI)/sai.a68 \
 	$(SAI)/input.a68 \
 

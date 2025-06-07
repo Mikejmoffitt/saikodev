@@ -141,3 +141,6 @@ _v_table:
 	.long	_v_unimp
 	.long	_v_unimp
 	.long	_v_unimp
+
+	.ascii	"SAIKODEV 2025 Mike Moffitt"
+	.align	2

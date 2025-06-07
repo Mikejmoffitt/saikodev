@@ -10,16 +10,24 @@
 ; As the C runtime startup clears work RAM and bss, some memory related to
 ; hardware will need initialization once more.
 sai_init:
-#if SAI_TARGET==SAI_TARGET_MD
+#if ((SAI_TARGET==SAI_TARGET_MD) || (SAI_TARGET==SAI_TARGET_C2))
 	bsr.w	sai_vdp_init
 	bsr.w	sai_pal_init
 	bsr.w	sai_vdp_dma_init
 	bsr.w	sai_vdp_spr_init
-#elif SAI_TARGET==SAI_TARGET_C2
-	bsr.w	sai_vdp_init
-	bsr.w	sai_pal_init
-	bsr.w	sai_vdp_dma_init
-	bsr.w	sai_vdp_spr_init
+
+	// C/C2-specific additions
+#if SAI_TARGET == SAI_TARGETC2
+	bsr.w	sai_c2_io_init
+	bsr.w	sai_sysc_vctrl_init
+#endif  // SAI_TARGET
+
+	// Enable vbl int
+	move.w	g_sai_vdp_reg_mode+2, d0
+	ori.w	#VDP_MODESET2_IE0, d0
+	move.w	d0, g_sai_vdp_reg_mode+2
+	move.w	d0, VDP_BASE+VDP_OFFS_CTRL
+
 #elif SAI_TARGET==SAI_TARGET_CPS
 #elif SAI_TARGET==SAI_TARGET_CPS2
 #endif  // SAI_TARGET

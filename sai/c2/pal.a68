@@ -1,0 +1,84 @@
+#include "sai/c2/pal.h"
+#include "sai/target.h"
+#include "sai/memmap.h"
+#include "sai/md/vdp.h"
+#include "sai/c2/prot.h"
+
+	.section	.bss
+
+	.global	g_sai_pal
+g_sai_pal:       ds.w 16*4*4
+
+	.section	.data
+
+	.global	g_sai_pal_dirty
+g_sai_pal_dirty: dc.l SAI_PAL_DIRTY_MASK_FULL
+
+	.section	.text
+
+	.global	sai_pal_poll
+sai_pal_poll:
+	move.l	g_sai_pal_dirty, d1
+	beq.w	pal_update_skip
+	movem.l	d2-d5/d7/a2-a5, -(sp)  ; A pile of registers is used for movem.
+	; Let CPU master color bus
+	move.w	g_sai_vdp_reg_mode+(2*2), d0
+	andi.w	#~(VDP_MODESET3_ADMUX), d0
+	move.w	d0, VDP_BASE+VDP_OFFS_CTRL
+
+	moveq	#0, d0  ; test bit for dirty field
+	moveq	#32-1, d7  ; 4x4+4x4 palette lines
+	lea	g_sai_pal, a0
+	lea	CRAM_BASE, a1
+
+pal_update_loop:
+	btst	d0, d1
+	beq.s	1f
+	movem.l	(a0), d2-d5/a2-a5  ; 8*4 bytes; one palette line
+	movem.l	d2-d5/a2-a5, (a1)
+1:
+	addq.w	#1, d0
+	lea	16*2(a0), a0
+	lea	16*2(a1), a1  ; next
+	dbf	d7, pal_update_loop
+
+	; At this point d0 is 0, so we can use it to reset g_sai_pal_dirty.
+	move.l	d0, g_sai_pal_dirty
+	; restore previous admux settings
+	move.w	g_sai_vdp_reg_mode+(2*2), VDP_BASE+VDP_OFFS_CTRL
+	movem.l	(sp)+, d2-d5/d7/a2-a5
+pal_update_skip:
+	rts
+
+	.global	sai_pal_init
+sai_pal_init:
+	calla6_safe sai_min_pal_init
+	rts
+
+	.global	sai_min_pal_init
+sai_min_pal_init:
+	move.w	#VDP_MODESET3_DEFAULT & ~(VDP_MODESET3_ADMUX), VDP_BASE+VDP_OFFS_CTRL
+
+	sf	SYSC_PROT_OFFS_PALBANK
+	calla1 pal_init_sub
+	move.b	#1, SYSC_PROT_OFFS_PALBANK
+	calla1 pal_init_sub
+	move.b	#2, SYSC_PROT_OFFS_PALBANK
+	calla1 pal_init_sub
+	move.b	#3, SYSC_PROT_OFFS_PALBANK
+	calla1 pal_init_sub
+
+	move.w	#VDP_MODESET3_DEFAULT, VDP_BASE+VDP_OFFS_CTRL
+	
+	jmp	(a6)
+
+; clears 1K of CRAM.
+; a1 = return
+pal_init_sub:
+	lea	CRAM_BASE, a0
+	moveq	#0, d0
+	move.w	#($400/4)-1, d1
+0:
+	move.l	d0, (a0)+
+	dbf	d1, 0b
+	jmp	(a1)

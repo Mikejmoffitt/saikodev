@@ -2,7 +2,7 @@
 CC_HOST := cc
 HOSTCFLAGAS := -O2 -std=gnu23 -Werror -Wall -Wpedantic
 
-UTILDIR := $(SAI)/../util
+UTILDIR := $(realpath $(SAI)/../util)
 
 # Utilities packed in with Saikodev
 BIN2S := $(UTILDIR)/core/bin2s

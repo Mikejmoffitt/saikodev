@@ -4,9 +4,10 @@
 #include "sai/macro.h"
 #include "sai/memmap.h"
 #include "sai/target.h"
-#include "sai/md/io.h"
 #include "sai/md/vdp.h"
-#include "sai/md/tmss.h"
+#include "sai/c2/io.h"
+#include "sai/c2/pal.h"
+#include "sai/c2/prot.h"
 
 	.extern	sai_crt0_begin
 
@@ -15,23 +16,21 @@
 	.global	start
 	.global	_start
 
-	.global	startup_err
 
 ; Entry point
 ; Routines here do not use a call stack, but instead store the return address in
 ; the a6 register; until the WRAM test has completed it is not assumed that the
 ; RAM actually works.
-	.org	$200
 _start:
 start:
 	move.w	#$2700, sr
 	lea	__stack, sp
 
-	calla6	sai_min_md_tmss_init
-	calla6	sai_min_md_z80_init
-	calla6	sai_min_md_pad_init
+	calla6	sai_min_c2_io_init
 	calla6	sai_min_psg_init
+	calla6	sai_min_sysc_vctrl_init
 	calla6	sai_min_vdp_init
+	calla6	sai_min_pal_init
 	calla6	sai_min_input_init
 	
 	move.w	#$5555, d0
@@ -49,12 +48,8 @@ start:
 softreset:
 	jmp	sai_crt0_begin
 
+	.global	startup_err
 startup_err:
-	move.l	#$00400040, (MD_IO_CTRL1-1).l  ; Set TH pin as an output
-	move.b	#$00, (MD_IO_DATA1).l  ; TH low
-	btst	#5, (MD_IO_DATA1).l  ; Check start button
-	bne.s	startup_err
-startup_err_wait_start_release:
-	btst	#5, (MD_IO_DATA1).l  ; Check start button
-	beq.s	startup_err_wait_start_release
+	; TODO: Start button to recovery from error or something
 	bra.w	start
+

@@ -5,15 +5,13 @@
 	.section	.bss
 
 	.global	g_sai_sysc_vctrl
-g_sai_sysc_vctrl: ds.w 1
+g_sai_sysc_vctrl:	ds.w 1
 
 	.section	.text
 
 	.global	sai_sysc_vctrl_init
 sai_sysc_vctrl_init:
-	move.l	a6, -(sp)
-	calla6	sai_min_sysc_vctrl_init
-	move.l	(sp)+. a6
+	calla6_safe sai_min_sysc_vctrl_init
 	rts
 
 	.global	sai_min_sysc_vctrl_init

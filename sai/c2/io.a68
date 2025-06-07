@@ -1,15 +1,24 @@
+#include "sai/target.h"
+#include "sai/memmap.h"
+#include "sai/input.h"
+#include "sai/c2/s5296.h"
+#include "sai/c2/io.h"
+
 	.section	.text
 
-#include "sai/memmap.h"
+	.global	sai_c2_io_init
+sai_c2_io_init:
+	calla6_safe sai_min_c2_io_init
+	rts
 
-	.global	sai_min_c2_init
+	.global	sai_min_c2_io_init
 ; a6.l = return
-sai_min_c2_init:
-	lea	SAI_S5296_BASE, a0
+sai_min_c2_io_init:
+	lea	S5296_BASE, a0
 	move.b	#SYSC_IO_DIR_DEFAULT, S5296_OFFS_DIR(a0)
 	move.b	#SYSC_IO_MO_DEFAULT, S5296_OFFS_PORTD(a0)
 	move.b	#SYSC_IO_MO2_DEFAULT, S5296_OFFS_PORTH(a0)
-	sf	S5206_OFFS_CNT(a0)  ; TODO: Puyo 2 sets to $F0...
+	sf	S5296_OFFS_CNT(a0)  ; TODO: Puyo 2 sets to $F0...
 	jmp	(a6)
 
 	.extern	sai_min_c2_io_init
@@ -17,7 +26,7 @@ sai_min_c2_init:
 	.global	sai_c2_io_poll
 sai_c2_io_poll:
 	lea	g_sai_in, a0
-	lea	SAI_S5296_BASE, a1
+	lea	S5296_BASE, a1
 
 	; Read P1 and P2 into d0.l
 	moveq	#0, d0
