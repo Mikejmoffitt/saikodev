@@ -113,11 +113,11 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_MODESET4_LSM1      SAI_BITVAL(2)
 #define VDP_MODESET4_LSM0      SAI_BITVAL(1)
 #define VDP_MODESET4_RS0       SAI_BITVAL(0)
-#if SAI_TARGET == SAI_TARGET_C2
+#if SAI_TARGET != SAI_TARGET_MD
 #define VDP_MODESET4_DEFAULT   (VDP_MODESET4_RS0 | VDP_MODESET4_SPAEN | VDP_MODESET4_VSCLK)
 #else
 #define VDP_MODESET4_DEFAULT   (VDP_MODESET4_RS0 | VDP_MODESET4_RS1)
-#endif  // SAI_TARGET_C2
+#endif  // SAI_TARGET
 
 //
 // Macros and Aliases

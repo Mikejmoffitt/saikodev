@@ -2,7 +2,7 @@
 # Saikodev Megadrive / Genesis rules and sources.
 #
 
-SAI_TARGET=SAI_TARGET_C2
+SAI_TARGET := SAI_TARGET_C2
 
 SAI_SOURCES_ASM := \
 	$(SAI)/boot/vectors.a68 \

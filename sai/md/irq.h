@@ -23,7 +23,7 @@ extern "C"
 #include "sai/target.h"
 
 #ifndef __ASSEMBLER__
-#if SAI_TARGET == SAI_TARGET_C2
+#if SAI_TARGET != SAI_TARGET_MD
 extern void (*g_irq_fm_callback)(void);
 #else
 extern void (*g_irq_th_callback)(void);
@@ -33,7 +33,7 @@ extern void (*g_irq_vbl_callback)(void);
 extern void (*g_irq_hbl_callback)(void);
 
 #else
-#if SAI_TARGET == SAI_TARGET_C2
+#if SAI_TARGET != SAI_TARGET_MD
 	.extern g_irq_fm_callback
 #else
 	.extern g_irq_th_callback

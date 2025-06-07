@@ -2,11 +2,11 @@
 # Saikodev Megadrive / Genesis rules and sources.
 #
 
-SAI_TARGET=SAI_TARGET_MD
+SAI_TARGET := SAI_TARGET_CPS
 
 SAI_SOURCES_ASM := \
 	$(SAI)/boot/vectors.a68 \
-	$(SAI)/md/boot.a68 \
+	$(SAI)/cps/boot.a68 \
 	$(SAI)/boot/crt0.a68 \
 	$(SAI)/boot/exceptions.a68 \
 	$(SAI)/boot/memcheck.a68 \
@@ -15,7 +15,6 @@ SAI_SOURCES_ASM := \
 	$(SAI)/input.a68 \
 
 SAI_SOURCES_C := \
-	$(SAI)/md/vdp_dma_queue.c
 
 SAI_SOURCES_CPP := 
 

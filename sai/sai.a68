@@ -10,14 +10,14 @@
 ; As the C runtime startup clears work RAM and bss, some memory related to
 ; hardware will need initialization once more.
 sai_init:
-#if ((SAI_TARGET==SAI_TARGET_MD) || (SAI_TARGET==SAI_TARGET_C2))
+#if ((SAI_TARGET == SAI_TARGET_MD) || (SAI_TARGET == SAI_TARGET_C1) || SAI_TARGET == SAI_TARGET_C2)
 	bsr.w	sai_vdp_init
 	bsr.w	sai_pal_init
 	bsr.w	sai_vdp_dma_init
 	bsr.w	sai_vdp_spr_init
 
 	// C/C2-specific additions
-#if SAI_TARGET == SAI_TARGETC2
+#if SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
 	bsr.w	sai_c2_io_init
 	bsr.w	sai_sysc_vctrl_init
 #endif  // SAI_TARGET
@@ -28,8 +28,8 @@ sai_init:
 	move.w	d0, g_sai_vdp_reg_mode+2
 	move.w	d0, VDP_BASE+VDP_OFFS_CTRL
 
-#elif SAI_TARGET==SAI_TARGET_CPS
-#elif SAI_TARGET==SAI_TARGET_CPS2
+#elif SAI_TARGET == SAI_TARGET_CPS
+#elif SAI_TARGET == SAI_TARGET_CPS2
 #endif  // SAI_TARGET
 	rts
 
@@ -37,13 +37,13 @@ sai_finish:
 ;
 ; Synchronize to VBL
 ;
-#if SAI_TARGET==SAI_TARGET_MD
+#if SAI_TARGET == SAI_TARGET_MD
 	bsr.w	sai_vdp_spr_finish
 	bsr.w	sai_pal_poll
 	bsr.w	sai_vdp_wait_vbl
 	bsr.w	sai_vdp_dma_flush
 	bsr.w	sai_vdp_spr_start
-#elif SAI_TARGET==SAI_TARGET_C2
+#elif SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
 	bsr.w	sai_vdp_spr_finish
 	bsr.w	sai_vdp_wait_vbl
 	bsr.w	sai_sysc_vctrl_on_vbl
@@ -55,13 +55,13 @@ sai_finish:
 ;
 ; I/O Poll
 ;
-#if SAI_TARGET==SAI_TARGET_MD
+#if SAI_TARGET == SAI_TARGET_MD
 	bsr.w	sai_md_pad_poll
-#elif SAI_TARGET==SAI_TARGET_C2
+#elif SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
 	bsr.w	sai_c2_io_poll
-#elif SAI_TARGET==SAI_TARGET_CPS
+#elif SAI_TARGET == SAI_TARGET_CPS
 	bsr.w	sai_cps_io_poll
-#elif SAI_TARGET==SAI_TARGET_CPS2
+#elif SAI_TARGET == SAI_TARGET_CPS2
 	bsr.w	sai_cps2_io_poll
 #endif  // SAI_TARGET
 

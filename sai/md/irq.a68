@@ -2,7 +2,7 @@
 #include "sai/md/vdp.h"
 #include "sai/target.h"
 
-#if SAI_TARGET == SAI_TARGET_C2
+#if SAI_TARGET != SAI_TARGET_MD
 	.global g_irq_fm_callback
 #else
 	.global g_irq_th_callback
@@ -22,7 +22,7 @@
 
 	.section	.data
 
-#if SAI_TARGET == SAI_TARGET_C2
+#if SAI_TARGET != SAI_TARGET_MD
 g_irq_fm_callback:	dc.l $68000000
 #else
 g_irq_th_callback:	dc.l $68000000
@@ -58,7 +58,7 @@ _v_irq5:
 _v_irq7:
 	rte
 
-#if SAI_TARGET == SAI_TARGET_C2
+#if SAI_TARGET != SAI_TARGET_MD
 _v_irq2:
 	irq_handler g_irq_fm_callback
 #else

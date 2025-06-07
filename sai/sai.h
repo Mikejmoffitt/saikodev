@@ -9,23 +9,23 @@
 #include "sai/macro.h"
 #include "sai/input.h"
 #include "sai/memmap.h"
-#if SAI_TARGET==SAI_TARGET_MD
-#include "sai/md/io.h"
+// MD / C1 / C2 share a lot.
+#if SAI_TARGET == SAI_TARGET_MD || SAI_TARGET == SAI_TARGET_C1 | SAI_TARGET == SAI_TARGET_C2
 #include "sai/md/irq.h"
-#include "sai/md/pal.h"
 #include "sai/md/vdp.h"
 #include "sai/md/vdp_dma_queue.h"
 #include "sai/md/vdp_spr.h"
-#elif SAI_TARGET==SAI_TARGET_C2
+#if SAI_TARGET == SAI_TARGET_MD
+#include "sai/md/io.h"
+#include "sai/md/pal.h"
+#else
 #include "sai/c2/io.h"
+#include "sai/c2/pal.h"
 #include "sai/c2/prot.h"
 #include "sai/c2/s5296.h"
 #include "sai/c2/upd7759.h"
-#include "sai/c2/pal.h"
-#include "sai/md/irq.h"
-#include "sai/md/vdp.h"
-#include "sai/md/vdp_dma_queue.h"
-#include "sai/md/vdp_spr.h"
+#endif  // SAI_TARGET
+
 #elif SAI_TARGET=SAI_TARGET_SYS16B
 #error "TODO"
 #elif SAI_TARGET=SAI_TARGET_SYS18

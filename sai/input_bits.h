@@ -29,7 +29,7 @@
 //
 // System C/C2
 //
-#elif SAI_TARGET == SAI_TARGET_C2
+#elif SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
 
 // Player 1/2 inputs
 #define SAI_BTN_UP             (SAI_BITVAL(5))
