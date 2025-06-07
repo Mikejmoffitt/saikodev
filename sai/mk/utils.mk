@@ -9,6 +9,7 @@ BIN2S := $(UTILDIR)/core/bin2s
 BIN2H := $(UTILDIR)/core/bin2h
 BINPAD := $(UTILDIR)/core/binpad
 BSPLIT := $(UTILDIR)/core/bsplit
+VELELLA := $(UTILDIR)/velella/velella
 
 $(BIN2S): $(UTILDIR)/core/bin2s.c
 	@$(CC_HOST) $^ -o $@ $(HOSTCFLAGS)
@@ -21,3 +22,7 @@ $(BINPAD): $(UTILDIR)/core/binpad.c
 
 $(BSPLIT): $(UTILDIR)/core/bsplit.c
 	@$(CC_HOST) $^ -o $@ $(HOSTCFLAGS)
+
+.PHONY: $(VELELLA)
+$(VELELLA):
+	make -C $(@D)

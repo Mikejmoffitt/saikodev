@@ -1,0 +1,20 @@
+#include "sai/s16b/pal.h"
+
+	.section	.text
+
+	.global	sai_pal_init
+sai_pal_init:
+	calla6_safe sai_min_pal_init
+	rts
+
+	.global	sai_min_pal_init
+sai_min_pal_init:
+	lea	CRAM_BASE, a0
+	moveq	#0, d0
+	move.w	#($2000/(4*4))-1, d1
+0:
+	.rept	4
+	move.l	d0, (a0)+
+	.endr
+	dbf	d1, 0b
+	jmp	(a6)

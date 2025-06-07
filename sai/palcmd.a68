@@ -1,0 +1,90 @@
+#include "sai/palcmd.h"
+#include "sai/macro.h"
+
+	.section	.bss
+
+	.global	g_sai_pal_cmd_count
+	.global	g_sai_pal_cmd_queue
+
+g_sai_pal_cmd_count: ds.w 1
+g_sai_pal_cmd_queue: ds.b SaiPalCmd.len*SAI_PAL_CMD_QUEUE_DEPTH
+
+	.section	.text
+
+	.global	sai_palcmd_init
+sai_palcmd_init:
+	moveq	#0, d0
+	move.w	d0, g_sai_pal_cmd_count
+	move.w	#((SaiPalCmd.len*SAI_PAL_CMD_QUEUE_DEPTH)/2)-1, d1
+	lea	g_sai_pal_cmd_queue, a0
+0:
+	move.w	d0, (a0)+
+	dbf	d1, 0b
+	rts
+
+	.global	sai_palcmd_poll
+sai_palcmd_poll:
+	move.w	g_sai_pal_cmd_count, d0
+	beq.w	skip
+	subq.w	#1, d0
+
+	lea	g_sai_pal_cmd_queue, a0
+poll_loop:
+	swap	d0                     ; store dbf count in upper word.
+	movea.l	SaiPalCmd.dest(a0), a1
+	move.w	SaiPalCmd.op_cnt(a0), d1
+	bpl.s	poll_copy_line
+;
+; Single color copy; can be used to fill.
+;
+	; Just one color.
+	andi.w	#$7FFF, d1               ; turn d1 into the repeat count
+	move.w	SaiPalCmd.color(a0), d0  ; value to write
+0:
+	move.w	d0, (a1)+
+	dbf	d1, 0b
+
+	bra.s	poll_next
+
+poll_copy_line:
+	move.w	#14, d0
+	bclr	d0, d1
+	beq.s	poll_copy_line_long
+;
+; 8-color half sized lines; System 16 uses these for BG tiles.
+;
+	; Copying palette lines. Look ma, no stack!
+	andi.w	#$3FFF, d1             ; turn d1 into the repeat count
+	move.w	d1, d0                 ; get the line count in d0,
+	move.l	a0, d1                 ; so we can back up A0 in D1.
+	movea.l	SaiPalCmd.src(a0), a0  ; a0 becomes the source.
+0:
+	.rept	(8*2)/4
+	move.l	(a0)+, (a1)+
+	.endr
+	dbf	d0, 0b
+	movea.l	d1, a0                 ; restore a0
+	bra.s	poll_next
+;
+; 16-color full sized lines.
+;
+poll_copy_line_long:
+	andi.w	#$3FFF, d1             ; turn d1 into the repeat count
+	move.w	d1, d0                 ; get the line count in d0,
+	move.l	a0, d1                 ; so we can back up A0 in D1.
+	movea.l	SaiPalCmd.src(a0), a0  ; a0 becomes the source.
+0:
+	.rept	(16*2)/4
+	move.l	(a0)+, (a1)+
+	.endr
+	dbf	d0, 0b
+	movea.l	d1, a0                 ; restore a0
+
+poll_next:
+	lea	SaiPalCmd.len(a0), a0
+	swap	d0
+	dbf	d0, poll_loop
+
+	clr.w	g_sai_pal_cmd_count
+skip:
+	rts

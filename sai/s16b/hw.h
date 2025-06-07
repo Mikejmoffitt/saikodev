@@ -46,6 +46,8 @@
 #define S16_IO_BASE            (0xC40000)
 #endif  // SAI_S16_CUSTOM_MAP
 
+#define CRAM_BASE              (S16_CRAM_BASE)
+
 #define S16_MAPPER_BASE        (0xC00000)
 
 #define S16_IO_MISC_OFFS       1

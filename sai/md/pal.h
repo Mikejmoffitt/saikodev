@@ -11,7 +11,6 @@ extern "C"
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>
-#include <string.h>
 #endif  // __ASSEMBLER__
 #include "sai/target.h"
 #include "sai/macro.h"
@@ -32,14 +31,10 @@ extern uint16_t g_sai_pal_dirty;
 static inline void sai_pal_set(uint16_t idx, uint16_t val);
 
 // Caches and schedules a transfer to palette data.
-// Dest: palette index (0 - 63 on MD, 0 - 255 on C/C2).
-// Source: Pointer to data to copy from. Data is copied immediately to a cache.
-// Count: Number of palette entries to copy (1 = one word = one color).
-static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t count);
-
-// Direct palette cache access. After modifying the palette, make sure to mark
-// the range as dirty! Otherwise, it may not be uploaded.
-static inline void sai_pal_mark_dirty(uint16_t first_index, uint16_t count);
+// dest:  palette line (0 - 3).
+// src:   Pointer to data to copy from. Data is copied immediately to a cache.
+// count: Number of palette lines to copy (1 = sixteen colors).
+static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count);
 
 // Schedules DMA transfers based on which palette lines are marked dirty.
 void sai_pal_poll(void);
@@ -52,31 +47,31 @@ static inline void sai_pal_set(uint16_t idx, uint16_t val)
 {
 	idx = idx % SAI_ARRAYSIZE(g_sai_pal);
 	g_sai_pal[idx] = val;
-	g_sai_pal_dirty |= (1 << (idx >> 4));
+	g_sai_pal_dirty |= SAI_BITVAL(idx/16);
 }
 
-static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t count)
+static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count)
 {
-	if (dest + count > SAI_ARRAYSIZE(g_sai_pal)) return;
-	sai_pal_mark_dirty(dest, count);
-	memcpy(&g_sai_pal[dest], source, count * sizeof(uint16_t));
-}
+	// TODO: runtime error check for debug build
+	if ((dest+count) > 4) return;
+	const uint16_t pal_line = dest*16;
 
-static inline void sai_pal_mark_dirty(uint16_t first_index, uint16_t count)
-{
-	const uint16_t first_line = (first_index / 16) % (SAI_ARRAYSIZE(g_sai_pal) / 16);
-	const uint16_t last_line = (count / 16) % (SAI_ARRAYSIZE(g_sai_pal) / 16);
-	if (last_line < first_line)
-	{
-		g_sai_pal_dirty |= SAI_PAL_DIRTY_MASK_FULL;
-		return;
-	}
+	const uint32_t *src32 = (const uint32_t *)(src);
+	uint32_t *dest32 = (uint32_t *)(&g_sai_pal[pal_line]);
+	uint16_t dirty_bit_mark = SAI_BITVAL(pal_line);
 
-	uint32_t dirty_mask = (1 << first_line);
-	for (uint16_t i = 0; i <= last_line - first_line; i++)
+	while (count--)
 	{
-		g_sai_pal_dirty |= dirty_mask;
-		dirty_mask = dirty_mask << 1;
+		*dest32++ = *src32++;
+		*dest32++ = *src32++;
+		*dest32++ = *src32++;
+		*dest32++ = *src32++;
+		*dest32++ = *src32++;
+		*dest32++ = *src32++;
+		*dest32++ = *src32++;
+		*dest32++ = *src32++;
+		g_sai_pal_dirty |= dirty_bit_mark;
+		dirty_bit_mark <<= 1;
 	}
 }
 

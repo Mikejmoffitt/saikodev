@@ -20,6 +20,8 @@ sai_init:
 #if SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
 	bsr.w	sai_c2_io_init
 	bsr.w	sai_sysc_vctrl_init
+	bsr.w	sai_pal_init
+	bsr.w	sai_palcmd_init
 #endif  // SAI_TARGET
 
 	// Enable vbl int
@@ -28,6 +30,9 @@ sai_init:
 	move.w	d0, g_sai_vdp_reg_mode+2
 	move.w	d0, VDP_BASE+VDP_OFFS_CTRL
 
+#elif SAI_TARGET == SAI_TARGET_S16B || SAI_TARGET == SAI_TARGET_S18
+	bsr.w	sai_palcmd_init
+	bsr.w	sai_pal_init
 #elif SAI_TARGET == SAI_TARGET_CPS
 #elif SAI_TARGET == SAI_TARGET_CPS2
 #endif  // SAI_TARGET
@@ -47,9 +52,11 @@ sai_finish:
 	bsr.w	sai_vdp_spr_finish
 	bsr.w	sai_vdp_wait_vbl
 	bsr.w	sai_sysc_vctrl_on_vbl
-	bsr.w	sai_pal_poll
+	bsr.w	sai_palcmd_poll
 	bsr.w	sai_vdp_dma_flush
 	bsr.w	sai_vdp_spr_start
+#elif SAI_TARGET == SAI_TARGET_S16B || SAI_TARGET == SAI_TARGET_S18
+	bsr.w	sai_palcmd_poll
 #endif  // SAI_TARGET
 
 ;

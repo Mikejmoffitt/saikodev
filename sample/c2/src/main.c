@@ -21,6 +21,7 @@ static void run_test_color_anim(void)
 void __attribute__((noreturn)) main(void)
 {
 	sai_init();
+	sai_pal_load(3, k_test_pal_1, 1);
 	while (true)
 	{
 		run_test_color_anim();

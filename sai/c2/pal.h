@@ -11,11 +11,12 @@ extern "C"
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>
-#include <string.h>
+#include <stddef.h>
 #endif  // __ASSEMBLER__
 #include "sai/target.h"
 #include "sai/macro.h"
 #include "sai/memmap.h"
+#include "sai/palcmd.h"
 
 // The C2 palette is banked in two stages.
 // The global bank is controlled by pins from the I/O controller, and banks out
@@ -39,6 +40,9 @@ extern "C"
 //
 // Banks may be controlled by sai_sysc_prot_set_pal_bank() for sub-banks and
 // by setting the SYSC_IO_MO2_PALBANK* bits on IO port H.
+//
+// As C/C2 has its own dedicated color RAM, the color data is not cached, and
+// instead a palette command list is used to schedule transfers for vblank.
 
 // C/C2 supports two palette organizations. One lines up with MD palettes
 // gracefully while the other represents a straight-across arrangement
@@ -65,71 +69,47 @@ extern "C"
 #define SAI_PAL333(r, g, b) (SAI_PAL555((r)<<2, (g)<<2, (b)<<2))
 #define SAI_PALHEX(x) SAI_PAL888((((x) >> 16) & 0xFF), (((x) >> 8) & 0xFF), ((x) & 0xFF))
 
-
-#define SAI_PAL_DIRTY_MASK_FULL 0xFFFF
-
 #ifndef __ASSEMBLER__
 
-extern uint16_t g_sai_pal[16*8*4];
-extern uint32_t g_sai_pal_dirty;
-
+// Clears palette and initializes queue system.
 void sai_pal_init(void);
 
-// Set a single palette color.
+// Registers a command to set a single palette color.
 static inline void sai_pal_set(uint16_t idx, uint16_t val);
 
-// Caches and schedules a transfer to palette data.
-// Dest: palette index (0 - 255 on C/C2).
-// Source: Pointer to data to copy from. Data is copied immediately to a cache.
-// Count: Number of palette entries to copy (1 = one word = one color).
-static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t count);
+// Schedules a transfer to palette data.
+// dest:  palette line (0 - 63).
+// src:   Pointer to data to copy from. Data must exist at least until next vbl.
+// count: Number of palette lines to copy (1 = sixteen colors).
+static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count);
 
-// Direct palette cache access. After modifying the palette, make sure to mark
-// the range as dirty! Otherwise, it may not be uploaded.
-static inline void sai_pal_mark_dirty(uint16_t first_index, uint16_t count);
-
-// Copy palette data that needs update into color memory within the global bank.
-void sai_pal_poll(void);
-
+// -----------------------------------------------------------------------------
 // Static implementations
+// -----------------------------------------------------------------------------
 
 static inline void sai_pal_set(uint16_t idx, uint16_t val)
 {
-	idx = idx % SAI_ARRAYSIZE(g_sai_pal);
-	g_sai_pal[idx] = val;
-	g_sai_pal_dirty |= (1 << (idx >> 4));
+	SaiPalCmd *cmd = sai_palcmd_add();
+	if (!cmd) return;
+	cmd->op_cnt = SAI_PAL_CMD_SET_COLOR | (1-1);
+	uint16_t *cram = (uint16_t *)CRAM_BASE;
+	cmd->dest = &cram[idx];
+	cmd->color = val;
 }
 
-static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t count)
+static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count)
 {
-	if (dest + count > SAI_ARRAYSIZE(g_sai_pal)) return;
-	sai_pal_mark_dirty(dest, count);
-	memcpy(&g_sai_pal[dest], source, count * sizeof(uint16_t));
-}
-
-static inline void sai_pal_mark_dirty(uint16_t first_index, uint16_t count)
-{
-	const uint16_t first_line = (first_index / 16) % (SAI_ARRAYSIZE(g_sai_pal) / 16);
-	const uint16_t last_line = (count / 16) % (SAI_ARRAYSIZE(g_sai_pal) / 16);
-	if (last_line < first_line)
-	{
-		g_sai_pal_dirty |= SAI_PAL_DIRTY_MASK_FULL;
-		return;
-	}
-
-	uint32_t dirty_mask = (1 << first_line);
-	for (uint16_t i = 0; i <= last_line - first_line; i++)
-	{
-		g_sai_pal_dirty |= dirty_mask;
-		dirty_mask = dirty_mask << 1;
-	}
+	SaiPalCmd *cmd = sai_palcmd_add();
+	if (!cmd) return;
+	cmd->op_cnt = SAI_PAL_CMD_COPY_LINE_LONG | (count-1);
+	uint16_t *cram = (uint16_t *)CRAM_BASE;
+	cmd->dest = &cram[dest*16];
+	cmd->src = src;
 }
 
 #else
 
-	.extern	g_sai_pal
-	.extern	g_sai_pal_dirty
-	.extern	sai_pal_poll
+	.extern	sai_min_pal_init
 	.extern	sai_pal_init
 
 #endif  // __ASSEMBLER__

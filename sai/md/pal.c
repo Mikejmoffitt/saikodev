@@ -1,5 +1,6 @@
 #include "sai/md/pal.h"
 #include "sai/md/vdp_dma_queue.h"
+#include <string.h>
 
 uint16_t g_sai_pal[16 * 4];
 uint16_t g_sai_pal_dirty = SAI_PAL_DIRTY_MASK_FULL;

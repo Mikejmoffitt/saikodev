@@ -12,7 +12,7 @@ extern "C"
 #endif  // __ASSEMBLER__
 #include "sai/memmap.h"
 #include "sai/macro.h"
-#include "sai/hw/s16b.h"
+#include "sai/s16b/hw.h"
 
 // Sound CPU command
 #define S16_MAPPER_OFFS_SND              0x07
