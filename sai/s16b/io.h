@@ -11,7 +11,7 @@ extern "C"
 #endif  // __ASSEMBLER__
 #include "sai/memmap.h"
 #include "sai/macro.h"
-#include "sai/hw/s16b.h"
+#include "sai/s16b/io.h"
 
 #ifdef __cplusplus
 }

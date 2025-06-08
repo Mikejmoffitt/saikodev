@@ -12,7 +12,6 @@
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #endif  // __ASSEMBLER__
-#include "sai/target.h"
 
 #define ROM_BASE               (0x000000)
 
@@ -27,9 +26,9 @@
 #define S16_REGION_IO          7
 
 // Base standard memory map set for the mapper
-#ifndef SAI_S16_CUSTOM_MAP
 #define WRAM_BASE              (0xE00000)
 #define WRAM_SIZE              (0x004000)
+#define CRAM_BASE              (0x700000)
 
 #define S16_ROM0_BASE          (0x000000)
 #define S16_ROM1_BASE          (0x200000)
@@ -37,16 +36,13 @@
 
 #define S16_SPR_BASE           (0x600000)
 #define S16_SPR_SIZE           (0x800)
-#define S16_CRAM_BASE          (0x700000)
+#define S16_CRAM_BASE          (CRAM_BASE)
 #define S16_CRAM_SIZE          (0x1000)
 #define S16_VRAM_BASE          (0x800000)
 #define S16_VRAM_SIZE          (0x10000)
 #define S16_WRAM_BASE          (WRAM_BASE)
 #define S16_WRAM_SIZE          (0x4000)
 #define S16_IO_BASE            (0xC40000)
-#endif  // SAI_S16_CUSTOM_MAP
-
-#define CRAM_BASE              (S16_CRAM_BASE)
 
 #define S16_MAPPER_BASE        (0xC00000)
 
