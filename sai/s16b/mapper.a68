@@ -2,7 +2,7 @@
 #include "sai/macro.h"
 #include "sai/memmap.h"
 #include "sai/target.h"
-#include "sai/s16b/io.h"
+#include "sai/s16b/mapper.h"
 
 	.section	.text
 
@@ -10,10 +10,10 @@
 
 sai_min_s16_mapper_init:
 	lea	mapper_cfg_tbl(pc), a0
-	lea	S16_MAPPER_BASE, a1
+	lea	S16_MAPPER_BASE+S16_MAPPER_OFFS_R0_CTRL, a1
 	.rept	4
 	move.l	(a0)+, d0
-	movep.l	d0, 1(a1)
+	movep.l	d0, 0(a1)
 	lea	8(a1), a1
 	.endr
 	jmp	(a6)

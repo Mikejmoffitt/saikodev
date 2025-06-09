@@ -17,6 +17,7 @@ g_sai_vbl_wait_flag:              ds.b 1
 ; As the C runtime startup clears work RAM and bss, some memory related to
 ; hardware will need initialization once more.
 sai_init:
+	bsr.w	sai_input_init
 #if ((SAI_TARGET == SAI_TARGET_MD) || (SAI_TARGET == SAI_TARGET_C1) || SAI_TARGET == SAI_TARGET_C2)
 	bsr.w	sai_vdp_init
 	bsr.w	sai_pal_init
@@ -38,6 +39,10 @@ sai_init:
 	move.w	d0, VDP_BASE+VDP_OFFS_CTRL
 
 #elif SAI_TARGET == SAI_TARGET_S16B || SAI_TARGET == SAI_TARGET_S18
+
+#if SAI_TARGET == SAI_TARGET_S16B
+	bsr.w	sai_s16b_io_init
+#endif  // SAI_TARGET
 	bsr.w	sai_palcmd_init
 	bsr.w	sai_pal_init
 #elif SAI_TARGET == SAI_TARGET_CPS
@@ -82,6 +87,8 @@ sai_finish:
 	bsr.w	sai_md_pad_poll
 #elif SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
 	bsr.w	sai_c2_io_poll
+#elif SAI_TARGET == SAI_TARGET_S16B
+	bsr.w	sai_s16b_io_poll
 #elif SAI_TARGET == SAI_TARGET_CPS
 	bsr.w	sai_cps_io_poll
 #elif SAI_TARGET == SAI_TARGET_CPS2

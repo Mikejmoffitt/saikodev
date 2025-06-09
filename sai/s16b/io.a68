@@ -1,1 +1,80 @@
-#include	"sai/s16b/io.h"
+#include "sai/s16b/io.h"
+#include "sai/input.h"
+
+	.section	.bss
+
+	.global	g_sai_io_misc_ctrl
+	.global	g_sai_io_dip
+g_sai_io_misc_ctrl:	ds.w 1
+g_sai_io_dip:		ds.b 2
+
+	.section	.text
+
+	.global	sai_s16b_io_init
+sai_s16b_io_init:
+	calla6_safe sai_min_s16b_io_init
+	rts
+
+	.global	sai_min_s16b_io_init
+sai_min_s16b_io_init:
+	move.b	#S16_IO_MISC_DEFAULT, d0
+	move.b	d0, g_sai_io_misc_ctrl
+	move.b	d0, S16_IO_BASE+S16_IO_MISC_OFFS
+	jmp	(a6)
+
+	.global	sai_s16b_io_poll
+sai_s16b_io_poll:
+	lea	g_sai_in, a0
+	lea	S16_IO_BASE, a1
+
+	; Update misc control (display blanking)
+	move.b	g_sai_io_misc_ctrl, S16_IO_MISC_OFFS(a1)
+
+	; The DIP switches.
+	move.b	S16_IO_DIP1_OFFS(a1), g_sai_io_dip
+	move.b	S16_IO_DIP2_OFFS(a1), g_sai_io_dip+1
+
+	; Read P1 and P2 directly into d0.l
+	moveq	#0, d0
+	move.b	S16_IO_INPUT_2_OFFS(a1), d0
+	swap	d0
+	move.b	S16_IO_INPUT_4_OFFS(a1), d0
+	; Now we have P1 main inputs in the upper word, P2 in the lower.
+
+	; Read the system inputs
+	move.b	S16_IO_INPUT_1_OFFS(a1), d1
+
+	; P2 start/coin
+	btst	#S16_IO_INPUT_1_START2, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	btst	#S16_IO_INPUT_1_COIN2, d1
+	beq.s	1f
+	ori.w	#SAI_BTN_COIN, d0
+1:
+	; P1 start/coin and system inputs
+	swap	d0
+	btst	#S16_IO_INPUT_1_START1, d1
+	beq.s	2f
+	ori.w	#SAI_BTN_START, d0
+2:
+	btst	#S16_IO_INPUT_1_COIN1, d1
+	beq.s	3f
+	ori.w	#SAI_BTN_COIN, d0
+3:
+	btst	#S16_IO_INPUT_1_TEST, d1
+	beq.s	4f
+	ori.w	#SAI_BTN_TEST, d0
+4:
+	btst	#S16_IO_INPUT_1_SERVICE, d1
+	beq.s	4f
+	ori.w	#SAI_BTN_SERVICE, d0
+4:
+	; Pass data to SaiInput P1
+	move.w	d0, SaiInput.now(a0)
+	swap	d0
+	; and to SaiInput P2
+	lea	SaiInput.len(a0), a0
+	move.w	d0, SaiInput.now(a0)
+	rts

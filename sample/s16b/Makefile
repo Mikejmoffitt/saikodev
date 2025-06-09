@@ -17,7 +17,7 @@ PROJECT_OUTPUT := $(OUTDIR)/$(PROJECT_NAME).bin
 include $(SAI)/s16b/Sources.mk
 include $(SAI)/mk/m68k-flags.mk
 include $(SAI)/mk/utils.mk
-#include $(SAI)/mk/utils-c2.mk
+include $(SAI)/mk/utils-s16b.mk
 include $(SAI)/mk/sai-build-rules.mk
 
 # Flags may be ammended here for user code.

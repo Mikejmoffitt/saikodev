@@ -6,7 +6,7 @@ extern "C"
 {
 #endif  // __cplusplus
 
-
+#ifndef __ASSEMBLER__
 #include <stdint.h>
 #include <stdbool.h>
 #endif  // __ASSEMBLER__

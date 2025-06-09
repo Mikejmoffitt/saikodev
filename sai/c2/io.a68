@@ -1,8 +1,6 @@
-#include "sai/target.h"
-#include "sai/memmap.h"
-#include "sai/input.h"
-#include "sai/c2/s5296.h"
 #include "sai/c2/io.h"
+#include "sai/c2/s5296.h"
+#include "sai/input.h"
 
 	.section	.text
 
@@ -71,6 +69,4 @@ sai_c2_io_poll:
 	; and to SaiInput P2
 	lea	SaiInput.len(a0), a0
 	move.w	d0, SaiInput.now(a0)
-	moveq	#0, d0
-	; and thus concludes our showing
 	rts

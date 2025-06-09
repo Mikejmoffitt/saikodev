@@ -40,8 +40,6 @@
 #define SAI_BTN_B              (SAI_BITVAL(1))
 #define SAI_BTN_C              (SAI_BITVAL(2))
 #define SAI_BTN_D              (SAI_BITVAL(3))
-
-// System inputs get pushed into the upper bits of player inputs.
 #define SAI_BTN_COIN           (SAI_BITVAL(8))
 #define SAI_BTN_START          (SAI_BITVAL(9))
 #define SAI_BTN_TEST           (SAI_BITVAL(10))
@@ -57,13 +55,12 @@
 #define SAI_BTN_LEFT           (SAI_BITVAL(1))
 #define SAI_BTN_DOWN           (SAI_BITVAL(2))
 #define SAI_BTN_UP             (SAI_BITVAL(3))
-#define SAI_BTN_BTN1           (SAI_BITVAL(4))
-#define SAI_BTN_BTN2           (SAI_BITVAL(5))
-#define SAI_BTN_BTN3           (SAI_BITVAL(6))
-#define SAI_BTN_BTN4           (SAI_BITVAL(7))
-#define SAI_BTN_KICK1          (SAI_BITVAL(8))
-#define SAI_BTN_KICK2          (SAI_BITVAL(9))
-#define SAI_BTN_KICK3          (SAI_BITVAL(10))
+#define SAI_BTN_A              (SAI_BITVAL(4))
+#define SAI_BTN_B              (SAI_BITVAL(5))
+#define SAI_BTN_C              (SAI_BITVAL(6))
+#define SAI_BTN_D              (SAI_BITVAL(8))
+#define SAI_BTN_E              (SAI_BITVAL(9))
+#define SAI_BTN_F              (SAI_BITVAL(10))
 #define SAI_BTN_START          (SAI_BITVAL(11))
 #define SAI_BTN_COIN           (SAI_BITVAL(12))
 #define SAI_BTN_TEST           (SAI_BITVAL(13))
@@ -88,6 +85,24 @@
 #define SAI_BTN_COIN           (SAI_BITVAL(12))
 #define SAI_BTN_TEST           (SAI_BITVAL(13))
 #define SAI_BTN_SERVICE        (SAI_BITVAL(14))
+
+//
+// Sysem 16B
+//
+#elif SAI_TARGET == SAI_TARGET_S16B
+
+#define SAI_BTN_LEFT           (SAI_BITVAL(7)
+#define SAI_BTN_RIGHT          (SAI_BITVAL(6)
+#define SAI_BTN_UP             (SAI_BITVAL(5)
+#define SAI_BTN_DOWN           (SAI_BITVAL(4)
+#define SAI_BTN_D              (SAI_BITVAL(3)
+#define SAI_BTN_A              (SAI_BITVAL(2)
+#define SAI_BTN_B              (SAI_BITVAL(1)
+#define SAI_BTN_C              (SAI_BITVAL(0)
+#define SAI_BTN_COIN           (SAI_BITVAL(8))
+#define SAI_BTN_START          (SAI_BITVAL(9))
+#define SAI_BTN_TEST           (SAI_BITVAL(10))
+#define SAI_BTN_SERVICE        (SAI_BITVAL(11))
 
 #else
 

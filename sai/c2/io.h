@@ -9,6 +9,7 @@ extern "C"
 #include <stdint.h>
 #endif  // __ASSEMBLER__
 #include "sai/macro.h"
+#include "sai/target.h"
 #include "sai/memmap.h"
 
 #if SAI_PLAYER_COUNT > 2
