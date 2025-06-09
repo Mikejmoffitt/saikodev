@@ -17,12 +17,13 @@ g_sai_vbl_wait_flag:              ds.b 1
 ; As the C runtime startup clears work RAM and bss, some memory related to
 ; hardware will need initialization once more.
 sai_init:
+	bsr.w	sai_irq_init
 	bsr.w	sai_input_init
 #if ((SAI_TARGET == SAI_TARGET_MD) || (SAI_TARGET == SAI_TARGET_C1) || SAI_TARGET == SAI_TARGET_C2)
 	bsr.w	sai_vdp_init
-	bsr.w	sai_pal_init
 	bsr.w	sai_vdp_dma_init
 	bsr.w	sai_vdp_spr_init
+	bsr.w	sai_pal_init
 
 	// C/C2-specific additions
 #if SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
@@ -42,11 +43,23 @@ sai_init:
 
 #if SAI_TARGET == SAI_TARGET_S16B
 	bsr.w	sai_s16b_io_init
+#else
+	bsr.w	sai_s18_io_init
+	bsr.w	sai_vdp_init
+	bsr.w	sai_vdp_dma_init
+	bsr.w	sai_vdp_spr_init
 #endif  // SAI_TARGET
-	bsr.w	sai_palcmd_init
 	bsr.w	sai_pal_init
+	bsr.w	sai_palcmd_init
 #elif SAI_TARGET == SAI_TARGET_CPS
 #elif SAI_TARGET == SAI_TARGET_CPS2
+#elif SAI_TARGET == SAI_TARGET_ESPRADE
+	bsr.w	sai_sp013_init
+	bsr.w	sai_bg038_init
+	bsr.w	sai_at_io_init
+	; TODO: EEPROM
+	bsr.w	sai_pal_init
+	bsr.w	sai_palcmd_init
 #endif  // SAI_TARGET
 	rts
 
@@ -78,6 +91,13 @@ sai_finish:
 #elif SAI_TARGET == SAI_TARGET_S16B || SAI_TARGET == SAI_TARGET_S18
 	bsr.w	sai_irq_vbl_wait
 	bsr.w	sai_palcmd_poll
+#elif SAI_TARGET == SAI_TARGET_CPS
+#elif SAI_TARGET == SAI_TARGET_CPS2
+#elif SAI_TARGET == SAI_TARGET_ESPRADE
+	bsr.w	sai_irq_vbl_wait
+	bsr.w	sai_sp013_finish
+	bsr.w	sai_palcmd_poll
+	bsr.w	sai_bg038_on_vbl
 #endif  // SAI_TARGET
 
 ;
@@ -89,10 +109,14 @@ sai_finish:
 	bsr.w	sai_c2_io_poll
 #elif SAI_TARGET == SAI_TARGET_S16B
 	bsr.w	sai_s16b_io_poll
+#elif SAI_TARGET == SAI_TARGET_S18
+	bsr.w	sai_s18_io_poll
 #elif SAI_TARGET == SAI_TARGET_CPS
 	bsr.w	sai_cps_io_poll
 #elif SAI_TARGET == SAI_TARGET_CPS2
 	bsr.w	sai_cps2_io_poll
+#elif SAI_TARGET == SAI_TARGET_ESPRADE
+	bsr.w	sai_at_io_poll
 #endif  // SAI_TARGET
 
 	bsr.w	sai_input_update_edges

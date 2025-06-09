@@ -35,16 +35,22 @@ extern "C"
 #elif SAI_TARGET == SAI_TARGET_S16B
 #include "sai/s16b/pal.h"
 #elif SAI_TARGET == SAI_TARGET_S18
-#error "TODO"
+#include "sai/s16b/pal.h"
+#include "sai/s18/io.h"
 #elif SAI_TARGET == SAI_TARGET_CPS
 #error "TODO"
 #elif SAI_TARGET == SAI_TARGET_CPS2
 #error "TODO"
+#elif SAI_TARGET == SAI_TARGET_ESPRADE
+#include "sai/at/io.h"
+#include "sai/at/pal.h"
+#include "sai/at/sp013.h"
+#include "sai/at/bg038.h"
 #endif
 
 #ifndef __ASSEMBLER__
 
-// Called after C runtime initialization.
+// Call after C runtime initialization.
 void sai_init(void);
 
 // Call at the end of the main loop to handle

@@ -1,5 +1,4 @@
-// System 16/18 palette support.
-// Once more thanks to Charles McDonald for describing this hardware.
+// Atlus palette support.
 #pragma once
 
 #ifdef __cplusplus
@@ -19,21 +18,28 @@ extern "C"
 #include "sai/memmap.h"
 #include "sai/palcmd.h"
 
-// System 16 has 4K of CRAM, split between the layers.
-// The text plane uses colors 0-63, from the first eight 8-color palettes.
-// The scroll planes use colors 0-1023, from 128 8-color palettes.
-// The sprites use the second half, 1024-2047 as 64 16-color palettes.
+// The SP013 sprite chip can address 64 palettes, each with 16 colors. However,
+// ESP Ra.De. and Guwange extend this to 256 colors with some external logic
+// and a second plane of ROM data.
+//
+// The BG038 background chip itself also has 64x16 colors, but with some simple
+// additional logic it too can be expanded to 256 colors. This is a common
+// arrangement. Aku Gallet and Sailor Moon are unique in that they expand just
+// one plane (C) to 64 colors with principally the same technique.
+//
+// While SP013 always uses the start of color RAM and only addresses using 10
+// bits (6 palette sel + 4 color) the BG038 chip can add some global address
+// bits using the control register, allowing the color RAM to be split.
+// In practice Aku Gallet gives each plane its own palette region, as there
+// is enough color memory to do this at 4bpp, but with all of the Cave titles
+// that use 8bpp backgrounds, the memory is only sufficient to split it between
+// sprites and all the other background planes.
+//
+// Treatment of color RAM varies from hardware to hardware, but this palette
+// support code will just operate on 16-color lines; To copy a 256 color
+// palette it is necessary to do a transfer that spans sixteen lines.
 
-#define SAI_PAL_SH SAI_BITVAL(15)
-
-#define SAI_PAL555(r, g, b)  ( \
-                              (SAI_BTST(r, 4)?SAI_BITVAL(12):0) | \
-                              (SAI_BTST(g, 4)?SAI_BITVAL(13):0) | \
-                              (SAI_BTST(b, 4)?SAI_BITVAL(14):0) | \
-                              ((((r)>>1) & 0xF)) | \
-                              ((((g)>>1) & 0xF)<<4) | \
-                              ((((b)>>1) & 0xF)<<8) \
-                             )
+#define SAI_PAL555(r, g, b)  (((r)<<5)|((g)<<10)|(b))
 #define SAI_PAL444(r, g, b) (SAI_PAL555((r)<<1, (g)<<1, (b)<<1))
 #define SAI_PAL888(r, g, b) (SAI_PAL555((r)>>3, (g)>>3, (b)>>3))
 #define SAI_PAL333(r, g, b) (SAI_PAL555((r)<<2, (g)<<2, (b)<<2))
@@ -52,8 +58,6 @@ static inline void sai_pal_set(uint16_t idx, uint16_t val);
 // src:   Pointer to data to copy from.
 // count: Number of palette lines to copy (for BG, this is 8 colors; for spr, 16).
 static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t count);
-static inline void sai_pal_load_bg(uint16_t dest, const void *source, uint16_t count);
-static inline void sai_pal_load_spr(uint16_t dest, const void *source, uint16_t count);
 
 // -----------------------------------------------------------------------------
 // Static implementations
@@ -69,30 +73,14 @@ static inline void sai_pal_set(uint16_t idx, uint16_t val)
 	cmd->color = val;
 }
 
-static inline void sai_pal_load_bg(uint16_t dest, const void *src, uint16_t count)
-{
-	SaiPalCmd *cmd = sai_palcmd_add();
-	if (!cmd) return;
-	cmd->op_cnt = SAI_PAL_CMD_COPY_LINE_HALF | (count-1);
-	uint16_t *cram = (uint16_t *)CRAM_BASE;
-	cmd->dest = &cram[dest*8];
-	cmd->src = src;
-}
-
-static inline void sai_pal_load_spr(uint16_t dest, const void *src, uint16_t count)
+static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count)
 {
 	SaiPalCmd *cmd = sai_palcmd_add();
 	if (!cmd) return;
 	cmd->op_cnt = SAI_PAL_CMD_COPY_LINE_LONG | (count-1);
 	uint16_t *cram = (uint16_t *)CRAM_BASE;
-	cmd->dest = &cram[1024+(dest*16)];
+	cmd->dest = &cram[(dest*16)];
 	cmd->src = src;
-}
-
-static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count)
-{
-	if (dest < 128) sai_pal_load_bg(dest, src, count);
-	else sai_pal_load_spr(dest-128, src, count);
 }
 
 #else

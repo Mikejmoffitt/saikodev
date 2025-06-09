@@ -77,9 +77,13 @@ extern "C"
 
 
 #ifndef __ASSEMBLER__
+
+extern uint8_t g_sai_io_dip[2];
+
 void sai_c2_io_init(void);
 void sai_c2_io_poll(void);
 #else
+	.extern g_sai_io_dip
 	.extern	sai_c2_io_init
 	.extern	sai_min_c2_io_init
 	.extern	sai_c2_io_poll

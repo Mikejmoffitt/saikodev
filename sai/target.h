@@ -8,3 +8,4 @@
 #define SAI_TARGET_S18 5
 #define SAI_TARGET_CPS 6
 #define SAI_TARGET_CPS2 7
+#define SAI_TARGET_ESPRADE 8

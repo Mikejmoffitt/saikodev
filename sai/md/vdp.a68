@@ -95,7 +95,7 @@ sai_min_vdp_clear_vram:
 	move.w	#VDP_REGST(VDP_AUTOINC, $02), VDP_OFFS_CTRL(a1)  ; Word increment
 	moveq	#0, d0
 	; Rept of 2 is used because IIRC the FIFO is four words long.
-	move.w	#(VRAM_SIZE_128K / (4*2)), d1
+	move.w	#(VDP_VRAM_SIZE_128K / (4*2)), d1
 0:
 	.rept	2
 	move.l	d0, VDP_OFFS_DATA(a1)

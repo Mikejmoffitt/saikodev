@@ -11,6 +11,7 @@ extern "C"
 #endif  // __ASSEMBLER__
 #include "sai/macro.h"
 #include "sai/target.h"
+#include "sai/memmap.h"
 
 //
 // HARDWARE OPTIONS
@@ -92,11 +93,11 @@ extern "C"
 #define BG038_CTRL_DISABLE_BIT     4
 #define BG038_CTRL_DISABLE         SAI_BITVAL(BG038_CTRL_DISABLE_BIT)
 
-#define BG038_SCRX_FLIP        SAI_BITVAL(15)
-#define BG038_SCRX_LINESCROLL  SAI_BITVAL(14)
+#define BG038_SCRX_FLIP            SAI_BITVAL(15)
+#define BG038_SCRX_LINESCROLL      SAI_BITVAL(14)
 
-#define BG038_SCRY_FLIP        SAI_BITVAL(15)
-#define BG038_SCRY_LINEPTR     SAI_BITVAL(14)
+#define BG038_SCRY_FLIP            SAI_BITVAL(15)
+#define BG038_SCRY_LINEPTR         SAI_BITVAL(14)
 
 #define BG038_ATTR(pal, prio) (((pri)<<0x6)|((pal)))
 #define BG038_ATTR16(pal, prio) (BG038_ATTR(pal, prio)<<8)
@@ -121,7 +122,7 @@ typedef struct Bg038Tile
 			uint8_t pad[3];
 		};
 		uint32_t code;  // 0-131072
-	}
+	};
 } Bg038Tile;
 
 // Scroll table entry
@@ -192,3 +193,4 @@ Bg038State.len:
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
+

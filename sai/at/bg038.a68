@@ -1,5 +1,5 @@
-#include	"at/bg038.h"
-#include	"at/macro.h"
+#include	"sai/at/bg038.h"
+#include	"sai/macro.h"
 
 	.section	.bss
 	
@@ -9,9 +9,7 @@ g_sai_bg038: ds.b Bg038State.len * SAI_BG038_COUNT
 
 	.global	sai_bg038_init
 sai_bg038_init:
-	move.l	a6, -(sp)
-	calla6	sai_min_bg038_init
-	move.l	(sp)+, a6
+	calla6_safe sai_min_bg038_init
 	rts
 
 	.global	sai_min_bg038_init
@@ -25,7 +23,8 @@ sai_min_bg038_init:
 	move.l	d0, (a0)+  ; flagsx, flagsy
 	move.w	#BG038_CTRL_DISABLE|1, (a0)+  ; ctrl disabled, pal grp 1
 	dbf	d1, 0b
-#else  ; Color group spread as seen in Aku Gallet
+#else
+	;Color group spread as seen in Aku Gallet
 	moveq	#BG038_CTRL_DISABLE|1, d0
 	moveq	#SAI_BG038_COUNT-1, d1
 	lea	g_sai_bg038, a0
@@ -36,6 +35,49 @@ sai_min_bg038_init:
 	addq.w	#1, d0
 	dbf	d1, b0
 #endif
+	; Wipe VRAM A
+	lea	BG038_A_VRAM_BASE, a0
+	moveq	#0, d0
+	move.w	#(BG038_A_VRAM_SIZE/(4*4))-1, d1
+0:
+	.rept	4
+	move.l	d0, (a0)+
+	.endr
+	dbf	d1, 0b
+#if SAI_BG038_COUNT > 1
+	; Wipe VRAM B
+	lea	BG038_B_VRAM_BASE, a0
+	moveq	#0, d0
+	move.w	#(BG038_B_VRAM_SIZE/(4*4))-1, d1
+0:
+	.rept	4
+	move.l	d0, (a0)+
+	.endr
+	dbf	d1, 0b
+#endif  // SAI_BG038_COUNT
+#if SAI_BG038_COUNT > 2
+	; Wipe VRAM C
+	lea	BG038_C_VRAM_BASE, a0
+	moveq	#0, d0
+	move.w	#(BG038_C_VRAM_SIZE/(4*4))-1, d1
+0:
+	.rept	4
+	move.l	d0, (a0)+
+	.endr
+	dbf	d1, 0b
+#endif  // SAI_BG038_COUNT
+#if SAI_BG038_COUNT > 3
+	; Wipe VRAM D
+	lea	BG038_D_VRAM_BASE, a0
+	moveq	#0, d0
+	move.w	#(BG038_D_VRAM_SIZE/(4*4))-1, d1
+0:
+	.rept	4
+	move.l	d0, (a0)+
+	.endr
+	dbf	d1, 0b
+#endif  // SAI_BG038_COUNT
+
 	jmp	(a6)
 
 	.global	sai_bg038_on_vbl
@@ -54,16 +96,16 @@ sai_min_bg038_init:
 sai_bg038_on_vbl:
 	lea	g_sai_bg038, a0
 
-	bg038_update BG038_BASE_A
+	bg038_update BG038_A_CTRL_BASE
 
-#if SAI_BG038_COUNT > 1)
-	bg038_update BG038_BASE_B
+#if SAI_BG038_COUNT > 1
+	bg038_update BG038_B_CTRL_BASE
 #endif  // SAI_BG038_COUNT
-#if SAI_BG038_COUNT > 2)
-	bg038_update BG038_BASE_C
+#if SAI_BG038_COUNT > 2
+	bg038_update BG038_C_CTRL_BASE
 #endif  // SAI_BG038_COUNT
-#if SAI_BG038_COUNT > 3)
-	bg038_update BG038_BASE_D
+#if SAI_BG038_COUNT > 3
+	bg038_update BG038_D_CTRL_BASE
 #endif  // SAI_BG038_COUNT
 
 	rts

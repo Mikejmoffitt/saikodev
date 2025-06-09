@@ -29,6 +29,7 @@
 // Control registers
 #define S5296_OFFS_CNT         0x19
 #define S5296_OFFS_DIR         0x1B
+// Control register mirrors
 #define S5296_OFFS_CNT2        0x1D
 #define S5296_OFFS_CTRL2       0x1F
 

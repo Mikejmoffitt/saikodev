@@ -20,6 +20,8 @@ sai_min_s16b_io_init:
 	move.b	#S16_IO_MISC_DEFAULT, d0
 	move.b	d0, g_sai_io_misc_ctrl
 	move.b	d0, S16_IO_BASE+S16_IO_MISC_OFFS
+	sf	g_sai_io_dip
+	sf	g_sai_io_dip+1
 	jmp	(a6)
 
 	.global	sai_s16b_io_poll

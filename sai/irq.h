@@ -32,7 +32,8 @@ extern "C"
 
 extern uint8_t g_sai_vbl_wait_flag;
 
-void sai_irq_vbl_wait(void);
+void sai_irq_init(void);      // Implemented in per-target irq.a68.
+void sai_irq_vbl_wait(void);  // Implemented in sai.a68
 
 #else
 
@@ -70,7 +71,8 @@ void sai_irq_vbl_wait(void);
 	.extern	_v_irq6
 	.extern	_v_irq7
 
-	.extern	sai_irq_vbl_wait
+	.extern	sai_irq_init      // Implemented in per-target irq.a68.
+	.extern	sai_irq_vbl_wait  // Implemented in sai.a68
 
 #endif  // __ASSEMBLER__
 

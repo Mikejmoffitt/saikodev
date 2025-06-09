@@ -12,8 +12,6 @@
 	.global	_v_irq6
 	.global	_v_irq7
 
-	.global	sai_default_irq_callback
-
 	.section	.data
 
 g_irq_vbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
@@ -29,4 +27,9 @@ _v_irq7:
 
 _v_irq4:
 	virq_handler g_irq_vbl_callback
+
+	.global	sai_irq_init
+sai_irq_init:
+	move.l	#SAI_IRQ_HANDLER_UNUSED, g_irq_vbl_callback
+	rts
 

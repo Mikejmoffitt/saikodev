@@ -17,6 +17,9 @@ extern "C"
 #include "sai/memmap.h"
 #include "sai/md/vdp_regs.h"
 
+#define VDP_VRAM_SIZE          (0x010000)
+#define VDP_VRAM_SIZE_128K     (0x020000)
+
 #ifndef __ASSEMBLER__
 
 //

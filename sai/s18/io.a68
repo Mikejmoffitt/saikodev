@@ -1,0 +1,99 @@
+#include "sai/s18/io.h"
+#include "sai/c2/s5296.h"
+#include "sai/input.h"
+
+	.section	.bss
+g_sai_io_dip: ds.b 1
+
+	.global	g_sai_io_vrom_bank
+g_sai_io_vrom_bank: ds.w 1
+
+	.section	.text
+
+	.global	sai_s18_io_init
+sai_s18_io_init:
+	calla6_safe sai_min_s18_io_init
+	rts
+
+	.global	sai_min_s18_io_init
+; a6.l = return
+sai_min_s18_io_init:
+	lea	S5296_BASE, a0
+	move.b	#S18_IO_DIR_DEFAULT, S5296_OFFS_DIR(a0)
+	move.b	#S18_IO_MO_DEFAULT, S5296_OFFS_PORTD(a0)
+	move.b	#0, S5296_OFFS_PORTH(a0)  ; bank
+	move.b	#S18_IO_CNT_DEFAULT, S5296_OFFS_CNT2(a0)
+	sf	g_sai_io_dip
+	; Enable video mixing
+	move.b	#$07, S18_VLATCH_BASE
+	jmp	(a6)
+
+	.global	sai_s18_io_poll
+sai_s18_io_poll:
+	lea	g_sai_in, a0
+	lea	S5296_BASE, a1
+
+	; Write video ROM bank
+	move.b	g_sai_io_vrom_bank+1, S5296_OFFS_PORTH(a1)
+
+	; Read the DIP.
+	move.b	S5296_OFFS_PORTG(a1), g_sai_io_dip
+
+	; Read P1 and P2 into d0.l
+	moveq	#$FFFFFFFF, d0
+	move.b	S5296_OFFS_PORTA(a1), d0
+	swap	d0
+	move.b	S5296_OFFS_PORTB(a1), d0
+	not.l	d0
+	; Now we have P1 main inputs in the upper word, P2 in the lower.
+
+	; Read the system inputs
+	move.b	S5296_OFFS_PORTE(a1), d1
+
+	; P2 start/coin
+	btst	#5, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	btst	#1, d1
+	bne.s	1f
+	ori.w	#SAI_BTN_COIN, d0
+1:
+	btst	#3, d1
+	bne.s	3f
+	ori.w	#SAI_BTN_SERVICE, d0  ; P2 has their own service on 18 apparently
+3:
+	; P1 start/coin
+	swap	d0
+	btst	#4, d1
+	bne.s	2f
+	ori.w	#SAI_BTN_START, d0
+2:
+	btst	#0, d1
+	bne.s	3f
+	ori.w	#SAI_BTN_COIN, d0
+3:
+	btst	#7, d1
+	bne.s	3f
+	ori.w	#SAI_BTN_SERVICE, d0
+3:
+	btst	#2, d1
+	bne.s	3f
+	ori.w	#SAI_BTN_TEST, d0
+3:
+	; Pass data to SaiInput P1
+	move.w	d0, SaiInput.now(a0)
+	swap	d0
+	; and to SaiInput P2
+	lea	SaiInput.len(a0), a0
+	move.w	d0, SaiInput.now(a0)
+
+	; Read player 3.
+#if SAI_PLAYER_COUNT > 2
+	moveq	#0, d0
+	lea	SaiInput.len(a0), a0
+	move.b	S5296_OFFS_PORTC(a1), d0
+	move.w	d0, SaiInput.now(a0)
+#endif  // SAI_PLAYER_COUNT
+
+	rts

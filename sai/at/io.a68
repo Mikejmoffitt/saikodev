@@ -1,0 +1,41 @@
+#include "sai/at/io.h"
+#include "sai/macro.h"
+#include "sai/memmap.h"
+#include "sai/input.h"
+
+	.section	.text
+	.global	sai_at_io_init
+sai_at_io_init:
+	calla6_safe sai_min_at_io_init
+	rts
+
+	.global	sai_min_at_io_init
+sai_min_at_io_init:
+	jmp	(a6)
+
+	.global	sai_at_io_poll
+sai_at_io_poll:
+
+; The typical Atlus inputs
+; TODO: Alternate mappings for Guwange HW
+	lea	g_sai_in, a0
+	lea	AT_IO_BASE, a1
+
+; TODO: If on Gaia, read DIPs
+	move.l	SAI_AT_IO_OFFS_P1(a0), d0  ; P1 sits in upper word
+	not.l	d0
+	; Only P1 has test and button E on bits 9 and 11.
+	; Only P2 has service on bit 9.
+	andi.l	#$0FFF07FF, d0  ; filter out unused bits and P2 EEP data
+	move.w	d0, d1
+	swap	d0
+	; P1 just takes the data as it is, but service is given to P1.
+	bclr	#9, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_SERVICE, d0
+0:
+	move.w	d0, SaiInput.now(a0)
+	lea	SaiInput.len(a0), a0
+	move.w	d1, SaiInput.now(a0)
+	rts
+

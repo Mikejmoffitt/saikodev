@@ -49,3 +49,15 @@ _v_irq4:
 _v_irq6:
 	virq_handler g_irq_vbl_callback
 
+	.global	sai_irq_init
+sai_irq_init:
+	move.l	#SAI_IRQ_HANDLER_UNUSED, d0
+	move.l	d0, g_irq_hbl_callback
+	move.l	d0, g_irq_vbl_callback
+
+#if SAI_TARGET != SAI_TARGET_MD
+	move.l	d0, g_fm_vbl_callback
+#else
+	move.l	d0, g_th_vbl_callback
+#endif  // SAI_TARGET
+	rts

@@ -1,0 +1,60 @@
+#include "sai/target.h"
+#include "sai/irq.h"
+#include "sai/memmap.h"
+#include "sai/at/irq.h"
+#include "sai/at/sp013.h"
+
+	.global	g_irq_vbl_callback
+
+	.global	_v_irq1
+	.global	_v_irq2
+	.global	_v_irq3
+	.global	_v_irq4
+	.global	_v_irq5
+	.global	_v_irq6
+	.global	_v_irq7
+
+	.section	.data
+
+g_irq_vbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+g_irq_hbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+g_irq_ymz_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+
+	.section	.text
+; Atlus IRQs are interesting in that they require disambiguation on the software side.
+_v_irq1:
+	; Determine the IRQ source.
+	move.w	d0, -(sp)
+	move.w	SP013_CTRL_BASE+SAI_SP013_OFFS_STATUS, d0
+	btst	#SP013_STATUS_VIRQ_BIT, d0
+	beq.w	virq
+	btst	#SP013_STATUS_HIRQ_BIT, d0
+	beq.w	hirq
+	; YMZ irq.
+	move.w	(sp)+, d0
+	irq_handler g_irq_ymz_callback
+virq:
+	move.w	(sp)+, d0
+	tst.w	SP013_CTRL_BASE+SAI_SP013_OFFS_VIRQ_ACK
+	virq_handler g_irq_vbl_callback
+hirq:
+	move.w	(sp)+, d0
+	tst.w	SP013_CTRL_BASE+SAI_SP013_OFFS_HIRQ_ACK
+	irq_handler g_irq_hbl_callback
+
+_v_irq2:
+_v_irq3:
+_v_irq4:
+_v_irq5:
+_v_irq6:
+_v_irq7:
+	rte
+
+	.global	sai_irq_init
+sai_irq_init:
+	move.l	#SAI_IRQ_HANDLER_UNUSED, d0
+	move.l	d0, g_irq_vbl_callback
+	move.l	d0, g_irq_hbl_callback
+	move.l	d0, g_irq_ymz_callback
+	rts
+

@@ -1,10 +1,11 @@
-; saikodev System 16B / 18 startup
+; saikodev System 18 startup
 #include "sai/boot/memcheck.h"
 #include "sai/input.h"
 #include "sai/target.h"
 #include "sai/macro.h"
 #include "sai/memmap.h"
-#include "sai/s16b/io.h"
+#include "sai/s16b/mapper.h"
+#include "sai/s18/io.h"
 #include "sai/md/vdp.h"
 
 	.extern	sai_crt0_begin
@@ -22,6 +23,7 @@ start:
 	lea	__stack, sp
 
 	calla6	sai_min_s16_mapper_init
+	calla6	sai_min_s18_io_init
 	calla6	sai_min_vdp_init
 	calla6	sai_min_input_init
 	

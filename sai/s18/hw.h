@@ -1,5 +1,5 @@
 //
-// System 16B definitions.
+// System 18 definitions.
 //
 // While 315-5195 exists to allow for flexibility with the memory map, Saikodev
 // offers a single memory configuration that is initialized in the boot code.
@@ -39,6 +39,7 @@ extern "C"
 #define S16_ROM1_BASE          (0x200000)
 #define S16_ROM2_BASE          (0x400000)
 
+
 #define S16_SPR_BASE           (0x600000)
 #define S16_SPR_SIZE           (0x800)
 #define S16_CRAM_BASE          (CRAM_BASE)
@@ -50,6 +51,11 @@ extern "C"
 #define S16_IO_BASE            (0xC40000)
 
 #define S16_MAPPER_BASE        (0xC00000)
+
+// These are the meaningful change compared to System 16B.
+#define VDP_BASE               (S16_ROM2_BASE)
+#define S5296_BASE             (S16_IO_BASE)
+#define S18_VLATCH_BASE        (S16_IO_BASE + 0x2001)
 
 #ifdef __cplusplus
 }

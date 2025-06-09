@@ -1,45 +1,49 @@
-#include	"at/sp038.h"
-#include	"at/macro.h"
+#include	"sai/at/sp013.h"
+#include	"sai/macro.h"
 
 	.section	.bss
-	.global	g_sai_sp013_bank
-g_sai_sp013_bank: ds.w 1
+	.global	g_sai_sp013_spr_count
+	.global	g_sai_sp013_spr_next
+g_sai_sp013_spr_count: ds.w 1
+g_sai_sp013_spr_next: ds.l 1
+
+s_last_obj: ds.l 2  ; one for each page
+s_obj_bank: ds.w 1
 
 	.section	.text
 
 	.global	sai_sp013_init
-	.global	sai_min_sp013_init
-	.global	sai_sp013_finish
-	.global	sai_sp013_wait_vbl
-
 sai_sp013_init:
 	move.l	a6, -(sp)
 	calla6	sai_min_sp013_init
 	move.l	(sp)+, a6
 
-	move.w	#$3F00, g_sai_sp013_cfg
-	clr.w	g_sai_sp013_bank
+	clr.w	s_obj_bank
+	bsr.w	sai_sp013_spr_reset
 
 	rts
 
+	.global	sai_min_sp013_init
 sai_min_sp013_init:
 	lea	format_data(pc), a0
-	lea	SP013_BASE, a1
+	lea	SP013_CTRL_BASE, a1
 
 	moveq	#0, d0
-	moveq	#
 	moveq	#$C, d1
 	; zero out upper regs
--:
+0:
 	move.w	d0, (a1)+
-	dbf	d1, -
-	moveq	#
+	dbf	d1, 0b
+
+	move.w	d0, s_obj_bank
+	move.w	d0, g_sai_sp013_spr_count
+
 	; Default scroll values
 
 	; Zero out the sub-cpu control regs I don't yet know about
 	moveq	#0, d0
 	moveq	#$D-1, d1
-	lea	SP013_BASE+SP013_OFFS_UNK0C, a1
+	lea	SP013_CTRL_BASE+SP013_OFFS_UNK0C, a1
 0:
 	move.w	d0, (a1)+
 	dbf	d0, 0b
@@ -48,24 +52,35 @@ sai_min_sp013_init:
 	moveq	#0, d0
 	moveq	#$18-1, d1
 	lea	format_data(pc), a0
-	lea	SP013_BASE+SP013_OFFS_FORMAT, a1
+	lea	SP013_CTRL_BASE+SP013_OFFS_FORMAT, a1
 0:
 	move.b	(a0)+, d0
 	move.w	d0, (a1)
 	dbf	d1, 0b
 
 	; Unknown magic value, which I suspect is actually some sub bus control.
-	move.w	#$3F00, SP013_BASE+SP013_OFFS_SPRCTRL
+	move.w	#SP013_CONFIG_DEFAULT, SP013_CTRL_BASE+SP013_OFFS_CONFIG
 
 	; More magic, possibly resetting a sub CPU that doesn't exist.
-	move.w	#$1000, SP013_BASE+SP013_OFFS_UNK20
-	move.w	#$69, SP013_BASE+SP013_WDOG
-	move.w	#$0, SP013_BASE+SP013_OFFS_UNK20
+	move.w	#$1000, SP013_CTRL_BASE+SP013_OFFS_UNK20
+	move.w	#$69, SP013_CTRL_BASE+SP013_OFFS_WDOG
+	move.w	#$0, SP013_CTRL_BASE+SP013_OFFS_UNK20
 
 	; Sprite offset values
-	move.w	#$0185, SP013_BASE+SP013_OFFS_SPRDX
-	move.w	#$0001, SP013_BASE+SP013_OFFS_SPRDY
+	move.w	#$0185, SP013_CTRL_BASE+SP013_OFFS_SPRDX
+	move.w	#$0001, SP013_CTRL_BASE+SP013_OFFS_SPRDY
 
+	; Clear sprite RAM
+	moveq	#0, d0
+	lea	SP013_VRAM_BASE, a0
+	move.w	#(SP013_VRAM_SIZE/(4*4))-1, d1
+0:
+	.rept	4
+	move.l	d0, (a0)+
+	.endr
+	dbf	d1, 0b
+
+	; Set sprite next pointer
 	jmp	(a6)
 format_data:
 	dc.b $3f  ; 0
@@ -93,8 +108,47 @@ format_data:
 	dc.b $20  ; $16
 	dc.b 4    ; $17
 
+	.global	sai_sp013_finish
+; The sprite list is terminated.
 sai_sp013_finish:
+	; Load the final sprite address from the last use of this buffer.
+	lea	s_last_obj, a0  ; even frame address
+	tst.w	s_obj_bank
+	beq.s	0f
+	addq.w	#4, a0  ; odd frame address
+0:
+	; Subtract the most recent last address from what we used last time.
+	move.l	(a0), d0
+	sub.l	g_sai_sp013_spr_next, d0
+	; If more sprites were used this time then no need to hide any.
+	ble.s	skip_termination
+	; Otherwise, d0 / Sp013Spr.len is the count of sprites to clear.
+	move.l	g_sai_sp013_spr_next, a1
+	move.l	a1, (a0)
+	lsr.w	#4, d0
+	subq.w	#1, d0
+	move.l	#$80008000, d1
+sprite_hide_loop:
+	move.l	d1, Sp013Spr.xpos(a1)
+	move.w	#$0101, Sp013Spr.sx(a1)
+	lea	Sp013Spr.len(a1), a0
+	dbf	d1, sprite_hide_loop
+skip_termination:
+	move.w	s_obj_bank, d0
+	eori.w	#$0001, d0
+	move.w	d0, s_obj_bank
+	move.w	d0, SP013_CTRL_BASE+SP013_OFFS_SPRBANK
 	rts
 
-sai_sp013_wait_vbl:
+	.global	sai_sp013_spr_reset
+sai_sp013_spr_reset:
+	lea	SP013_VRAM_BASE, a0
+	moveq	#0, d0
+	lea	SP013_VRAM_BASE, a0
+	move.w	#(SP013_VRAM_SIZE/(4*4))-1, d1
+0:
+	.rept	4
+	move.l	d0, (a0)+
+	.endr
+	dbf	d1, 0b
 	rts
