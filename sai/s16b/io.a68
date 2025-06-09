@@ -35,42 +35,43 @@ sai_s16b_io_poll:
 	move.b	S16_IO_DIP2_OFFS(a1), g_sai_io_dip+1
 
 	; Read P1 and P2 directly into d0.l
-	moveq	#0, d0
+	moveq	#$FFFFFFFF, d0
 	move.b	S16_IO_INPUT_2_OFFS(a1), d0
 	swap	d0
 	move.b	S16_IO_INPUT_4_OFFS(a1), d0
+	not.l	d0
 	; Now we have P1 main inputs in the upper word, P2 in the lower.
 
 	; Read the system inputs
 	move.b	S16_IO_INPUT_1_OFFS(a1), d1
 
 	; P2 start/coin
-	btst	#S16_IO_INPUT_1_START2, d1
-	beq.s	0f
+	btst	#S16_IO_INPUT_1_START2_BIT, d1
+	bne.s	0f
 	ori.w	#SAI_BTN_START, d0
 0:
-	btst	#S16_IO_INPUT_1_COIN2, d1
-	beq.s	1f
+	btst	#S16_IO_INPUT_1_COIN2_BIT, d1
+	bne.s	1f
 	ori.w	#SAI_BTN_COIN, d0
 1:
 	; P1 start/coin and system inputs
 	swap	d0
-	btst	#S16_IO_INPUT_1_START1, d1
-	beq.s	2f
+	btst	#S16_IO_INPUT_1_START1_BIT, d1
+	bne.s	2f
 	ori.w	#SAI_BTN_START, d0
 2:
-	btst	#S16_IO_INPUT_1_COIN1, d1
-	beq.s	3f
+	btst	#S16_IO_INPUT_1_COIN1_BIT, d1
+	bne.s	3f
 	ori.w	#SAI_BTN_COIN, d0
 3:
-	btst	#S16_IO_INPUT_1_TEST, d1
-	beq.s	4f
+	btst	#S16_IO_INPUT_1_TEST_BIT, d1
+	bne.s	4f
 	ori.w	#SAI_BTN_TEST, d0
 4:
-	btst	#S16_IO_INPUT_1_SERVICE, d1
-	beq.s	4f
+	btst	#S16_IO_INPUT_1_SERVICE_BIT, d1
+	bne.s	5f
 	ori.w	#SAI_BTN_SERVICE, d0
-4:
+5:
 	; Pass data to SaiInput P1
 	move.w	d0, SaiInput.now(a0)
 	swap	d0
