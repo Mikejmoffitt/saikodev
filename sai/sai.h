@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #include "sai/target.h"
 
 #ifndef SAI_TARGET
@@ -8,6 +13,7 @@
 
 #include "sai/macro.h"
 #include "sai/input.h"
+#include "sai/irq.h"
 #include "sai/memmap.h"
 // MD / C1 / C2 share a lot.
 #if SAI_TARGET == SAI_TARGET_MD || SAI_TARGET == SAI_TARGET_C1 | SAI_TARGET == SAI_TARGET_C2
@@ -26,13 +32,13 @@
 #include "sai/c2/upd7759.h"
 #endif  // SAI_TARGET
 
-#elif SAI_TARGET=SAI_TARGET_SYS16B
+#elif SAI_TARGET == SAI_TARGET_S16B
+#include "sai/s16b/pal.h"
+#elif SAI_TARGET == SAI_TARGET_S18
 #error "TODO"
-#elif SAI_TARGET=SAI_TARGET_SYS18
+#elif SAI_TARGET == SAI_TARGET_CPS
 #error "TODO"
-#elif SAI_TARGET=SAI_TARGET_CPS
-#error "TODO"
-#elif SAI_TARGET=SAI_TARGET_CPS2
+#elif SAI_TARGET == SAI_TARGET_CPS2
 #error "TODO"
 #endif
 
@@ -49,3 +55,7 @@ void sai_init(void);
 // * input polling
 void sai_finish(void);
 #endif  // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

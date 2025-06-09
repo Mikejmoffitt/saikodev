@@ -4,7 +4,7 @@
 #define SAI_TARGET_MD 1
 #define SAI_TARGET_C1 2
 #define SAI_TARGET_C2 3
-#define SAI_TARGET_SYS16B 4
-#define SAI_TARGET_SYS18 5
+#define SAI_TARGET_S16B 4
+#define SAI_TARGET_S18 5
 #define SAI_TARGET_CPS 6
 #define SAI_TARGET_CPS2 7

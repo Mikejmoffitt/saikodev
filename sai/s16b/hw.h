@@ -9,6 +9,11 @@
 // and then provide the memory bases and sizes yourself.
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #endif  // __ASSEMBLER__
@@ -53,3 +58,7 @@
 #define S16_IO_INPUT_4_OFFS    (0x1007)
 #define S16_IO_DIP2_OFFS       (0x2001)
 #define S16_IO_DIP1_OFFS       (0x2003)
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

@@ -32,16 +32,12 @@ extern uint32_t g_sai_vdp_hsbase;        // Horizontal scroll address.
 // Registers data for MODE1-MODE4. The command is baked in as well.
 extern uint16_t g_sai_vdp_reg_mode[4];  // $80, $81, $8B, $8C modeset bits.
 
-// Vertical blank synchronization flag
-extern uint8_t g_vbl_wait_flag;
 #else
 	.extern	g_sai_vdp_ntbase
 	.extern	g_sai_vdp_sprbase
 	.extern	g_sai_vdp_hsbase
 
 	.extern	g_sai_vdp_reg_mode
-
-	.extern	g_vbl_wait_flag
 #endif  // __ASSEMBLER__
 
 #ifndef __ASSEMBLER__
@@ -52,7 +48,6 @@ extern uint8_t g_vbl_wait_flag;
 
 void sai_vdp_init(void);
 void sai_vdp_clear_vram(void);  // Zeroes out VRAM.
-void sai_vdp_wait_vbl(void);    // Waits until vertical IRQ is hit.
 
 // Register and misc functions
 void sai_vdp_update_scroll_regs(void);  // Call after setting the *base vars.

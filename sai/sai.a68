@@ -1,6 +1,13 @@
 
 #include "sai/sai.h"
 #include "sai/input.h"
+#include "sai/irq.h"
+
+	.section	.bss
+
+	.global	g_sai_vbl_wait_flag
+
+g_sai_vbl_wait_flag:              ds.b 1
 
 	.section	.text
 
@@ -38,6 +45,14 @@ sai_init:
 #endif  // SAI_TARGET
 	rts
 
+	.global	sai_irq_vbl_wait
+sai_irq_vbl_wait:
+	st	g_sai_vbl_wait_flag
+0:
+	tst.b	g_sai_vbl_wait_flag
+	bne.s	0b
+	rts
+
 sai_finish:
 ;
 ; Synchronize to VBL
@@ -45,17 +60,18 @@ sai_finish:
 #if SAI_TARGET == SAI_TARGET_MD
 	bsr.w	sai_vdp_spr_finish
 	bsr.w	sai_pal_poll
-	bsr.w	sai_vdp_wait_vbl
+	bsr.b	sai_irq_vbl_wait
 	bsr.w	sai_vdp_dma_flush
 	bsr.w	sai_vdp_spr_start
 #elif SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
 	bsr.w	sai_vdp_spr_finish
-	bsr.w	sai_vdp_wait_vbl
+	bsr.b	sai_irq_vbl_wait
 	bsr.w	sai_sysc_vctrl_on_vbl
 	bsr.w	sai_palcmd_poll
 	bsr.w	sai_vdp_dma_flush
 	bsr.w	sai_vdp_spr_start
 #elif SAI_TARGET == SAI_TARGET_S16B || SAI_TARGET == SAI_TARGET_S18
+	bsr.w	sai_irq_vbl_wait
 	bsr.w	sai_palcmd_poll
 #endif  // SAI_TARGET
 

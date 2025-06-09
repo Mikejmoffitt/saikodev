@@ -1,0 +1,32 @@
+#include "sai/md/vdp.h"
+#include "sai/target.h"
+#include "sai/irq.h"
+
+	.global	g_irq_vbl_callback
+
+	.global	_v_irq1
+	.global	_v_irq2
+	.global	_v_irq3
+	.global	_v_irq4
+	.global	_v_irq5
+	.global	_v_irq6
+	.global	_v_irq7
+
+	.global	sai_default_irq_callback
+
+	.section	.data
+
+g_irq_vbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+
+	.section	.text
+_v_irq1:
+_v_irq2:
+_v_irq3:
+_v_irq5:
+_v_irq6:
+_v_irq7:
+	rte
+
+_v_irq4:
+	virq_handler g_irq_vbl_callback
+

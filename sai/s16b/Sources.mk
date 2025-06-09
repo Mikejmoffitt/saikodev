@@ -11,9 +11,12 @@ SAI_SOURCES_ASM := \
 	$(SAI)/boot/exceptions.a68 \
 	$(SAI)/boot/memcheck.a68 \
 	$(SAI)/s16b/io.a68 \
+	$(SAI)/s16b/mapper.a68 \
 	$(SAI)/s16b/pal.a68 \
+	$(SAI)/s16b/irq.a68 \
 	$(SAI)/sai.a68 \
 	$(SAI)/input.a68 \
+	$(SAI)/palcmd.a68 \
 
 SAI_SOURCES_C :=
 

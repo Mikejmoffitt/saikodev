@@ -11,15 +11,9 @@
 	.global	g_sai_vdp_reg_bg_color
 	.global	g_sai_vdp_reg_planesize
 
-	.global	g_vbl_wait_flag
-
 //
 // Storage
 //
-	.section	.bss
-
-g_vbl_wait_flag:              ds.b 1
-
 	.section	.data
 g_sai_vdp_reg_mode:
 	dc.w VDP_REGST(VDP_MODESET1, VDP_MODESET1_DEFAULT)
@@ -160,14 +154,6 @@ sai_vdp_update_scroll_base:
 	lsr.l	d1, d0
 	ori.w	#VDP_REGST(VDP_HSCRBASE, 0), d0
 	move.w	d0, VDP_OFFS_CTRL(a1)
-	rts
-
-	.global	sai_vdp_wait_vbl
-sai_vdp_wait_vbl:
-	st	g_vbl_wait_flag
-0:
-	tst.b	g_vbl_wait_flag
-	bne.s	0b
 	rts
 
 	.global	sai_vdp_debug_set
