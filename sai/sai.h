@@ -46,6 +46,7 @@ extern "C"
 #include "sai/at/pal.h"
 #include "sai/at/sp013.h"
 #include "sai/at/bg038.h"
+#include "sai/at/ymz.h"
 #endif
 
 #ifndef __ASSEMBLER__

@@ -44,7 +44,10 @@ extern "C"
 // .... .... .?.. .... Unknown; esprade and uo poko set it
 // .... .... ...c .... Blanks the rightmost pixel...?
 // .... .... .... rr.. Moves the raster some amount.
-#define SP013_CONFIG_DEFAULT   0x3F00
+#define SP013_CONFIG_FIXED     (SAI_BITVAL(13) | SAI_BITVAL(14))
+#define SP013_CONFIG_H_240     SAI_BITVAL(9)
+#define SP013_CONFIG_W_384     SAI_BITVAL(8)
+#define SP013_CONFIG_DEFAULT   SP013_CONFIG_H_240
 
 // Notes from experiments:
 // rr bit 0 seems to move the blanking 1px to the right.
@@ -91,8 +94,12 @@ extern "C"
 #define SP013_ATTR_FLIPX       SAI_BITVAL(SP013_ATTR_FLIPX_BIT)
 #define SP013_ATTR_FLIPY       SAI_BITVAL(SP013_ATTR_FLIPY_BIT)
 
+// For defining the attr field alone
 #define SP013_ATTR(pal, pri) (((pal) << SP013_ATTR_PAL_SHIFT)|((pri) << SP013_ATTR_PRI_SHIFT))
-#define SP013_SIZE(sy, sx) (((sy)<<4)|(sx))
+// For defining attributes with atcode
+#define SP013_AT32(pal, pri) ((SP013_ATTR(pal, pri)) << 16)
+// Size is specified in 16x16 steps. (2, 2) == 32x32
+#define SP013_SIZE(sy, sx) (((sy-1)<<4)|(sx-1))
 
 #ifndef __ASSEMBLER__
 
@@ -108,11 +115,11 @@ typedef struct Sp013Spr
 		};
 		uint32_t atcode;
 	};
-	int16_t xpos, ypos;
+	int16_t x, y;
 	uint16_t size;
 	uint16_t pad[3];
 #else
-	int16_t xpos, ypos;
+	int16_t x, y;
 	union
 	{
 		struct
@@ -122,14 +129,28 @@ typedef struct Sp013Spr
 		};
 		uint32_t atcode;
 	};
-	uint16_t sx, sy;
+	union
+	{
+		struct
+		{
+			uint16_t sx, sy;
+		};
+		uint32_t scale;
+	};
 	uint16_t size;
 	uint16_t pad;
 #endif
 } Sp013Spr;
 _Static_assert(sizeof(Sp013Spr) == 16);
 
-extern uint16_t g_sai_sp013_spr_count;
+// We don't need to think too hard about making sure we stay within the bounds
+// of the sprite RAM. In the worst case, we run in to the next bank, and since
+// we are toggling bit 1 of the bank bit and not bit 0 that basically gives us
+// a free buffer area. It'd take so long to overrun two banks, so by that time
+// you'd already be in blanking and not see the effect. The data is ephemeral,
+// so there won't be lasting effects. Even if it somehow went beyond all banks
+// it'd wrap within the 1MiB of address range given to the sprite RAM area. In
+// other words, write to this with reckless abandon.
 extern Sp013Spr *g_sai_sp013_spr_next;
 
 void sai_sp013_init(void);
@@ -138,8 +159,46 @@ void sai_sp013_finish(void);
 // Initializes the sprite list.
 void sai_sp013_spr_reset(void);
 
+static inline Sp013Spr *sai_sp013_draw(int16_t x, int16_t y,
+                                       uint32_t atcode, uint16_t size);
+#ifndef SAI_SP013_NOSCALE
+static inline Sp013Spr *sai_sp013_draw_sc(int16_t x, int16_t y,
+                                          uint32_t atcode, uint16_t size,
+                                          uint16_t sx, uint16_t sy);
+#endif  // SAI_SP013_NOSCALE
+
+// ------------------------------------
+static inline Sp013Spr *sai_sp013_draw(int16_t x, int16_t y,
+                                       uint32_t atcode, uint16_t size)
+{
+	Sp013Spr *spr = g_sai_sp013_spr_next++;
+	spr->x = x;
+	spr->y = y;
+	spr->atcode = atcode;
+	spr->size = size;
+#ifndef SAI_SP013_NOSCALE
+	spr->scale = 0x01000100;
+#endif  // SAI_SP013_NOSCALE
+	return spr;
+}
+
+#ifndef SAI_SP013_NOSCALE
+static inline Sp013Spr *sai_sp013_draw_sc(int16_t x, int16_t y,
+                                          uint32_t atcode, uint16_t size,
+                                          uint16_t sx, uint16_t sy)
+{
+	Sp013Spr *spr = g_sai_sp013_spr_next++;
+	spr->x = x;
+	spr->y = y;
+	spr->atcode = atcode;
+	spr->size = size;
+	spr->sx = sx;
+	spr->sy = sy;
+	return spr;
+}
+#endif  // SAI_SP013_NOSCALE
+
 #else
-	
 	.extern	g_sai_sp013_bank
 	.extern	g_sai_sp013_spr_count
 	.extern	g_sai_sp013_spr_next
@@ -156,13 +215,13 @@ void sai_sp013_spr_reset(void);
 #ifdef SAI_SP013_NOSCALE
 Sp013Spr.attr: ds.w 1
 Sp013Spr.code: ds.w 1
-Sp013Spr.xpos: ds.w 1
-Sp013Spr.ypos: ds.w 1
+Sp013Spr.x: ds.w 1
+Sp013Spr.y: ds.w 1
 Sp013Spr.size: ds.w 1
 Sp013Spr.pad:  ds.w 3
 #else
-Sp013Spr.xpos: ds.w 1
-Sp013Spr.ypos: ds.w 1
+Sp013Spr.x: ds.w 1
+Sp013Spr.y: ds.w 1
 Sp013Spr.attr: ds.w 1
 Sp013Spr.code: ds.w 1
 Sp013Spr.sx:   ds.w 1

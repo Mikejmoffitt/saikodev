@@ -1,3 +1,6 @@
 [submodule "util/velella"]
 	path = util/velella
 	url = git@github.com:mikejmoffitt/velella
+[submodule "util/ymztool"]
+	path = util/ymztool
+	url = git@github.com:mikejmoffitt/ymztool

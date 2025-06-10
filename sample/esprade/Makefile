@@ -43,33 +43,11 @@ OBJECTS_CPP := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SOURCES_CPP))
 all: $(PROJECT_OUTPUT)
 .DEFAULT_GOAL := all
 
-
-
-# Debug output for manual sanity check.
-vars:
-	@echo "GCC_VER is" "$(GCC_VER)"
-	@echo "CFLAGS is" "$(CFLAGS)"
-	@echo "CPPFLAGS is" "$(CPPFLAGS)"
-	@echo "ASFLAGS is" "$(ASFLAGS)"
-	@echo "LDFLAGS is" "$(LDFLAGS)"
-	@echo "SOURCES_C is" "$(SOURCES_C)"
-	@echo "SOURCES_CPP is" "$(SOURCES_CPP)"
-	@echo "SOURCES_ASM is" "$(SOURCES_ASM)"
-	@echo "OBJECTS_C is" "$(OBJECTS_C)"
-	@echo "OBJECTS_CPP is" "$(OBJECTS_CPP)"
-	@echo "OBJECTS_ASM is" "$(OBJECTS_ASM)"
-	@echo "SAI_SOURCES_C is" "$(SAI_SOURCES_C)"
-	@echo "SAI_SOURCES_CPP is" "$(SAI_SOURCES_CPP)"
-	@echo "SAI_SOURCES_ASM is" "$(SAI_SOURCES_ASM)"
-	@echo "SAI_OBJECTS_C is" "$(SAI_OBJECTS_C)"
-	@echo "SAI_OBJECTS_CPP is" "$(SAI_OBJECTS_CPP)"
-	@echo "SAI_OBJECTS_ASM is" "$(SAI_OBJECTS_ASM)"
-
 clean:
-	rm -rf $(OUTDIR) $(OBJDIR) $(SAIOBJDIR) $(WRKDIR)
+	rm -rf $(OUTDIR) $(OBJDIR) $(SAIOBJDIR) $(WRKDIR) $(RESDIR)
 
 # Source build rules
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(RESDIR)/spr.ch1 $(RESDIR)/bga.chr $(RESDIR)/bgb.chr $(RESDIR)/bgc.chr $(RESDIR)/ymz.ymz
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[96m[  C  ]\e[0m $< --> $@\n"'
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -77,7 +55,7 @@ ifneq ($(SAI_WANT_ASM_OUT),)
 	$(CC) $(CFLAGS) -S $< -o $@.asm
 endif
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(RESDIR)/spr.ch1 $(RESDIR)/bga.chr $(RESDIR)/bgb.chr $(RESDIR)/bgc.chr $(RESDIR)/ymz.ymz
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[96m[ CPP ]\e[0m $< --> $@\n"'
 	$(CPPC) $(CPPFLAGS) -c $< -o $@
@@ -85,7 +63,7 @@ ifneq ($(SAI_WANT_ASM_OUT),)
 	$(CPPC) $(CPPFLAGS) -S $< -o $@.asm
 endif
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.a68
+$(OBJDIR)/%.o: $(SRCDIR)/%.a68 $(RESDIR)/spr.ch1 $(RESDIR)/bga.chr $(RESDIR)/bgb.chr $(RESDIR)/bgc.chr $(RESDIR)/ymz.ymz
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[33m[ ASM ]\e[0m $< --> $@\n"'
 # TODO: Put this obscenity in a script file or even just make a utility.
@@ -106,3 +84,40 @@ $(OUTDIR)/$(PROJECT_NAME).elf: $(SAI_OBJECTS_ASM) $(OBJECTS_ASM) $(SAI_OBJECTS_C
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[36m[ LNK ]\e[0m ... --> $@\n"'
 	$(LD) -o $@ -T $(LDSCRIPT) $(LDFLAGS) $^ $(LIBS)
+
+# Resource data
+.PHONY: $(RESDIR)/spr.ch1
+$(RESDIR)/spr.ch1: png/spr.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	mkdir -p $(@D)
+	$(VELELLA) $<
+	mv $(WRKDIR)/spr.ch1 $(@D)
+	mv $(WRKDIR)/spr.ch2 $(@D)
+
+.PHONY: $(RESDIR)/bga.chr
+$(RESDIR)/bga.chr: png/bga.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	mkdir -p $(@D)
+	$(VELELLA) $<
+	mv $(WRKDIR)/bga.chr $(@D)
+
+.PHONY: $(RESDIR)/bgb.chr
+$(RESDIR)/bgb.chr: png/bgb.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	mkdir -p $(@D)
+	$(VELELLA) $<
+	mv $(WRKDIR)/bgb.chr $(@D)
+
+.PHONY: $(RESDIR)/bgc.chr
+$(RESDIR)/bgc.chr: png/bgc.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	mkdir -p $(@D)
+	$(VELELLA) $<
+	mv $(WRKDIR)/bgc.chr $(@D)
+
+.PHONY: $(RESDIR)/ymz.ymz
+$(RESDIR)/ymz.ymz: wav/ymz.ini $(YMZTOOL)
+	mkdir -p $(WRKDIR)
+	mkdir -p $(@D)
+	$(YMZTOOL) $<
+	mv $(WRKDIR)/ymz.ymz $(@D)

@@ -10,6 +10,7 @@ BIN2H := $(UTILDIR)/core/bin2h
 BINPAD := $(UTILDIR)/core/binpad
 BSPLIT := $(UTILDIR)/core/bsplit
 VELELLA := $(UTILDIR)/velella/velella
+YMZTOOL := $(UTILDIR)/ymztool/ymztool
 
 $(BIN2S): $(UTILDIR)/core/bin2s.c
 	@$(CC_HOST) $^ -o $@ $(HOSTCFLAGS)
@@ -25,4 +26,8 @@ $(BSPLIT): $(UTILDIR)/core/bsplit.c
 
 .PHONY: $(VELELLA)
 $(VELELLA):
+	make -C $(@D)
+
+.PHONY: $(YMZTOOL)
+$(YMZTOOL):
 	make -C $(@D)

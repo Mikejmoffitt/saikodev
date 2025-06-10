@@ -26,7 +26,7 @@ sai_palcmd_init:
 sai_palcmd_poll:
 	move.w	g_sai_pal_cmd_count, d0
 	beq.w	skip
-	movem.l	d2-d6/a2-a6, -(sp)  ; for movem.
+	movem.l	d2-d5/a2-a5, -(sp)  ; for movem.
 	subq.w	#1, d0
 
 	lea	g_sai_pal_cmd_queue, a0
@@ -60,8 +60,8 @@ poll_copy_line:
 	move.l	a0, d1                 ; so we can back up A0 in D1.
 	movea.l	SaiPalCmd.src(a0), a0  ; a0 becomes the source.
 0:
-	movem.l	(a0)+, d2-d6
-	movem.l	d2-d6, (a1)
+	movem.l	(a0)+, d2-d5
+	movem.l	d2-d5, (a1)
 	lea	8*2(a1), a1
 	dbf	d0, 0b
 	movea.l	d1, a0                 ; restore a0
@@ -75,8 +75,8 @@ poll_copy_line_long:
 	move.l	a0, d1                 ; so we can back up A0 in D1.
 	movea.l	SaiPalCmd.src(a0), a0  ; a0 becomes the source.
 0:
-	movem.l	(a0)+, d2-d6/a2-a6
-	movem.l	d2-d6/a2-a6, (a1)
+	movem.l	(a0)+, d2-d5/a2-a5
+	movem.l	d2-d5/a2-a5, (a1)
 	lea	16*2(a1), a1
 	dbf	d0, 0b
 	movea.l	d1, a0                 ; restore a0
@@ -88,6 +88,6 @@ poll_next:
 
 	clr.w	g_sai_pal_cmd_count
 
-	movem.l	(sp)+, d2-d6/a2-a6
+	movem.l	(sp)+, d2-d5/a2-a5
 skip:
 	rts

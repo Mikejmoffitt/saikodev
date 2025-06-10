@@ -1,0 +1,20 @@
+	.section	.rodata
+	.global	wrk_spr_pal
+wrk_spr_pal:
+	.incbin	"wrk/spr.pal"
+
+	.global	wrk_bga_pal
+wrk_bga_pal:
+	.incbin	"wrk/bga.pal"
+
+	.global	wrk_bgb_pal
+wrk_bgb_pal:
+	.incbin	"wrk/bgb.pal"
+
+	.global	wrk_bgc_pal
+wrk_bgc_pal:
+	.incbin	"wrk/bgc.pal"
+
+	.global	wrk_ymz_dat
+wrk_ymz_dat:
+	.incbin	"wrk/ymz.dat"

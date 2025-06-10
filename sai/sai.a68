@@ -54,6 +54,7 @@ sai_init:
 #elif SAI_TARGET == SAI_TARGET_CPS
 #elif SAI_TARGET == SAI_TARGET_CPS2
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
+	bsr.w	sai_ymz_reset
 	bsr.w	sai_sp013_init
 	bsr.w	sai_bg038_init
 	bsr.w	sai_at_io_init

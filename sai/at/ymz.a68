@@ -1,1 +1,341 @@
 #include "sai/at/ymz.h"
+
+;
+; Saikodev YMZ280B 68000-side code.
+; 2025 Mike J Moffitt
+;
+; Playback commands operate using a high level YMZ data blob, emitted by
+; YMZtool. These are referenced by call ID.
+; De-facto standard C register clobber conventions are followed (d0-d1/a0-a1).
+; ------------------
+; STANDARD REGISTERS
+; ------------------
+;
+; Registers are indexed by number, so when writing from the 68000 side double
+; the offset as there is no A0 line.
+;
+; The standard blocks index different channels by adding $4, so each block is
+; repeated eight times within its region.
+;
+; $00-$1F: Play control
+; +$0 : frequency
+; +$1 : key / frequency high
+; +$2 : total level
+; +$3 : panpot
+;
+; $20-$3F: High address byte
+; +$0 : Start
+; +$1 : Loop start
+; +$2 : Loop end
+; +$3 : End address
+;
+; $40-$5F: Middle address byte
+; +$0 : Start
+; +$1 : Loop start
+; +$2 : Loop end
+; +$3 : End address
+;
+; $60-$7F: Low address byte
+; +$0 : Start
+; +$1 : Loop start
+; +$2 : Loop end
+; +$3 : End address
+;
+; -----------------
+; UTILITY REGISTERS
+; -----------------
+;
+; These registers do not follow the pattern above.
+; $80 : Enablement
+;     7654 3210
+;     L... R... : LENB/RENB left and right channel enable bits; '1' = disable
+;     .lll .rrr : LCH2..0/RCH2..0 left and right channel select bits (address)
+;
+; $81 : DSP enable     ; '0' = disable
+; $82 : DSP data
+; $84 ; RAM address H
+; $85 ; RAM address M
+; $86 ; RAM address L
+; $87 : RAM data
+; $FE : IRQ mask '1' = disable
+; $FF : Various control flags
+;     7654 3210
+;     k... .... : KENB key on enable  '0' = all channels key off
+;     .m.. .... : MENB memory enable  '0' = pin59 becomes an IRQ output. '1' makes it a DSPCDI input.
+;     ...i .... : IENB IRQ enable     '0' = memory pins go high impedance.
+;     .... ..tt ; TST2..1 LSI test;   '0' = normal operation
+;
+;
+; ------------
+; STATUS FLAGS
+; ------------
+;
+; Read from the data port to get the status register.
+;
+; Each flag bit corresponds to a channel. The bit goes high when a channel has
+; its corresponding IRQ enable bit set and the playback has reached the
+; end address.
+;
+; Reading the status register clears all bits that were set high.
+;
+
+; You must define YMZ_BASE before including this.
+
+#include "sai/at/ymz.h"
+
+	.section	.bss
+s_sai_ymz_data: ds.l 1
+
+	.section	.text
+
+; void sai_ymz_init(const void *sai_ymz_data_blob);
+	.global	sai_ymz_init
+sai_ymz_init:
+	move.l	4(sp), s_sai_ymz_data
+; fall-through to sai_ymz_reset
+
+; void sai_ymz_reset(void);
+	.global	sai_ymz_reset
+sai_ymz_reset:
+	move.l	4(sp), d0
+	move.l	d0, s_sai_ymz_data
+	lea	YMZ_BASE+YMZ_OFFS_CTRL, a0
+	lea	YMZ_BASE+YMZ_OFFS_DATA, a1
+	; Enable
+	move.w	#$0080, (a0)
+	move.w	#$0088, (a1)  ; L and R out
+	; DSP disable
+	move.w	#$0081, (a0)
+	move.w	#$0001, (a1)  ; disable bit
+	; Per-channel IRQ mask
+	move.w	#$0f0FE, (a0)
+	move.w	#$00FF, (a1)  ; disable for all
+	; Control flags
+	move.w	#$00FF, (a0)
+	move.w	#$00C0, (a1)  ; KENB, MENB, IENB
+	; Key off all channels
+	move.w	#$0001, d1
+	moveq	#8-1, d7
+	moveq	#$00, d0  ; key off, mode 00 (quiet), no loop
+0:
+	move.w	d1, (a0)
+	move.w	d0, (a1)
+	addq.w	#4, d1  ; next channel block
+	dbf	d7, 0b
+	rts
+
+; -----------------------------------------------------------------------------
+;
+; Playback API
+;
+; -----------------------------------------------------------------------------
+
+; void sai_ymz_stop(uint16_t channel);
+	.global	sai_ymz_stop
+sai_ymz_stop:
+	move.w	4+2(sp), d0
+	add.w	d0, d0
+	add.w	d0, d0
+	lea	YMZ_BASE, a1
+	bsr.w	sai_ymz_dat_key_off_sub
+	rts
+
+; void sai_ymz_stop_all(void);
+	.global	sai_ymz_stop_all
+sai_ymz_stop_all:
+	bra.w	sai_ymz_reset
+
+; void sai_ymz_play(uint16_t blob_offs, uint16_t channel);
+	.global	sai_ymz_play
+sai_ymz_play:
+	move.l	s_sai_ymz_data, a0
+	move.w	4+2(sp), d0
+	adda.w	d0, a0
+	; Get channel
+	move.w	8+2(sp), d0
+	bsr.b	sai_ymz_setup_sub
+	btst	#4, YmzDat.key(a0) ; loop?
+	bne.w	sai_ymz_dat_key_on_loop_sub
+	bra.w	sai_ymz_dat_key_on_sub
+
+; void sai_ymz_play_loop(uint16_t blob_offs, uint16_t channel);
+	.global	sai_ymz_play_loop
+sai_ymz_play_loop:
+	; Index into data blob
+	move.l	s_sai_ymz_data, a0
+	move.w	4+2(sp), d0
+	adda.w	d0, a0
+	; Get channel
+	move.w	8+2(sp), d0
+	bsr.b	sai_ymz_setup_sub
+	bra.w	sai_ymz_dat_key_on_loop_sub
+
+; void sai_ymz_play_once(uint16_t blob_offs, uint16_t channel);
+	.global	sai_ymz_play_once
+sai_ymz_play_once:
+	; Index into data blob
+	move.l	s_sai_ymz_data, a0
+	move.w	4+2(sp), d0
+	adda.w	d0, a0
+	; Get channel
+	move.w	8+2(sp), d0
+	bsr.b	sai_ymz_setup_sub
+	bra.w	sai_ymz_dat_key_on_sub
+
+;
+; Support subroutines
+;
+
+; Loads a0 with the ymz data.
+; Sets up d0.w to hold the offset within a register block for the channel, and
+; places YMZ_BASE+YMZ_OFFS_CTRL in a1 for all of the register poking subroutines.
+sai_ymz_setup_sub:
+	add.w	d0, d0
+	add.w	d0, d0  ; d0 = channel offset in register block
+	lea	YMZ_BASE, a1
+	bsr.b	sai_ymz_dat_key_off_sub
+	bsr.b	sai_ymz_dat_set_fn_sub
+	bsr.b	sai_ymz_dat_set_tl_sub
+	bsr.b	sai_ymz_dat_set_pan_sub
+	bra.w	sai_ymz_dat_set_addr_sub
+
+; d0.w = channel offset
+; a0.l = YmzDat
+; a1.l = YMZ_BASE
+sai_ymz_dat_key_off_sub:
+	moveq	#$01, d1  ; R01
+	add.w	d0, d1
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	moveq	#$61, d1  ; mask for mode bits and FN8
+	and.b	YmzDat.key(a0), d1  ; ch key control
+	move.w	d1, YMZ_OFFS_DATA(a1)
+	rts
+
+; d0.w = channel offset
+; a0.l = YmzDat
+; a1.l = YMZ_BASE
+sai_ymz_dat_key_on_sub:
+	moveq	#$01, d1  ; R01
+	add.w	d0, d1
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	YmzDat.key(a0), d1  ; ch key control
+	move.w	d1, YMZ_OFFS_DATA(a1)
+	rts
+
+; d0.w = channel offset
+; a0.l = YmzDat
+; a1.l = YMZ_BASE
+sai_ymz_dat_key_on_loop_sub:
+	moveq	#$01, d1  ; R01
+	add.w	d0, d1
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	YmzDat.key(a0), d1  ; ch key control
+	ori.w	#$10, d1  ; set loop bits
+	move.w	d1, YMZ_OFFS_DATA(a1)
+	rts
+
+; d0.w = channel offset
+; a0.l = YmzDat
+; a1.l = YMZ_BASE
+sai_ymz_dat_set_fn_sub:
+	moveq	#$00, d1  ; R00
+	add.w	d0, d1
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	YmzDat.fn(a0), d1  ; ch key control
+	move.w	d1, YMZ_OFFS_DATA(a1)
+	rts
+
+; d0.w = channel offset
+; a0.l = YmzDat
+; a1.l = YMZ_BASE
+sai_ymz_dat_set_tl_sub:
+	moveq	#$02, d1  ; R02
+	add.w	d0, d1
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	YmzDat.tl(a0), d1  ; ch key control
+	move.w	d1, YMZ_OFFS_DATA(a1)
+	rts
+
+; d0.w = channel offset
+; a0.l = YmzDat
+; a1.l = YMZ_BASE
+sai_ymz_dat_set_pan_sub:
+	moveq	#$03, d1  ; R03
+	add.w	d0, d1
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	YmzDat.pan(a0), d1  ; ch key control
+	move.w	d1, YMZ_OFFS_DATA(a1)
+	rts
+
+; d0.w = channel offset
+; a0.l = YmzDat
+; a1.l = YMZ_BASE
+sai_ymz_dat_set_addr_sub:
+	bsr.w	sai_ymz_delay_sub
+	move.l	a2, -(sp)
+
+	lea	YmzDat.start_address(a0), a2
+	moveq	#$20, d1  ; base reg
+	bsr.b	write_addr_subsub
+
+	lea	YmzDat.end_address(a0), a2
+	moveq	#$23, d1  ; base reg
+	bsr.b	write_addr_subsub
+
+	; Loop information is written even if it does not loop.
+	btst	#4, YmzDat.key(a0)
+	lea	YmzDat.loop_start_address(a0), a2
+	moveq	#$21, d1  ; base reg
+	bsr.b	write_addr_subsub
+
+	lea	YmzDat.loop_end_address(a0), a2
+	moveq	#$22, d1  ; base reg
+	bsr.b	write_addr_subsub
+
+	move.l	(sp)+, a2
+	rts
+
+; d0.w = channel offset
+; d1.w = base reg
+; a1.l = YMZ_BASE
+; a2.l = address data pointer
+write_addr_subsub:
+	add.w	d0, d1
+
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	(a2)+, 1+YMZ_OFFS_DATA(a1)
+	add.w	#$20, d1
+
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	(a2)+, 1+YMZ_OFFS_DATA(a1)
+	add.w	#$20, d1
+
+	move.w	d1, YMZ_OFFS_CTRL(a1)
+	bsr.w	sai_ymz_delay_sub
+	move.b	(a2)+, 1+YMZ_OFFS_DATA(a1)
+	rts
+
+;
+; Functions to just waste some time.
+;
+; d1 is clobbered; d0 left untouched.
+sai_ymz_delay_sub:
+	move.w	d1, -(sp)
+	moveq	#$10-1, d1
+sai_ymz_delay_sub_loop:
+	dbf	d1, sai_ymz_delay_sub_loop
+	move.w	(sp)+, d1
+	rts
+
+sai_ymz_delay_sub_long:
+	move.w	d1, -(sp)
+	moveq	#100, d1
+	bra.s	sai_ymz_delay_sub_loop
