@@ -82,6 +82,8 @@
 ; You must define YMZ_BASE before including this.
 
 #include "sai/at/ymz.h"
+#include "sai/macro.h"
+#include "sai/memmap.h"
 
 	.section	.bss
 s_sai_ymz_data: ds.l 1
@@ -97,8 +99,11 @@ sai_ymz_init:
 ; void sai_ymz_reset(void);
 	.global	sai_ymz_reset
 sai_ymz_reset:
-	move.l	4(sp), d0
-	move.l	d0, s_sai_ymz_data
+	calla6_safe sai_min_ymz_reset
+	rts
+
+	.global	sai_min_ymz_reset
+sai_min_ymz_reset:
 	lea	YMZ_BASE+YMZ_OFFS_CTRL, a0
 	lea	YMZ_BASE+YMZ_OFFS_DATA, a1
 	; Enable
@@ -114,15 +119,16 @@ sai_ymz_reset:
 	move.w	#$00FF, (a0)
 	move.w	#$00C0, (a1)  ; KENB, MENB, IENB
 	; Key off all channels
-	move.w	#$0001, d1
-	moveq	#8-1, d7
+	move.w	#$0001, d0
+	moveq	#8-1, d1
 	moveq	#$00, d0  ; key off, mode 00 (quiet), no loop
 0:
-	move.w	d1, (a0)
-	move.w	d0, (a1)
-	addq.w	#4, d1  ; next channel block
-	dbf	d7, 0b
-	rts
+	move.w	d0, (a0)  ; register / id
+	clr.w	(a1)      ; key off, mode 00 (quiet), no loop
+	addq.w	#4, d0    ; next channel block
+	dbf	d1, 0b
+
+	jmp	(a6)
 
 ; -----------------------------------------------------------------------------
 ;

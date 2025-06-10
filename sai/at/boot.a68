@@ -28,6 +28,7 @@ start:
 	calla6	sai_min_pal_init
 	calla6	sai_min_sp013_init
 	calla6	sai_min_bg038_init
+	calla6	sai_min_ymz_reset
 
 	move.w	#$5555, d0
 	move.w	#(WRAM_SIZE/2), d1

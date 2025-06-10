@@ -89,6 +89,7 @@ static inline uint16_t sai_sai_ymz_status(void)
 #else
 
 	.extern sai_ymz_init
+	.extern sai_min_ymz_reset
 	.extern sai_ymz_reset
 	.extern sai_ymz_stop
 	.extern sai_ymz_stop_all
