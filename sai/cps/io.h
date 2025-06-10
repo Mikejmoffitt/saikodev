@@ -12,7 +12,6 @@ extern "C"
 #ifndef __ASSEMBLER__
 void sai_cps_io_poll(void);
 #else
-	.extern	sai_min_cps_io_init;
 	.extern	sai_cps_io_poll;
 #endif  // __ASSEMBLER__
 

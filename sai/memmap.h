@@ -9,7 +9,7 @@
 #elif SAI_TARGET == SAI_TARGET_S18
 #include "sai/s18/hw.h"
 #elif SAI_TARGET == SAI_TARGET_CPS
-#error "TODO"
+#include "sai/cps/hw.h"
 #elif SAI_TARGET == SAI_TARGET_CPS2
 #include "sai/cps2/hw.h"
 #elif SAI_TARGET == SAI_TARGET_ESPRADE

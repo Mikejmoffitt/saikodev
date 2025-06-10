@@ -40,7 +40,7 @@ extern "C"
 #elif SAI_TARGET == SAI_TARGET_CPS
 #include "sai/cps/pal.h"
 #include "sai/cps/ppu.h"
-#error "TODO"
+#include "sai/cps/io.h"
 #elif SAI_TARGET == SAI_TARGET_CPS2
 #include "sai/cps/pal.h"
 #include "sai/cps/ppu.h"

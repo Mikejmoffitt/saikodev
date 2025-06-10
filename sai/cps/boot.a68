@@ -24,7 +24,6 @@ start:
 
 	calla6	sai_min_input_init
 	calla6	sai_min_cps_ppu_init
-	calla6	sai_min_cps_io_init
 	calla6	sai_min_pal_init
 
 	move.w	#$5555, d0
