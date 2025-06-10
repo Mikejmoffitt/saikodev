@@ -16,6 +16,7 @@ extern "C"
 // HARDWARE OPTIONS
 //
 // SAI_SP013_NOSCALE - set this for operation with the old revision.
+// SAI_SP013_FIXED - use fixed point positioning for coordinates.
 
 // Read to get blanking status and get IRQ source
 // fedc ba98 7654 3210
@@ -33,6 +34,14 @@ extern "C"
 #define SP013_OFFS_SPRSX       0x04
 #define SP013_OFFS_SPRSY       0x06
 #define SP013_OFFS_SPRBANK     0x08
+
+#define SP013_FIXED_SHIFT      6
+
+#ifdef SAI_SP013_FIXED
+#define SP013_SPR_HIDE_POS     (384<<SP013_FIXED_SHIFT)
+#else
+#define SP013_SPR_HIDE_POS     384
+#endif
 
 // Sprite / chip configuration register.
 #define SP013_OFFS_CONFIG      0x0A
@@ -155,6 +164,7 @@ extern Sp013Spr *g_sai_sp013_spr_next;
 
 void sai_sp013_init(void);
 void sai_sp013_finish(void);
+void sai_sp013_on_vbl(void);
 
 // Initializes the sprite list.
 void sai_sp013_spr_reset(void);
@@ -203,10 +213,10 @@ static inline Sp013Spr *sai_sp013_draw_sc(int16_t x, int16_t y,
 	.extern	g_sai_sp013_spr_count
 	.extern	g_sai_sp013_spr_next
 
-	.extern sai_sp013_init
-	.extern sai_min_sp013_init
-	.extern sai_sp013_finish
-	.extern sai_sp013_wait_vbl
+	.extern	sai_sp013_init
+	.extern	sai_min_sp013_init
+	.extern	sai_sp013_finish
+	.extern	sai_sp013_on_vbl
 
 	.extern	sai_sp013_spr_reset
 

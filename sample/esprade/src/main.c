@@ -64,6 +64,19 @@ static void move_test_sprite(void)
 		sai_ymz_play(YMZ_BOUNCE2_OFFS, 2);
 		s_dy = 1;
 	}
+
+	if (g_sai_in[0].now & SAI_BTN_C)
+	{
+		sai_sp013_draw_sc(s_x/8, s_y/8, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE, 0x20, 0x20);
+	}
+	if (g_sai_in[0].now & SAI_BTN_B)
+	{
+		sai_sp013_draw_sc(s_x/4, s_y/4, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE, 0x40, 0x40);
+	}
+	if (g_sai_in[0].now & SAI_BTN_A)
+	{
+		sai_sp013_draw_sc(s_x/2, s_y/2, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE, 0x80, 0x80);
+	}
 	sai_sp013_draw(s_x, s_y, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE);
 }
 

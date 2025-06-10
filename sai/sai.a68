@@ -95,8 +95,9 @@ sai_finish:
 #elif SAI_TARGET == SAI_TARGET_CPS
 #elif SAI_TARGET == SAI_TARGET_CPS2
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
-	bsr.w	sai_irq_vbl_wait
 	bsr.w	sai_sp013_finish
+	bsr.w	sai_irq_vbl_wait
+	bsr.w	sai_sp013_on_vbl
 	bsr.w	sai_palcmd_poll
 	bsr.w	sai_bg038_on_vbl
 #endif  // SAI_TARGET

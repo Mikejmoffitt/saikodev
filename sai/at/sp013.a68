@@ -5,7 +5,8 @@
 	.global	g_sai_sp013_spr_next
 g_sai_sp013_spr_next: ds.l 1
 
-s_last_obj: ds.l 2  ; one for each page
+s_last_obj_even: ds.l 1
+s_last_obj_odd:  ds.l 1
 s_obj_bank: ds.w 1
 
 	.section	.text
@@ -71,8 +72,8 @@ sai_min_sp013_init:
 	moveq	#0, d0
 	lea	SP013_VRAM_BASE, a0
 	move.l	a0, g_sai_sp013_spr_next
-	move.l	a0, s_last_obj
-	move.l	a0, s_last_obj+4
+	move.l	a0, s_last_obj_even
+	move.l	#SP013_VRAM_BASE + (SP013_BANK_SIZE*2), s_last_obj_odd
 	move.w	#(SP013_VRAM_SIZE/(4*4))-1, d1
 0:
 	.rept	4
@@ -112,30 +113,32 @@ format_data:
 	.global	sai_sp013_finish
 ; The sprite list is terminated.
 sai_sp013_finish:
-	; Load the final sprite address from the last use of this buffer.
-	lea	s_last_obj, a0  ; even frame address
+	; A0 points to the last sprite entry that was written to.
+	move.l	g_sai_sp013_spr_next, a0
+	; Get the address of the last sprite we wrote to in this buffer.
+	lea	s_last_obj_even, a1
 	tst.w	s_obj_bank
 	beq.s	0f
-	addq.w	#4, a0  ; odd frame address
+	addq.l	#4, a1  ; point to s_last_obj_odd
 0:
-	; Subtract the most recent last address from what we used last time.
-	move.l	(a0), d0
-	sub.l	g_sai_sp013_spr_next, d0
-	; If more sprites were used this time then no need to hide any.
-	ble.s	skip_termination
-	; Otherwise, d0 / Sp013Spr.len is the count of sprites to clear.
-	move.l	g_sai_sp013_spr_next, a1
-	move.l	a1, (a0)
-	lsr.w	#4, d0
-	subq.w	#1, d0
-	move.l	#$80008000, d1
-sprite_hide_loop:
-	move.l	d1, Sp013Spr.x(a1)
-	move.w	#$0101, Sp013Spr.sx(a1)
-	lea	Sp013Spr.len(a1), a0
-	dbf	d1, sprite_hide_loop
-
-skip_termination:
+	move.l	(a1), d1  ; d1 holds the previous max sprite address
+	; Update max sprite address tracking
+	move.l	a0, (a1)
+	; Now if the previous > now, erase the sprites between
+	movea.l	d1, a1
+	move.w	#SP013_SPR_HIDE_POS, d0  ; xpos
+	move.w	#$0101, d1  ; size field
+0:
+	.rept	4
+	cmpa.l	a0, a1
+	bcs.s	1f
+	move.w	d0, Sp013Spr.x(a0)
+	move.w	d1, Sp013Spr.size(a0)
+	lea	Sp013Spr.len(a0), a0
+	.endr
+	bra.s	0b
+1:
+	; Swap bank and update pointer
 	lea	SP013_VRAM_BASE, a0
 	move.w	s_obj_bank, d0
 	eori.w	#$0002, d0  ; Bank in $4000*2
@@ -143,7 +146,6 @@ skip_termination:
 	lea	SP013_VRAM_BASE+(SP013_BANK_SIZE*2), a0
 0:
 	move.w	d0, s_obj_bank
-	move.w	d0, SP013_CTRL_BASE+SP013_OFFS_SPRBANK
 	move.l	a0, g_sai_sp013_spr_next
 	rts
 
@@ -158,4 +160,9 @@ sai_sp013_spr_reset:
 	move.l	d0, (a0)+
 	.endr
 	dbf	d1, 0b
+	rts
+
+	.global	sai_sp013_on_vbl
+sai_sp013_on_vbl:
+	move.w	s_obj_bank, SP013_CTRL_BASE+SP013_OFFS_SPRBANK
 	rts
