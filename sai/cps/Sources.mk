@@ -14,6 +14,7 @@ SAI_SOURCES_ASM := \
 	$(SAI)/cps/ppu.a68 \
 	$(SAI)/cps/io.a68 \
 	$(SAI)/cps/irq.a68 \
+	$(SAI)/cps/obj.a68 \
 	$(SAI)/sai.a68 \
 	$(SAI)/input.a68 \
 	$(SAI)/palcmd.a68 \

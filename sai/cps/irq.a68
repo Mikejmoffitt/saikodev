@@ -20,11 +20,11 @@ g_irq_hbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
 
 	.section	.text
 _v_irq1:
+_v_irq4:  ; for CPS2.
 	irq_handler g_irq_hbl_callback
 _v_irq2:
 	virq_handler g_irq_vbl_callback
 _v_irq3:
-_v_irq4:
 _v_irq5:
 _v_irq6:
 _v_irq7:

@@ -1,0 +1,14 @@
+#include "sai/cps/obj.h"
+#include "sai/macro.h"
+#include "sai/memmap.h"
+#include "sai/cps/ppu.h"
+
+	.section	.text
+	.global	sai_cps_obj_init
+sai_cps_obj_init:
+	calla6_safe sai_min_cps_obj_init
+	rts
+	.global	sai_min_cps_obj_init
+sai_min_cps_obj_init:
+
+	jmp	(a6)

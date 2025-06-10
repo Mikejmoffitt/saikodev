@@ -7,6 +7,7 @@ extern "C"
 #endif  // __cplusplus
 
 #include "sai/macro.h"
+#include "sai/target.h"
 
 #define ROM_BASE               (0x000000)
 #define WRAM_BASE              (0xFF0000)
@@ -14,8 +15,13 @@ extern "C"
 #define VRAM_BASE              (0x900000)
 #define VRAM_SIZE              (0x30000)
 
-#define SAI_CPSA_REG_BASE      (0x804100)
-#define SAI_CPSB_REG_BASE      (0x804140)
+#ifndef SAI_CPSA_REG_BASE
+#define SAI_CPSA_REG_BASE      (0x800100)
+#endif  // SAI_CPSA_REG_BASE
+#ifndef SAI_CPSB_REG_BASE
+#define SAI_CPSB_REG_BASE      (0x800140)
+#endif  // SAI_CPSB_REG_BASE
+
 #define SAI_CPS_IO_BASE        (0x800000)
 
 // VRAM layout

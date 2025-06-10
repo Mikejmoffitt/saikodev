@@ -104,7 +104,6 @@ sai_finish:
 	bsr.w	sai_cps_ppu_trigger_pal_dma
 	bsr.w	sai_irq_vbl_wait
 #elif SAI_TARGET == SAI_TARGET_CPS2
-	; As CPS2 has its own palette DMA, run pal commands using vbl wait time.
 	bsr.w	sai_palcmd_poll
 	bsr.w	sai_cps_ppu_trigger_pal_dma
 	bsr.w	sai_irq_vbl_wait
