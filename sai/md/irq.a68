@@ -56,8 +56,8 @@ sai_irq_init:
 	move.l	d0, g_irq_vbl_callback
 
 #if SAI_TARGET != SAI_TARGET_MD
-	move.l	d0, g_fm_vbl_callback
+	move.l	d0, g_irq_fm_callback
 #else
-	move.l	d0, g_th_vbl_callback
+	move.l	d0, g_irq_th_callback
 #endif  // SAI_TARGET
 	rts
