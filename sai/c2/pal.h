@@ -6,9 +6,6 @@ extern "C"
 {
 #endif  // __cplusplus
 
-// Functions to read and write to the palette. Color data is cached in a small
-// buffer that is queued for transfer during vblank if needed.
-
 #ifndef __ASSEMBLER__
 #include <stdint.h>
 #include <stddef.h>

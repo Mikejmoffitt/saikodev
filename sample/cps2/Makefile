@@ -14,10 +14,10 @@ PROJECT_OUTPUT := $(OUTDIR)/$(PROJECT_NAME).bin
 .PHONY: all vars clean
 
 # Saikodev sources and default flags come from here.
-include $(SAI)/md/Sources.mk
+include $(SAI)/cps2/Sources.mk
 include $(SAI)/mk/m68k-flags.mk
 include $(SAI)/mk/utils.mk
-include $(SAI)/mk/utils-md.mk
+include $(SAI)/mk/utils-cps2.mk
 include $(SAI)/mk/sai-build-rules.mk
 
 # Linker script.
@@ -29,7 +29,7 @@ CPPFLAGS +=
 ASFLAGS +=
 LDFLAGS +=
 LIBS +=
-LDSCRIPT := $(SAI)/ld/md.ld
+LDSCRIPT := $(SAI)/ld/cps2.ld
 
 # Sources.
 SOURCES_ASM := $(shell find $(SRCDIR)/ -type f -name '*.a68')
@@ -100,7 +100,7 @@ $(PROJECT_OUTPUT): $(OUTDIR)/$(PROJECT_NAME).elf $(BINPAD)
 	$(BINPAD) $@
 	@bash -c 'printf "\n"'
 	@bash -c 'printf "\e[92m \tBuild Complete. --> $@\n"'
-	@bash -c 'printf "\e[0m\n"'
+	@bash -c 'printf " \e[0m\n"'
 
 $(OUTDIR)/$(PROJECT_NAME).elf: $(SAI_OBJECTS_ASM) $(OBJECTS_ASM) $(SAI_OBJECTS_C) $(OBJECTS_C) # $(SAI_OBJECTS_CPP) $(OBJECTS_CPP)
 	@mkdir -p $(dir $@)

@@ -1,15 +1,21 @@
-//
-// I/O code for CPS2
-//
-#include	"sai/cps2/hw.h"
+;
+; I/O code for CPS2
+;
+#include	"sai/target.h"
+#include	"sai/macro.h"
+#include	"sai/memmap.h"
 #include	"sai/cps2/io.h"
-
+#include	"sai/input.h"
+#include	"sai/input_bits.h"
+;
 ; CPS2 I/O
 ;
 
 #if SAI_PLAYER_COUNT > 2
 #error "CPS2 4-player input polling not yet implemented!"
 #endif  // SAI_PLAYER_COUNT
+
+	.section	.text
 
 	.global	sai_cps2_io_poll
 sai_cps2_io_poll:
@@ -21,31 +27,31 @@ sai_cps2_io_poll:
 ; Player 1
 ;
 	moveq	#0, d0
-	move.b	(CPS2_IO_PL0 + 1)(a1), d0  ; This is left as-is
+	move.b	(SAI_CPS2_IO_PL0 + 1)(a1), d0  ; This is left as-is
 	not.b	d0
 
 	; Get kick input
-	move.w	CPS2_IO_PL1(a1), d1
+	move.w	SAI_CPS2_IO_PL1(a1), d1
 
-	btst	#CPS2_IO_SW_PL1_KICK1_BIT, d1
+	btst	#SAI_CPS2_IO_SW_PL1_KICK1_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_D, d0
 0:
-	btst	#CPS2_IO_SW_PL1_KICK2_BIT, d1
+	btst	#SAI_CPS2_IO_SW_PL1_KICK2_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_E, d0
 0:
-	btst	#CPS2_IO_SW_PL1_KICK3_BIT, d1
+	btst	#SAI_CPS2_IO_SW_PL1_KICK3_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_F, d0
 0:
 	; Start, con, test, and service
-	move.w	CPS2_IO_SYS(a1), d1
-	btst	#CPS2_IO_SW_START1_BIT, d1
+	move.w	SAI_CPS2_IO_SYS(a1), d1
+	btst	#SAI_CPS2_IO_SW_START1_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_START, d0
 0:
-	btst	#CPS2_IO_SW_COIN1_BIT, d1
+	btst	#SAI_CPS2_IO_SW_COIN1_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_COIN, d0
 0:
@@ -65,36 +71,35 @@ sai_cps2_io_poll:
 ;
 	lea	SaiInput.len(a0), a0
 	moveq	#0, d0
-	move.b	CPS2_IO_PL0(a1), d0  ; P2 data as-is
+	move.b	SAI_CPS2_IO_PL0(a1), d0  ; P2 data as-is
 	not.b	d0
 
 	; Get P2 kicks (they are spread out everywhere)
-	move.w	CPS2_IO_PL1(a1), d1
+	move.w	SAI_CPS2_IO_PL1(a1), d1
 
-	btst	#CPS2_IO_SW_PL2_KICK1_BIT, d1
+	btst	#SAI_CPS2_IO_SW_PL2_KICK1_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_D, d0
 0:
-	btst	#CPS2_IO_SW_PL2_KICK2_BIT, d1
+	btst	#SAI_CPS2_IO_SW_PL2_KICK2_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_E, d0
-0:
-	; P2 kick 3 is on the system input...?!
-	move.w	CPS2_IO_SYS(a1), d1
-	btst	#CPS2_IO_SW_PL2_KICK3_BIT, d1
-	bne.s	0f
-	ori.w	#SAI_BTN_F, d0
-0:
-	; Start and coin
-	; D1 still contains CPS2_IO_SYS from before
-	btst	#CPS2_IO_SW_START2_BIT, d1
+0:	; Start and coin
+	move.w	SAI_CPS2_IO_SYS(a1), d1
+	btst	#SAI_CPS2_IO_SW_START2_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_START, d0
 0:
-	btst	#CPS2_IO_SW_COIN2_BIT, d1
+	btst	#SAI_CPS2_IO_SW_COIN2_BIT, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_COIN, d0
 0:
+	; P2 kick 3 is on the system input...?!
+	andi.w	#SAI_BITVAL(SAI_CPS2_IO_SW_PL2_KICK3_BIT), d1
+	bne.s	0f
+	ori.w	#SAI_BTN_F, d0
+0:
+
 	move.w	d0, SaiInput.now(a0)
 
 	rts

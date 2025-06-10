@@ -1,6 +1,13 @@
 // Hardware definitions for Capcom CPS1/2.
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
+#include "sai/macro.h"
+
 #define ROM_BASE               (0x000000)
 #define WRAM_BASE              (0xFF0000)
 #define WRAM_SIZE              (0x10000)
@@ -19,5 +26,8 @@
 #define VRAM_ROWSCROLL         (VRAM_BASE+0x02000)
 #define VRAM_PALETTE           (VRAM_BASE+0x00000)
 
-#define SAI_CPS_SCROLL_X_DEFAULT -64
-#define SAI_CPS_SCROLL_Y_DEFAULT -16
+#define CRAM_BASE              (VRAM_PALETTE)
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus

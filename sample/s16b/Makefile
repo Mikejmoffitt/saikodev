@@ -95,7 +95,7 @@ $(PROJECT_OUTPUT): $(OUTDIR)/$(PROJECT_NAME).elf $(BINPAD)
 	$(BINPAD) $@
 	@bash -c 'printf "\n"'
 	@bash -c 'printf "\e[92m \tBuild Complete. --> $@\n"'
-	@bash -c 'printf "\n"'
+	@bash -c 'printf "\e[0m\n"'
 
 $(OUTDIR)/$(PROJECT_NAME).elf: $(SAI_OBJECTS_ASM) $(OBJECTS_ASM) $(SAI_OBJECTS_C) $(OBJECTS_C) # $(SAI_OBJECTS_CPP) $(OBJECTS_CPP)
 	@mkdir -p $(dir $@)

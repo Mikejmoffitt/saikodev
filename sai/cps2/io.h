@@ -14,16 +14,33 @@ extern "C"
 // reduces the number of usable buttons per player, per the 4-player pinout
 // (as used by D&D, etc).
 
+#ifdef __ASSEMBLER__
+.macro	cps2_wdog_pet
+	move.l	#0xFFFFFFFF, (0xFFFFFFFC).l
+.endm
+#endif  // __ASSEMBLER__
+
 // Offsets from SAI_CPS2_IO_BASE.
-#define SAI_CPS2_IO_PL0 $00  ; P1 and P2
-#define SAI_CPS2_IO_PL1 $10  ; Kick inputs, or P3 and P4
-#define SAI_CPS2_IO_SYS $20  ; starts, coins, EEPROM read
-#define SAI_CPS2_IO_VOL $30  ; Volume, and bit flags for B board expansions.
-#define SAI_CPS2_IO_EEP $40  ; EEPROM signals, Z80 control
-#define SAI_CPS2_IO_OU1 $80  ; Output port of unknown purpose.
-#define SAI_CPS2_IO_OU2 $90  ; Output port of unknown purpose.
-#define SAI_CPS2_IO_SRM $A0  ; SRAM control. Bit 0 is set to 1 to enble DRAM refresh.
-#define SAI_CPS2_IO_BNK $E0  ; Object RAM bank (swaps in what's at $700000 by twiddling bit 14)
+
+// P1, P2
+#define SAI_CPS2_IO_PL0 0x00
+// Kick, P3/P4
+#define SAI_CPS2_IO_PL1 0x10
+// starts, coins, EEPROM read
+#define SAI_CPS2_IO_SYS 0x20
+// Volume, and bit flags for B board expansions.
+#define SAI_CPS2_IO_VOL 0x30
+// EEPROM signals, Z80 control
+#define SAI_CPS2_IO_EEP 0x40
+// Output port of unknown purpose.
+#define SAI_CPS2_IO_OU1 0x80
+// Output port of unknown purpose.
+#define SAI_CPS2_IO_OU2 0x90
+// SRAM control. Bit 0 is set to 1 to enble DRAM refresh.
+#define SAI_CPS2_IO_SRM 0xA0
+// Object RAM bank (swaps in what's at $700000 by twiddling bit 14)
+#define SAI_CPS2_IO_BNK 0xE0
+
 
 // Enums for SAI_CPS2_IO_PL0/1 bits. These match CPS1 fortunately.
 #define SAI_CPS2_IO_SW_PL_RIGHT_BIT 0
@@ -55,7 +72,7 @@ extern "C"
 #define SAI_CPS2_IO_SW_COIN2_BIT     13
 #define SAI_CPS2_IO_SW_COIN3_BIT     14
 #define SAI_CPS2_IO_SW_COIN4_BIT     15
-#define SAI_CPS2_IO_SW_PL2_KICK3_BIT 14  ; P2 kick3 sits on the P3 coin bit.
+#define SAI_CPS2_IO_SW_PL2_KICK3_BIT 14
 
 // Enums for SAI_CPS2_IO_VOL bits.
 #define SAI_CPS2_IO_SW_VOL_DOWN     1
@@ -65,7 +82,8 @@ extern "C"
 #define SAI_CPS2_IO_EEP_COINC1_BIT  0
 #define SAI_CPS2_IO_EEP_COINC2_BIT  1
 
-#define SAI_CPS2_IO_EEP_Z80_RESET   4  ; Bring high before accessing Z80 memory!
+// Bring high before accessing Z80 memory!
+#define SAI_CPS2_IO_EEP_Z80_RESET   4
 #define SAI_CPS2_IO_EEP_LOCK1_BIT   5
 #define SAI_CPS2_IO_EEP_LOCK2_BIT   6
 #define SAI_CPS2_IO_EEP_CN5_PIN7    7

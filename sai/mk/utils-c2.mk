@@ -1,5 +1,5 @@
 
-SAI_C2_TESTROM_NAME := ooparts
+SAI_TESTROM_NAME := ooparts
 
 # Prepares images for use with 27C040 or compatible ROMs.
 .PHONY: rom
@@ -13,7 +13,7 @@ $(OUTDIR)/rom/ic32.bin: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	$(BSPLIT) s $(WRKDIR)/prgaa $(@D)/ic32.bin $(@D)/ic31.bin
 	$(BSPLIT) s $(WRKDIR)/prgab $(@D)/ic34.bin $(@D)/ic33.bin
 
-$(OUTDIR)/$(SAI_C2_TESTROM_NAME)/ooparts.ic32: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
+$(OUTDIR)/$(SAI_TESTROM_NAME)/ooparts.ic32: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	mkdir -p $(@D)
 	mkdir -p $(WRKDIR)
 	$(BINPAD) $(PROJECT_OUTPUT) 0x200000
@@ -23,5 +23,5 @@ $(OUTDIR)/$(SAI_C2_TESTROM_NAME)/ooparts.ic32: $(PROJECT_OUTPUT) $(BSPLIT) $(BIN
 	# TODO adpcm
 	dd if=/dev/zero of=$(@D)/epr-13655.ic4 bs=1 count=1
 
-mame: $(OUTDIR)/$(SAI_C2_TESTROM_NAME)/ooparts.ic32
-	mame $(SAI_C2_TESTROM_NAME) -debug -r 1280x960 -prescale 4 -rompath $(shell pwd)/$(OUTDIR) -ror
+mame: $(OUTDIR)/$(SAI_TESTROM_NAME)/ooparts.ic32
+	mame $(SAI_TESTROM_NAME) -debug -r 1280x960 -prescale 4 -rompath $(shell pwd)/$(OUTDIR) -ror

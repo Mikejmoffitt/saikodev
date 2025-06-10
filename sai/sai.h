@@ -38,9 +38,14 @@ extern "C"
 #include "sai/s16b/pal.h"
 #include "sai/s18/io.h"
 #elif SAI_TARGET == SAI_TARGET_CPS
+#include "sai/cps/pal.h"
+#include "sai/cps/ppu.h"
 #error "TODO"
 #elif SAI_TARGET == SAI_TARGET_CPS2
-#error "TODO"
+#include "sai/cps/pal.h"
+#include "sai/cps/ppu.h"
+#include "sai/cps2/io.h"
+#include "sai/cps2/obj.h"
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
 #include "sai/at/io.h"
 #include "sai/at/pal.h"

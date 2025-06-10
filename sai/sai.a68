@@ -52,7 +52,14 @@ sai_init:
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init
 #elif SAI_TARGET == SAI_TARGET_CPS
+	bsr.w	sai_cps_ppu_init
+	bsr.w	sai_pal_init
+	bsr.w	sai_palcmd_init
 #elif SAI_TARGET == SAI_TARGET_CPS2
+	bsr.w	sai_cps_ppu_init
+	bsr.w	sai_cps2_obj_init
+	bsr.w	sai_pal_init
+	bsr.w	sai_palcmd_init
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
 	bsr.w	sai_ymz_reset
 	bsr.w	sai_sp013_init
@@ -93,7 +100,15 @@ sai_finish:
 	bsr.w	sai_irq_vbl_wait
 	bsr.w	sai_palcmd_poll
 #elif SAI_TARGET == SAI_TARGET_CPS
+	bsr.w	sai_palcmd_poll
+	bsr.w	sai_cps_ppu_trigger_pal_dma
+	bsr.w	sai_irq_vbl_wait
 #elif SAI_TARGET == SAI_TARGET_CPS2
+	; As CPS2 has its own palette DMA, run pal commands using vbl wait time.
+	bsr.w	sai_palcmd_poll
+	bsr.w	sai_cps_ppu_trigger_pal_dma
+	bsr.w	sai_irq_vbl_wait
+	bsr.w	sai_cps2_obj_on_vbl
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
 	bsr.w	sai_sp013_finish
 	bsr.w	sai_irq_vbl_wait

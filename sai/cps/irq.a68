@@ -1,8 +1,9 @@
-#include "sai/s16b/irq.h"
+#include "sai/cps/irq.h"
 #include "sai/target.h"
 #include "sai/irq.h"
 
 	.global	g_irq_vbl_callback
+	.global	g_irq_hbl_callback
 
 	.global	_v_irq1
 	.global	_v_irq2
@@ -15,18 +16,19 @@
 	.section	.data
 
 g_irq_vbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+g_irq_hbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
 
 	.section	.text
 _v_irq1:
+	irq_handler g_irq_hbl_callback
 _v_irq2:
+	virq_handler g_irq_vbl_callback
 _v_irq3:
+_v_irq4:
 _v_irq5:
 _v_irq6:
 _v_irq7:
 	rte
-
-_v_irq4:
-	virq_handler g_irq_vbl_callback
 
 	.global	sai_irq_init
 sai_irq_init:

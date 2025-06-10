@@ -11,7 +11,7 @@
 #elif SAI_TARGET == SAI_TARGET_CPS
 #error "TODO"
 #elif SAI_TARGET == SAI_TARGET_CPS2
-#error "TODO"
+#include "sai/cps2/hw.h"
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
 #include "sai/at/hw.h"
 #else

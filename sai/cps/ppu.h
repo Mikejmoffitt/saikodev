@@ -111,15 +111,12 @@ extern "C"
 //      scroll 3
 // bot: --------
 
-#define SAI_CPSB_LAYER_ORDER_DEF(ly0, ly1, ly2, ly3) (((ly0) << SAI_CPSB_LAYER_CTRL_DRAW0_BIT) \
-                                                      ((ly1) << SAI_CPSB_LAYER_CTRL_DRAW1_BIT) \
-                                                      ((ly2) << SAI_CPSB_LAYER_CTRL_DRAW2_BIT) \
+#define SAI_CPSB_LAYER_ORDER_DEF(ly0, ly1, ly2, ly3) (((ly0) << SAI_CPSB_LAYER_CTRL_DRAW0_BIT) | \
+                                                      ((ly1) << SAI_CPSB_LAYER_CTRL_DRAW1_BIT) | \
+                                                      ((ly2) << SAI_CPSB_LAYER_CTRL_DRAW2_BIT) | \
                                                       ((ly3) << SAI_CPSB_LAYER_CTRL_DRAW3_BIT))
 
-#define SIA_CPSB_LAYER_ORDER_DEFAULT (SAI_CPSB_LAYER_ORDER_DEF(1, 2, 3, 0) | \
-                                      SAI_BITVAL(1) \
-                                      SAI_BITVAL(2) \
-                                      SAI_BITVAL(3))
+#define SAI_CPSB_LAYER_ORDER_DEFAULT (SAI_CPSB_LAYER_ORDER_DEF(1, 2, 3, 0) | 0xE)
 
 //
 // Priority mask registers. Used for per-color masking with the scroll plane
@@ -159,17 +156,38 @@ extern "C"
 #define SAI_CPSB_PAL_CTRL_DEFAULT   (SAI_CPSB_PAL_CTRL_OBJ | \
                                      SAI_CPSB_PAL_CTRL_SCROLL1 | \
                                      SAI_CPSB_PAL_CTRL_SCROLL2 | \
-                                     SAI_CPSB_PAL_CTRL_SCROLL3 | \
-                                     SAI_CPSB_PAL_CTRL_STAR1 | \
-                                     SAI_CPSB_PAL_CTRL_STAR2)
+                                     SAI_CPSB_PAL_CTRL_SCROLL3)
 
 #define SAI_CPSB_ID                 0x32
 #define SAI_CPSB_SCANLINE           0x3E
 
-#ifndef __ASSEMBLER__
+//
+// Background tilemaps are defined as such:
+//
+// fedc ba98 7654 3210 fedc ba98 7654 3210
+// .... ...p p... .... .... .... .... .... Priority (?)
+// .... .... .yx. .... .... .... .... .... Y/X flip
+// .... .... ...c cccc .... .... .... .... Color
+// .... .... .... .... aaaa aaaa aaaa aaaa Tile address
+#define SAI_CPS_BG_FLIPX           (SAI_BITVAL(5))
+#define SAI_CPS_BG_FLIPY           (SAI_BITVAL(6))
+#define SAI_CPS_BG_ATTR(pal, prio) ((pal) | ((prio)<<7))
 
+// VRAM position calculation
+#define SAI_CPS_SCROLL1_OFFS(x, y) (((x)*128)+((y)*4))
+#define SAI_CPS_SCROLL2_OFFS(x, y) (((x)*64)+((y)*4))
+#define SAI_CPS_SCROLL3_OFFS(x, y) (((x)*32)+((y)*4))
+
+#define SAI_CPS_SCROLL_X_DEFAULT -64
+#define SAI_CPS_SCROLL_Y_DEFAULT -16
+
+#ifndef __ASSEMBLER__
+void sai_cps_ppu_init(void);
+void sai_cps_ppu_trigger_pal_dma(void);
 #else
+	.extern	sai_cps_ppu_init
 	.extern	sai_min_cps_ppu_init
+	.extern	sai_cps_ppu_trigger_pal_dma
 #endif  // __ASSEMBLER__
 
 #ifdef __cplusplus
