@@ -3,6 +3,7 @@
 
 	.section	.bss
 	
+	.global	g_sai_bg038
 g_sai_bg038: ds.b Bg038State.len * SAI_BG038_COUNT
 
 	.section	.text
@@ -19,22 +20,37 @@ sai_min_bg038_init:
 	moveq	#SAI_BG038_COUNT-1, d1
 	lea	g_sai_bg038, a0
 0:
-	move.l	d0, (a0)+  ; sx, sy
-	move.l	d0, (a0)+  ; flagsx, flagsy
-	move.w	#BG038_CTRL_DISABLE|1, (a0)+  ; ctrl disabled, pal grp 1
+	move.l	d0, (a0)+  ; base_x, base_y
+	move.l	d0, (a0)+  ; scroll_x, scroll_y
+	move.l	#((BG038_SCRX_DEFAULT)<<16) | BG038_SCRY_DEFAULT, (a0)+  ; flagsx, flagsy
+	move.w	#BG038_CTRL_DEFAULT|1, (a0)+  ; ctrl disabled, pal grp 1
 	dbf	d1, 0b
 #else
 	;Color group spread as seen in Aku Gallet
-	moveq	#BG038_CTRL_DISABLE|1, d0
+	moveq	#BG038_CTRL_DEFAULT|1, d0
 	moveq	#SAI_BG038_COUNT-1, d1
 	lea	g_sai_bg038, a0
 0:
-	clr.l	(a0)+  ; sx, sy
-	clr.l	(a0)+  ; flagsx, flagsy
+	clr.l	(a0)+  ; base_x, base_y
+	clr.l	(a0)+  ; scroll_x, scroll_y
+	move.l	#((BG038_SCRX_DEFAULT)<<16) | BG038_SCRY_DEFAULT, (a0)+  ; flagsx, flagsy
 	move.w	d0, (a0)+  ; ctrl
 	addq.w	#1, d0
 	dbf	d1, b0
 #endif
+
+	; Set base positions, accounting for shift from chaining
+	move.l	#((BG038_BASE_X_DEFAULT)<<16) | (BG038_BASE_Y_DEFAULT), d0
+	moveq	#SAI_BG038_COUNT-1, d1
+	lea	g_sai_bg038, a0
+0:
+	move.l	d0, Bg038State.base_x(a0)
+	swap	d0
+	subq.w	#1, d0
+	swap	d0
+	lea	Bg038State.len(a0), a0
+	dbf	d1, 0b
+
 	; Wipe VRAM A
 	lea	BG038_A_VRAM_BASE, a0
 	moveq	#0, d0
@@ -84,13 +100,18 @@ sai_min_bg038_init:
 
 .macro	bg038_update	regbase
 	lea	\regbase, a1
-	move.l	(a0)+, d0
-	andi.l	#$01FF01FF, d0  ; mas scroll value
-	or.l	(a0)+, d0       ; bring in flags
-	move.w	d0, (a1)+
+	move.l	(a0)+, d0       ; Base X/Y
 	swap	d0
-	move.w	d0, (a1)+
-	move.w	(a0)+, (a1)+
+	add.w	(a0)+, d0       ; scroll X
+	swap	d0
+	add.w	(a0)+, d0       ; scroll Y
+	andi.l	#$01FF01FF, d0  ; Scroll wrap
+	or.l	(a0)+, d0       ; bring in flags
+	swap	d0
+	move.w	d0, (a1)+       ; scrx
+	swap	d0
+	move.w	d0, (a1)+       ; scry
+	move.w	(a0)+, (a1)+    ; ctrl
 .endm
 
 sai_bg038_on_vbl:

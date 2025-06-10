@@ -93,14 +93,22 @@ extern "C"
 #define BG038_CTRL_DISABLE_BIT     4
 #define BG038_CTRL_DISABLE         SAI_BITVAL(BG038_CTRL_DISABLE_BIT)
 
+#define BG038_CTRL_DEFAULT         (BG038_CTRL_DISABLE)
+
 #define BG038_SCRX_FLIP            SAI_BITVAL(15)
 #define BG038_SCRX_LINESCROLL      SAI_BITVAL(14)
+#define BG038_SCRX_DEFAULT         (BG038_SCRX_FLIP)
 
 #define BG038_SCRY_FLIP            SAI_BITVAL(15)
 #define BG038_SCRY_LINEPTR         SAI_BITVAL(14)
+#define BG038_SCRY_TILE16          SAI_BITVAL(13)
+#define BG038_SCRY_DEFAULT         (BG038_SCRY_FLIP)
 
-#define BG038_ATTR(pal, prio) (((pri)<<0x6)|((pal)))
-#define BG038_ATTR16(pal, prio) (BG038_ATTR(pal, prio)<<8)
+#define BG038_ATTR(pal, prio) (((prio)<<0x6)|((pal)))
+#define BG038_AT16(pal, prio) (BG038_ATTR(pal, prio)<<8)
+#define BG038_AT32(pal, prio) (BG038_ATTR(pal, prio)<<24)
+#define BG038_VRAM_OFFS8(x, y) (((x)*4)+((y)*4*64))
+#define BG038_VRAM_OFFS16(x, y) (((x)*4)+((y)*4*32))
 
 #define BG038_VRAM_NT              0x0000
 #define BG038_VRAM_NT_SIZE         0x1000
@@ -108,6 +116,10 @@ extern "C"
 #define BG038_VRAM_LINE_PTR_SIZE   0x0400
 #define BG038_VRAM_NT8             0x4000
 #define BG038_VRAM_NT8_SIZE        0x4000
+
+// The default base X, Y values place 0,0 at the top-left.
+#define BG038_BASE_X_DEFAULT 0x018F
+#define BG038_BASE_Y_DEFAULT 0x01EF
 
 #ifndef __ASSEMBLER__
 
@@ -135,7 +147,8 @@ typedef struct Bg038LineDef
 // Struct representing register state to send to BG038.
 typedef struct Bg038State
 {
-	int16_t sx, sy;
+	int16_t base_x, base_y;
+	int16_t scroll_x, scroll_y;
 	uint16_t flagx, flagy;  // ORed with sx, sy before reaching registers.
 	uint16_t ctrl;
 } Bg038State;
@@ -166,7 +179,7 @@ static inline void sai_bg038_set_color_group(uint16_t idx, uint8_t group)
 
 	.struct 0
 Bg038Tile.attr:
-Bg038Tile.code: ds.l 1
+Bg038Tile.code:      ds.l 1
 Bg038Tile.len:
 
 	.struct 0
@@ -175,8 +188,10 @@ Bg038LineDef.src:    ds.w 1
 Bg038LineDef.len:
 
 	.struct 0
-Bg038State.sx:       ds.w 1
-Bg038State.sy:       ds.w 1
+Bg038State.base_x:   ds.w 1
+Bg038State.base_y:   ds.w 1
+Bg038State.scroll_x: ds.w 1
+Bg038State.scroll_y: ds.w 1
 Bg038State.flagx:    ds.w 1
 Bg038State.flagy:    ds.w 1
 Bg038State.ctrl:     ds.w 1

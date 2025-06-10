@@ -54,9 +54,9 @@ void sai_pal_init(void);
 static inline void sai_pal_set(uint16_t idx, uint16_t val);
 
 // Caches and schedules a transfer to palette data.
-// dest:  palette line index (0 - 127: background; 128-191: sprites)
+// dest:  palette line index
 // src:   Pointer to data to copy from.
-// count: Number of palette lines to copy (for BG, this is 8 colors; for spr, 16).
+// count: Number of palette lines to copy (16 colors per).
 static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t count);
 
 // -----------------------------------------------------------------------------
