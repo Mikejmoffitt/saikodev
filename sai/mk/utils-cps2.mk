@@ -8,8 +8,9 @@ $(OUTDIR)/rom/03.bin: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	mkdir -p $(@D)
 	mkdir -p $(WRKDIR)
 # Program
-	$(BINPAD) $(PROJECT_OUTPUT) 0x400000
-	$(SPLIT) -b 524288 $(PROJECT_OUTPUT) $(WRKDIR)/prg
+	cp $(PROJECT_OUTPUT) $(WRKDIR)/prg.bin
+	$(BINPAD) $(WRKDIR)/prg.bin 0x400000
+	$(SPLIT) -b 524288 $(WRKDIR)/prg.bin $(WRKDIR)/prg
 	$(BSPLIT) x $(WRKDIR)/prgaa $(@D)/03.bin
 	$(BSPLIT) x $(WRKDIR)/prgab $(@D)/04.bin
 	$(BSPLIT) x $(WRKDIR)/prgac $(@D)/05.bin
@@ -19,19 +20,24 @@ $(OUTDIR)/rom/03.bin: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	$(BSPLIT) x $(WRKDIR)/prgag $(@D)/09.bin
 	$(BSPLIT) x $(WRKDIR)/prgah $(@D)/10.bin
 # Graphics
-	dd if=/dev/zero bs=1M count=4 of=$(WRKDIR)/blank4
-	cp $(WRKDIR)/blank4 $(@D)/13.bin
-	cp $(WRKDIR)/blank4 $(@D)/15.bin
-	cp $(WRKDIR)/blank4 $(@D)/17.bin
-	cp $(WRKDIR)/blank4 $(@D)/19.bin
-	cp $(WRKDIR)/blank4 $(@D)/14.bin
-	cp $(WRKDIR)/blank4 $(@D)/16.bin
-	cp $(WRKDIR)/blank4 $(@D)/18.bin
-	cp $(WRKDIR)/blank4 $(@D)/20.bin
+	cp $(RESDIR)/gfx.chr $(WRKDIR)/chr.bin
+	$(BINPAD) $(WRKDIR)/chr.bin 0x2000000
+	$(BSPLIT) s $(WRKDIR)/chr.bin $(WRKDIR)/chr_e.bin $(WRKDIR)/chr_o.bin
+	$(SPLIT) -b 4194304 $(WRKDIR)/chr_e.bin $(WRKDIR)/chr_e_
+	$(SPLIT) -b 4194304 $(WRKDIR)/chr_o.bin $(WRKDIR)/chr_o_
+	mv $(WRKDIR)/chr_e_aa $(@D)/13.bin
+	mv $(WRKDIR)/chr_e_ab $(@D)/15.bin
+	mv $(WRKDIR)/chr_e_ac $(@D)/17.bin
+	mv $(WRKDIR)/chr_e_ad $(@D)/19.bin
+	mv $(WRKDIR)/chr_o_aa $(@D)/14.bin
+	mv $(WRKDIR)/chr_o_ab $(@D)/16.bin
+	mv $(WRKDIR)/chr_o_ac $(@D)/18.bin
+	mv $(WRKDIR)/chr_o_ad $(@D)/20.bin
 # Sound CPU
 	dd if=/dev/zero bs=32K count=4 of=$(@D)/01.bin
 	dd if=/dev/zero bs=32K count=4 of=$(@D)/02.bin
 # QSound audio
+	dd if=/dev/zero bs=1M count=4 of=$(WRKDIR)/blank4
 	cp $(WRKDIR)/blank4 $(@D)/11.bin
 	cp $(WRKDIR)/blank4 $(@D)/12.bin
 # TODO: pick up from resdir

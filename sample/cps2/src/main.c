@@ -1,4 +1,5 @@
 #include "sai/sai.h"
+#include "res.h"
 
 static void run_test_color_anim(void)
 {
@@ -21,6 +22,7 @@ static void run_test_color_anim(void)
 void __attribute__((noreturn)) main(void)
 {
 	sai_init();
+	sai_pal_load(0, (void *)(wrk_gfx_pal+SPR_TIA_PAL_OFFS), 1);
 	while (true)
 	{
 		run_test_color_anim();
