@@ -20,6 +20,9 @@ extern "C"
 #define SAI_PAL333(r, g, b) (SAI_PAL444((r)<<1, (g)<<1, (b)<<1))
 #define SAI_PALHEX(x) SAI_PAL888((((x) >> 16) & 0xFF), (((x) >> 8) & 0xFF), ((x) & 0xFF))
 
+// The background color is only respected on CPS.
+#define SAI_CPS_BG_PAL 0xBFF
+
 #ifndef __ASSEMBLER__
 
 // Clears palette and initializes queue system.
@@ -27,6 +30,9 @@ void sai_pal_init(void);
 
 // Registers a command to set a single palette color.
 static inline void sai_pal_set(uint16_t idx, uint16_t val);
+
+// Registers a command to fill a range to a single palette color.
+static inline void sai_pal_fill(uint16_t idx, uint16_t val, uint16_t count);
 
 // Schedules a transfer to palette data.
 // dest:  palette line (0 - 31).
@@ -40,9 +46,14 @@ static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count);
 
 static inline void sai_pal_set(uint16_t idx, uint16_t val)
 {
+	sai_pal_fill(idx, val, 1);
+}
+
+static inline void sai_pal_fill(uint16_t idx, uint16_t val, uint16_t count)
+{
 	SaiPalCmd *cmd = sai_palcmd_add();
 	if (!cmd) return;
-	cmd->op_cnt = SAI_PAL_CMD_SET_COLOR | (1-1);
+	cmd->op_cnt = SAI_PAL_CMD_SET_COLOR | (count-1);
 	uint16_t *cram = (uint16_t *)CRAM_BASE;
 	cmd->dest = &cram[idx];
 	cmd->color = val;

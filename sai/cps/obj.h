@@ -25,7 +25,8 @@ extern "C"
 #ifndef __ASSEMBLER__
 typedef struct CpsObj
 {
-	int16_t x, y;
+	int16_t x;
+	int16_t y;
 	int16_t code;
 	union
 	{
@@ -51,12 +52,12 @@ CpsObj.len:
 
 #endif  // __ASSEMBLER__
 
+#ifndef __ASSEMBLER__
+
 #if SAI_TARGET != SAI_TARGET_CPS2
 extern CpsObj *g_sai_cps_obj_next;
 extern uint16_t g_sai_cps_obj_count;
 #endif  // SAI_TARGET
-
-#ifndef __ASSEMBLER__
 
 #if SAI_TARGET != SAI_TARGET_CPS2
 void sai_cps_obj_init(void);

@@ -15,12 +15,13 @@ extern "C"
 #define VRAM_BASE              (0x900000)
 #define VRAM_SIZE              (0x30000)
 
-#ifndef SAI_CPSA_REG_BASE
+#if SAI_TARGET != SAI_TARGET_CPS2
 #define SAI_CPSA_REG_BASE      (0x800100)
-#endif  // SAI_CPSA_REG_BASE
-#ifndef SAI_CPSB_REG_BASE
 #define SAI_CPSB_REG_BASE      (0x800140)
-#endif  // SAI_CPSB_REG_BASE
+#else
+#define SAI_CPSA_REG_BASE      (0x804100)
+#define SAI_CPSB_REG_BASE      (0x804140)
+#endif  // SAI_TARGET
 
 #define SAI_CPS_IO_BASE        (0x800000)
 

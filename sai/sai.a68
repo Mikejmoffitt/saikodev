@@ -104,6 +104,7 @@ sai_finish:
 	bsr.w	sai_palcmd_poll
 	bsr.w	sai_cps_ppu_trigger_pal_dma
 	bsr.w	sai_irq_vbl_wait
+	bsr.w	sai_cps_obj_on_vbl
 #elif SAI_TARGET == SAI_TARGET_CPS2
 	bsr.w	sai_cps2_obj_finish
 	bsr.w	sai_palcmd_poll

@@ -46,11 +46,15 @@ void move_test_sprite(void)
 	}
 
 	sai_cps_obj_draw(s_x, s_y, SPR_TIA_CODE, CPS_OBJ_AT16(0, SPR_TIA_SIZE));
+	sai_cps_obj_draw(s_x+128, s_y, SPR_TIA_CODE, CPS_OBJ_AT16(0, SPR_TIA_SIZE));
+	sai_cps_obj_draw(s_x+128, s_y+128, SPR_TIA_CODE, CPS_OBJ_AT16(0, SPR_TIA_SIZE));
+	sai_cps_obj_draw(s_x+128, s_y+128, SPR_TIA_CODE, CPS_OBJ_AT16(0, SPR_TIA_SIZE));
 }
 
 void __attribute__((noreturn)) main(void)
 {
 	sai_init();
+	sai_pal_fill(0, 0xF000 | SAI_PAL888(0xFF, 0x00, 0x00), 16*32*8);
 	sai_pal_load(0, (void *)(wrk_spr_pal+SPR_TIA_PAL_OFFS), 1);
 	while (true)
 	{

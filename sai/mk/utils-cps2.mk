@@ -20,19 +20,23 @@ $(OUTDIR)/rom/03.bin: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	$(BSPLIT) x $(WRKDIR)/prgag $(@D)/09.bin
 	$(BSPLIT) x $(WRKDIR)/prgah $(@D)/10.bin
 # Graphics
-	cp $(RESDIR)/gfx.chr $(WRKDIR)/chr.bin
+	cp $(RESDIR)/spr.chr $(WRKDIR)/chr.bin
 	$(BINPAD) $(WRKDIR)/chr.bin 0x2000000
-	$(BSPLIT) s $(WRKDIR)/chr.bin $(WRKDIR)/chr_e.bin $(WRKDIR)/chr_o.bin
-	$(SPLIT) -b 4194304 $(WRKDIR)/chr_e.bin $(WRKDIR)/chr_e_
-	$(SPLIT) -b 4194304 $(WRKDIR)/chr_o.bin $(WRKDIR)/chr_o_
-	mv $(WRKDIR)/chr_e_aa $(@D)/13.bin
-	mv $(WRKDIR)/chr_e_ab $(@D)/15.bin
-	mv $(WRKDIR)/chr_e_ac $(@D)/17.bin
-	mv $(WRKDIR)/chr_e_ad $(@D)/19.bin
-	mv $(WRKDIR)/chr_o_aa $(@D)/14.bin
-	mv $(WRKDIR)/chr_o_ab $(@D)/16.bin
-	mv $(WRKDIR)/chr_o_ac $(@D)/18.bin
-	mv $(WRKDIR)/chr_o_ad $(@D)/20.bin
+	$(BSPLIT) s $(WRKDIR)/chr.bin $(WRKDIR)/chr_h.bin $(WRKDIR)/chr_l.bin 8
+	$(BSPLIT) s $(WRKDIR)/chr_h.bin $(WRKDIR)/chr_0.bin $(WRKDIR)/chr_2.bin 4
+	$(BSPLIT) s $(WRKDIR)/chr_l.bin $(WRKDIR)/chr_4.bin $(WRKDIR)/chr_6.bin 4
+	$(SPLIT) -b 4194304 $(WRKDIR)/chr_0.bin $(WRKDIR)/chr_0_
+	$(SPLIT) -b 4194304 $(WRKDIR)/chr_2.bin $(WRKDIR)/chr_2_
+	$(SPLIT) -b 4194304 $(WRKDIR)/chr_4.bin $(WRKDIR)/chr_4_
+	$(SPLIT) -b 4194304 $(WRKDIR)/chr_6.bin $(WRKDIR)/chr_6_
+	mv $(WRKDIR)/chr_0_aa $(@D)/13.bin
+	mv $(WRKDIR)/chr_2_aa $(@D)/15.bin
+	mv $(WRKDIR)/chr_4_aa $(@D)/17.bin
+	mv $(WRKDIR)/chr_6_aa $(@D)/19.bin
+	mv $(WRKDIR)/chr_0_ab $(@D)/14.bin
+	mv $(WRKDIR)/chr_2_ab $(@D)/16.bin
+	mv $(WRKDIR)/chr_4_ab $(@D)/18.bin
+	mv $(WRKDIR)/chr_6_ab $(@D)/20.bin
 # Sound CPU
 	dd if=/dev/zero bs=32K count=4 of=$(@D)/01.bin
 	dd if=/dev/zero bs=32K count=4 of=$(@D)/02.bin

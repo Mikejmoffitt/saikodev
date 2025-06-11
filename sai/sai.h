@@ -41,6 +41,7 @@ extern "C"
 #include "sai/cps/pal.h"
 #include "sai/cps/ppu.h"
 #include "sai/cps/io.h"
+#include "sai/cps/obj.h"
 #elif SAI_TARGET == SAI_TARGET_CPS2
 #include "sai/cps/pal.h"
 #include "sai/cps/ppu.h"

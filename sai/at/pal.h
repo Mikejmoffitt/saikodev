@@ -53,6 +53,9 @@ void sai_pal_init(void);
 // Set a single palette color.
 static inline void sai_pal_set(uint16_t idx, uint16_t val);
 
+// Registers a command to fill a range to a single palette color.
+static inline void sai_pal_fill(uint16_t idx, uint16_t val, uint16_t count);
+
 // Caches and schedules a transfer to palette data.
 // dest:  palette line index
 // src:   Pointer to data to copy from.
@@ -65,9 +68,14 @@ static inline void sai_pal_load(uint16_t dest, const void *source, uint16_t coun
 
 static inline void sai_pal_set(uint16_t idx, uint16_t val)
 {
+	sai_pal_fill(idx, val, 1);
+}
+
+static inline void sai_pal_fill(uint16_t idx, uint16_t val, uint16_t count)
+{
 	SaiPalCmd *cmd = sai_palcmd_add();
 	if (!cmd) return;
-	cmd->op_cnt = SAI_PAL_CMD_SET_COLOR | (1-1);
+	cmd->op_cnt = SAI_PAL_CMD_SET_COLOR | (count-1);
 	uint16_t *cram = (uint16_t *)CRAM_BASE;
 	cmd->dest = &cram[idx];
 	cmd->color = val;

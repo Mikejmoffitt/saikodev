@@ -8,25 +8,33 @@ $(OUTDIR)/rom/8f.bin: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	mkdir -p $(@D)
 	mkdir -p $(WRKDIR)
 # Program
-	$(BINPAD) $(PROJECT_OUTPUT) 0x200000
+	$(BINPAD) $(PROJECT_OUTPUT) 0x400000
 	$(SPLIT) -b 524288 $(PROJECT_OUTPUT) $(WRKDIR)/prg
 	$(BSPLIT) x $(WRKDIR)/prgaa $(@D)/8f.bin
 	$(BSPLIT) x $(WRKDIR)/prgab $(@D)/7f.bin
 	$(BSPLIT) x $(WRKDIR)/prgac $(@D)/6f.bin
 # Graphics
-	dd if=/dev/zero bs=512K count=1 of=$(WRKDIR)/blank512
-	cp $(WRKDIR)/blank512 $(@D)/3a.bin
-	cp $(WRKDIR)/blank512 $(@D)/4a.bin
-	cp $(WRKDIR)/blank512 $(@D)/5a.bin
-	cp $(WRKDIR)/blank512 $(@D)/6a.bin
-	cp $(WRKDIR)/blank512 $(@D)/7a.bin
-	cp $(WRKDIR)/blank512 $(@D)/8a.bin
-	cp $(WRKDIR)/blank512 $(@D)/9a.bin
-	cp $(WRKDIR)/blank512 $(@D)/10a.bin
-	cp $(WRKDIR)/blank512 $(@D)/3c.bin
-	cp $(WRKDIR)/blank512 $(@D)/4c.bin
-	cp $(WRKDIR)/blank512 $(@D)/5c.bin
-	cp $(WRKDIR)/blank512 $(@D)/6c.bin
+	cp $(RESDIR)/spr.chr $(WRKDIR)/chr.bin
+	$(BINPAD) $(WRKDIR)/chr.bin 0x2000000
+	$(BSPLIT) s $(WRKDIR)/chr.bin $(WRKDIR)/chr_h.bin $(WRKDIR)/chr_l.bin 8
+	$(BSPLIT) s $(WRKDIR)/chr_h.bin $(WRKDIR)/chr_0.bin $(WRKDIR)/chr_2.bin 4
+	$(BSPLIT) s $(WRKDIR)/chr_l.bin $(WRKDIR)/chr_4.bin $(WRKDIR)/chr_6.bin 4
+	$(SPLIT) -b 524288 $(WRKDIR)/chr_0.bin $(WRKDIR)/chr_0_
+	$(SPLIT) -b 524288 $(WRKDIR)/chr_2.bin $(WRKDIR)/chr_2_
+	$(SPLIT) -b 524288 $(WRKDIR)/chr_4.bin $(WRKDIR)/chr_4_
+	$(SPLIT) -b 524288 $(WRKDIR)/chr_6.bin $(WRKDIR)/chr_6_
+	cp $(WRKDIR)/chr_0_aa $(@D)/3a.bin
+	cp $(WRKDIR)/chr_2_aa $(@D)/4a.bin
+	cp $(WRKDIR)/chr_4_aa $(@D)/5a.bin
+	cp $(WRKDIR)/chr_6_aa $(@D)/6a.bin
+	cp $(WRKDIR)/chr_0_ab $(@D)/7a.bin
+	cp $(WRKDIR)/chr_2_ab $(@D)/8a.bin
+	cp $(WRKDIR)/chr_4_ab $(@D)/9a.bin
+	cp $(WRKDIR)/chr_6_ab $(@D)/10a.bin
+	cp $(WRKDIR)/chr_0_ac $(@D)/3c.bin
+	cp $(WRKDIR)/chr_2_ac $(@D)/4c.bin
+	cp $(WRKDIR)/chr_4_ac $(@D)/5c.bin
+	cp $(WRKDIR)/chr_6_ac $(@D)/6c.bin
 # Sound CPU
 	dd if=/dev/zero bs=32K count=1 of=$(WRKDIR)/blank32
 	cp $(WRKDIR)/blank32 $(@D)/12a.bin

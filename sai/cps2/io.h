@@ -38,6 +38,8 @@ extern "C"
 #define SAI_CPS2_IO_OU2 0x90
 // SRAM control. Bit 0 is set to 1 to enble DRAM refresh.
 #define SAI_CPS2_IO_SRM 0xA0
+// Debug DIP switches.
+#define SAI_CPS2_IO_DIP 0xB0
 // Object RAM bank (swaps in what's at $700000 by twiddling bit 14)
 #define SAI_CPS2_IO_BNK 0xE0
 

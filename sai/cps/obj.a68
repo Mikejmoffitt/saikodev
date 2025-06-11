@@ -42,7 +42,6 @@ sai_cps_obj_finish:
 sai_cps_obj_on_vbl:
 	move.w	s_obj_base, SAI_CPSA_OFFS_OBJ_BASE(a0)
 
-
 	move.l	g_sai_cps_obj_next, d0
 	andi.l	#CPS_OBJ_BANK_OFFS, d0
 	eori.w	#CPS_OBJ_BANK_OFFS, d0
