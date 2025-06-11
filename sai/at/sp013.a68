@@ -3,7 +3,9 @@
 
 	.section	.bss
 	.global	g_sai_sp013_spr_next
+	.global	g_sai_sp013_state
 g_sai_sp013_spr_next: ds.l 1
+g_sai_sp013_state:    ds.b Sp013State.len
 
 s_last_obj_even: ds.l 1
 s_last_obj_odd:  ds.l 1
@@ -13,33 +15,21 @@ s_obj_bank: ds.w 1
 
 	.global	sai_sp013_init
 sai_sp013_init:
-	move.l	a6, -(sp)
-	calla6	sai_min_sp013_init
-	move.l	(sp)+, a6
+	calla6_safe sai_min_sp013_init
 
 	clr.w	s_obj_bank
 	bsr.w	sai_sp013_spr_reset
 
+	lea	g_sai_sp013_state, a0
+	move.l	#((SP013_SPRDX_DEFAULT)<<16)|SP013_SPRDY_DEFAULT, (a0)+
+	move.l	#((SP013_SPRSX_DEFAULT)<<16)|SP013_SPRSY_DEFAULT, (a0)+
 	rts
 
 	.global	sai_min_sp013_init
 sai_min_sp013_init:
-	lea	format_data(pc), a0
-	lea	SP013_CTRL_BASE, a1
-
-	moveq	#0, d0
-	moveq	#$C, d1
-	; zero out upper regs
-0:
-	move.w	d0, (a1)+
-	dbf	d1, 0b
-
-	move.w	d0, s_obj_bank
-
-	; Default scroll values
-
 	; Zero out the sub-cpu control regs I don't yet know about
 	moveq	#0, d0
+	move.w	d0, s_obj_bank
 	moveq	#$D-1, d1
 	lea	SP013_CTRL_BASE+SP013_OFFS_UNK0C, a1
 0:
@@ -56,7 +46,6 @@ sai_min_sp013_init:
 	move.w	d0, (a1)
 	dbf	d1, 0b
 
-	; Unknown magic value, which I suspect is actually some sub bus control.
 	move.w	#SP013_CONFIG_DEFAULT, SP013_CTRL_BASE+SP013_OFFS_CONFIG
 
 	; More magic, possibly resetting a sub CPU that doesn't exist.
@@ -65,8 +54,10 @@ sai_min_sp013_init:
 	move.w	#$0, SP013_CTRL_BASE+SP013_OFFS_UNK20
 
 	; Sprite offset values
-	move.w	#$0185, SP013_CTRL_BASE+SP013_OFFS_SPRDX
-	move.w	#$0001, SP013_CTRL_BASE+SP013_OFFS_SPRDY
+	move.w	#SP013_SPRDX_DEFAULT, SP013_CTRL_BASE+SP013_OFFS_SPRDX
+	move.w	#SP013_SPRDY_DEFAULT, SP013_CTRL_BASE+SP013_OFFS_SPRDY
+	move.w	#SP013_SPRSX_DEFAULT, SP013_CTRL_BASE+SP013_OFFS_SPRSX
+	move.w	#SP013_SPRSY_DEFAULT, SP013_CTRL_BASE+SP013_OFFS_SPRSY
 
 	; Clear sprite RAM
 	moveq	#0, d0
@@ -165,4 +156,8 @@ sai_sp013_spr_reset:
 	.global	sai_sp013_on_vbl
 sai_sp013_on_vbl:
 	move.w	s_obj_bank, SP013_CTRL_BASE+SP013_OFFS_SPRBANK
+	lea	g_sai_sp013_state, a0
+	movem.l	(a0), d0-d1
+	move.l	d0, SP013_CTRL_BASE+SP013_OFFS_SPRDX
+	move.l	d1, SP013_CTRL_BASE+SP013_OFFS_SPRSX
 	rts

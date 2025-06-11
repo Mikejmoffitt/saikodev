@@ -35,6 +35,11 @@ extern "C"
 #define SP013_OFFS_SPRSY       0x06
 #define SP013_OFFS_SPRBANK     0x08
 
+#define SP013_SPRDX_DEFAULT    0x0185
+#define SP013_SPRDY_DEFAULT    0x0001
+#define SP013_SPRSX_DEFAULT    0x0000
+#define SP013_SPRSY_DEFAULT    0x0000
+
 #define SP013_FIXED_SHIFT      6
 
 #ifdef SAI_SP013_FIXED
@@ -152,6 +157,12 @@ typedef struct Sp013Spr
 } Sp013Spr;
 _Static_assert(sizeof(Sp013Spr) == 16);
 
+typedef struct Sp013State
+{
+	int16_t dx, dy;  // Sprite dest offset
+	int16_t sx, sy;  // Sprite buffer source coords
+} Sp013State;
+
 // We don't need to think too hard about making sure we stay within the bounds
 // of the sprite RAM. In the worst case, we run in to the next bank, and since
 // we are toggling bit 1 of the bank bit and not bit 0 that basically gives us
@@ -161,6 +172,7 @@ _Static_assert(sizeof(Sp013Spr) == 16);
 // it'd wrap within the 1MiB of address range given to the sprite RAM area. In
 // other words, write to this with reckless abandon.
 extern Sp013Spr *g_sai_sp013_spr_next;
+extern Sp013State *g_sai_sp013_state;
 
 void sai_sp013_init(void);
 void sai_sp013_finish(void);
@@ -209,9 +221,8 @@ static inline Sp013Spr *sai_sp013_draw_sc(int16_t x, int16_t y,
 #endif  // SAI_SP013_NOSCALE
 
 #else
-	.extern	g_sai_sp013_bank
-	.extern	g_sai_sp013_spr_count
 	.extern	g_sai_sp013_spr_next
+	.extern	g_sai_sp013_state
 
 	.extern	sai_sp013_init
 	.extern	sai_min_sp013_init
@@ -240,6 +251,13 @@ Sp013Spr.size: ds.w 1
 Sp013Spr.pad:  ds.w 1
 #endif  // SAI_SP013_NOSCALE
 Sp013Spr.len:
+
+	.struct	0
+Sp013State.dx: ds.w 1
+Sp013State.dy: ds.w 1
+Sp013State.sx: ds.w 1
+Sp013State.sy: ds.w 1
+Sp013State.len:
 
 .macro	SP013_WAIT_VBL_POLL
 9:
