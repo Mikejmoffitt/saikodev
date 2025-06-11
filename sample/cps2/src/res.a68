@@ -1,4 +1,4 @@
 	.section	.rodata
-	.global	wrk_gfx_pal
-wrk_gfx_pal:
-	.incbin	"wrk/gfx.pal"
+	.global	wrk_spr_pal
+wrk_spr_pal:
+	.incbin	"wrk/spr.pal"

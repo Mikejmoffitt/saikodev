@@ -1,14 +1,60 @@
-#include "sai/cps/obj.h"
-#include "sai/macro.h"
-#include "sai/memmap.h"
-#include "sai/cps/ppu.h"
+#include	"sai/cps/obj.h"
+#include	"sai/macro.h"
+#include	"sai/memmap.h"
+#include	"sai/cps/ppu.h"
+
+	.section	.bss
+
+	.global	g_sai_cps_obj_next
+g_sai_cps_obj_next: ds.l 1
+	.global	g_sai_cps_obj_count
+g_sai_cps_obj_count: ds.w 1
+s_obj_base:          ds.w 1
 
 	.section	.text
+	
 	.global	sai_cps_obj_init
 sai_cps_obj_init:
 	calla6_safe sai_min_cps_obj_init
-	rts
+
+	clr.w	g_sai_cps_obj_count
+	move.l	#VRAM_OBJRAM, g_sai_cps_obj_next
+	move.w	#VRAM_OBJRAM>>8, s_obj_base
+	bra.w	sai_cps_obj_reset
+
 	.global	sai_min_cps_obj_init
 sai_min_cps_obj_init:
-
+	move.w	#VRAM_OBJRAM>>8, SAI_CPSA_REG_BASE+SAI_CPSA_OFFS_OBJ_BASE
 	jmp	(a6)
+
+	.global sai_cps_obj_finish
+sai_cps_obj_finish:
+	; Terminate the list if there is space.
+	cmpi.w	#CPS_OBJ_COUNT_MAX, g_sai_cps_obj_count
+	bcc.s	0f
+	move.l	g_sai_cps_obj_next, a0
+	move.w	#$FF00, CpsObj.sizeattr(a0)
+0:
+	clr.w	g_sai_cps_obj_count
+	rts
+
+	.global	sai_cps_obj_on_vbl
+sai_cps_obj_on_vbl:
+	move.w	s_obj_base, SAI_CPSA_OFFS_OBJ_BASE(a0)
+
+
+	move.l	g_sai_cps_obj_next, d0
+	andi.l	#CPS_OBJ_BANK_OFFS, d0
+	eori.w	#CPS_OBJ_BANK_OFFS, d0
+	ori.l	#VRAM_OBJRAM, d0
+	move.l	d0, g_sai_cps_obj_next
+
+	eori.w	#CPS_OBJ_BANK_OFFS>>8, s_obj_base
+
+	rts
+
+	.global	sai_cps_obj_reset
+sai_cps_obj_reset:
+	move.l	#VRAM_OBJRAM, g_sai_cps_obj_next
+	clr.w	g_sai_cps_obj_count
+	bra.w	sai_cps_obj_finish

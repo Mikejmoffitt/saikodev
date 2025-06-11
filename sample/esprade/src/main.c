@@ -44,6 +44,7 @@ static void move_test_sprite(void)
 	static int16_t s_y = 0;
 	s_x += s_dx;
 	s_y += s_dy;
+
 	if (s_x + SPR_TIA_W >= 320)
 	{
 		sai_ymz_play(YMZ_BOUNCE_OFFS, 1);

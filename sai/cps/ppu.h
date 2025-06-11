@@ -55,9 +55,11 @@ extern "C"
 #define SAI_CPSA_VIDEO_CTRL_SCROLL1    SAI_BITVAL(1)
 #define SAI_CPSA_VIDEO_CTRL_LINESCROLL SAI_BITVAL(0)
 
-#define SAI_CPSA_VIDEO_CTRL_DEFAULT (SAI_CPSA_VIDEO_CTRL_SCROLL1 | \
-                                     SAI_CPSA_VIDEO_CTRL_SCROLL2 | \
-                                     SAI_CPSA_VIDEO_CTRL_SCROLL3)
+#define SAI_CPSA_VIDEO_CTRL_DEFAULT 0
+
+//#define SAI_CPSA_VIDEO_CTRL_DEFAULT (SAI_CPSA_VIDEO_CTRL_SCROLL1 | \
+//                                     SAI_CPSA_VIDEO_CTRL_SCROLL2 | \
+//                                     SAI_CPSA_VIDEO_CTRL_SCROLL3)
 
 #define SAI_CPSA_OFFS_TILEMAP_UNK      0x24
 #define SAI_CPSA_OFFS_ID               0x26

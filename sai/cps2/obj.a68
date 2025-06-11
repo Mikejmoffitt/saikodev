@@ -1,13 +1,25 @@
 #include	"sai/cps2/obj.h"
-#include	"sai/memmap.h"
 #include	"sai/cps2/io.h"
 #include	"sai/macro.h"
+#include	"sai/memmap.h"
+
+	.section	.bss
+
+	.global	g_sai_cps_obj_next
+g_sai_cps_obj_next: ds.l 1
+	.global	g_sai_cps_obj_count
+g_sai_cps_obj_count: ds.w 1
+s_obj_base:          ds.w 1
 
 	.section	.text
 
 	.global	sai_cps2_obj_init
 sai_cps2_obj_init:
 	calla6_safe sai_min_cps2_obj_init
+
+	clr.w	g_sai_cps_obj_count
+	move.l	#SAI_CPS2_OBJRAM_BASE, g_sai_cps_obj_next
+	move.w	#SAI_CPS2_OBJRAM_BASE>>8, s_obj_base
 	rts
 
 	.global	sai_min_cps2_obj_init
@@ -15,13 +27,31 @@ sai_min_cps2_obj_init:
 	lea	SAI_CPS2_REG_BASE, a0
 	move.w	#SAI_CPS2_OBJRAM_BASE>>8, SAI_CPS2_OBJ_OFFS_BASE(a0)
 	move.w	#$807D, SAI_CPS2_OBJ_OFFS_UNK1(a0)  ; TODO: wtf is this
-	move.w	#$1234, SAI_CPS2_OBJ_OFFS_PRIO(a0)
+	move.w	#SAI_CPS2_OBJ_PRIO_DEFAULT, SAI_CPS2_OBJ_OFFS_PRIO(a0)
 	move.w	#$0000, SAI_CPS2_OBJ_OFFS_UNK2(a0)
-	move.w	#$0040, SAI_CPS2_OBJ_OFFS_XOFF(a0)
-	move.w	#$0010, SAI_CPS2_OBJ_OFFS_YOFF(a0)
+	move.w	#SAI_CPS2_OBJ_XOFF_DEFAULT, SAI_CPS2_OBJ_OFFS_XOFF(a0)
+	move.w	#SAI_CPS2_OBJ_YOFF_DEFAULT, SAI_CPS2_OBJ_OFFS_YOFF(a0)
 	jmp	(a6)
 
 	.global	sai_cps2_obj_on_vbl
 sai_cps2_obj_on_vbl:
 	move.w	#SAI_BITVAL(0), SAI_CPS2_IO_BASE+SAI_CPS2_IO_BNK
+	move.l	#SAI_CPS2_OBJRAM_BASE, g_sai_cps_obj_next
 	rts
+
+	.global	sai_cps2_obj_finish
+sai_cps2_obj_finish:
+	; Terminate the list if there is space.
+	cmpi.w	#CPS2_OBJ_COUNT_MAX, g_sai_cps_obj_count
+	bcc.s	0f
+	move.l	g_sai_cps_obj_next, a0
+	move.w	#$FF00, CpsObj.sizeattr(a0)
+0:
+	clr.w	g_sai_cps_obj_count
+	rts
+
+	.global	sai_cps2_obj_reset
+sai_cps2_obj_reset:
+	move.l	#SAI_CPS2_OBJRAM_BASE, g_sai_cps_obj_next
+	clr.w	g_sai_cps_obj_count
+	bra.w	sai_cps2_obj_finish

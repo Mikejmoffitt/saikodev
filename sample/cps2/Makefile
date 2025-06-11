@@ -47,7 +47,7 @@ clean:
 	rm -rf $(OUTDIR) $(OBJDIR) $(SAIOBJDIR) $(WRKDIR)
 
 # Source build rules
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(RESDIR)/gfx.chr
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(RESDIR)/spr.chr
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[96m[  C  ]\e[0m $< --> $@\n"'
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -55,7 +55,7 @@ ifneq ($(SAI_WANT_ASM_OUT),)
 	$(CC) $(CFLAGS) -S $< -o $@.asm
 endif
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(RESDIR)/gfx.chr
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(RESDIR)/spr.chr
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[96m[ CPP ]\e[0m $< --> $@\n"'
 	$(CPPC) $(CPPFLAGS) -c $< -o $@
@@ -63,7 +63,7 @@ ifneq ($(SAI_WANT_ASM_OUT),)
 	$(CPPC) $(CPPFLAGS) -S $< -o $@.asm
 endif
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.a68 $(RESDIR)/gfx.chr
+$(OBJDIR)/%.o: $(SRCDIR)/%.a68 $(RESDIR)/spr.chr
 	@mkdir -p $(dir $@)
 	@bash -c 'printf " \e[33m[ ASM ]\e[0m $< --> $@\n"'
 # TODO: Put this obscenity in a script file or even just make a utility.
@@ -86,9 +86,9 @@ $(OUTDIR)/$(PROJECT_NAME).elf: $(SAI_OBJECTS_ASM) $(OBJECTS_ASM) $(SAI_OBJECTS_C
 	$(LD) -o $@ -T $(LDSCRIPT) $(LDFLAGS) $^ $(LIBS)
 
 # Resource data
-.PHONY: $(RESDIR)/gfx.chr
-$(RESDIR)/gfx.chr: png/gfx.ini $(VELELLA)
+.PHONY: $(RESDIR)/spr.chr
+$(RESDIR)/spr.chr: png/spr.ini $(VELELLA)
 	mkdir -p $(WRKDIR)
 	mkdir -p $(@D)
 	$(VELELLA) $<
-	mv $(WRKDIR)/gfx.chr $(@D)
+	mv $(WRKDIR)/spr.chr $(@D)
