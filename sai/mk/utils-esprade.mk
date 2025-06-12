@@ -11,14 +11,14 @@ $(OUTDIR)/rom/u42.bin: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 # Program data
 	$(BINPAD) $(PROJECT_OUTPUT) 0x100000
 	$(BSPLIT) s $(PROJECT_OUTPUT) $(@D)/u42.bin $(@D)/u41.bin
+# SP013 data split
+	$(BSPLIT) s $(RESDIR)/spr.chr $(WRKDIR)/spr.ch1 $(WRKDIR)/spr.ch2
 # SP013 (lower)
-	cp $(RESDIR)/spr.ch1 $(WRKDIR)/spr.ch1
 	$(BINPAD) $(WRKDIR)/spr.ch1 16777216
 	split -b 4194304 $(WRKDIR)/spr.ch1 $(WRKDIR)/x
 	mv $(WRKDIR)/xaa $(@D)/u64.bin
 	mv $(WRKDIR)/xab $(@D)/u66.bin
 # SP013 (upper)
-	cp $(RESDIR)/spr.ch2 $(WRKDIR)/spr.ch2
 	$(BINPAD) $(WRKDIR)/spr.ch2 16777216
 	split -b 4194304 $(WRKDIR)/spr.ch2 $(WRKDIR)/x
 	mv $(WRKDIR)/xaa $(@D)/u63.bin
