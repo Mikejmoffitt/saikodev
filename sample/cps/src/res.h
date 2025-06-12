@@ -1,5 +1,5 @@
 #pragma once
 
 #ifndef __ASSEMBLER__
-#include "wrk/spr.h"
+#include "wrk/gfx.h"
 #endif  // __ASSEMBLER

@@ -183,9 +183,33 @@ extern "C"
 #define SAI_CPS_SCROLL_X_DEFAULT -64
 #define SAI_CPS_SCROLL_Y_DEFAULT -16
 
+#define SAI_CPS_PLANE_SCROLL1 0
+#define SAI_CPS_PLANE_SCROLL2 1
+#define SAI_CPS_PLANE_SCROLL3 2
+#define SAI_CPS_PLANE_STAR1 3
+#define SAI_CPS_PLANE_STAR2 4
+
 #ifndef __ASSEMBLER__
 void sai_cps_ppu_init(void);
 void sai_cps_ppu_trigger_pal_dma(void);
+
+static inline void sai_cps_set_scroll_x(uint16_t plane, int16_t val);
+static inline void sai_cps_set_scroll_y(uint16_t plane, int16_t val);
+
+// inline implementations ------------------------------------------------------
+
+static inline void sai_cps_set_scroll_x(uint16_t plane, int16_t val)
+{
+	volatile int16_t *reg = (volatile int16_t *)(SAI_CPSA_REG_BASE+SAI_CPSA_OFFS_SCROLL1_X+(plane*2));
+	*reg = val;
+}
+
+static inline void sai_cps_set_scroll_y(uint16_t plane, int16_t val)
+{
+	volatile int16_t *reg = (volatile int16_t *)(SAI_CPSA_REG_BASE+SAI_CPSA_OFFS_SCROLL1_Y+(plane*2));
+	*reg = val;
+}
+
 #else
 	.extern	sai_cps_ppu_init
 	.extern	sai_min_cps_ppu_init
