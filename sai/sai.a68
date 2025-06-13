@@ -52,6 +52,7 @@ sai_init:
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init
 #elif SAI_TARGET == SAI_TARGET_CPS
+	bsr.w	sai_cps_io_init
 	bsr.w	sai_cps_ppu_init
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init

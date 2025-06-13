@@ -2,12 +2,74 @@
 // I/O code for CPS
 //
 #include	"sai/cps/io.h"
+#include	"sai/memmap.h"
+#include	"sai/input.h"
 
 #if SAI_PLAYER_COUNT > 2
 #error "CPS 4-player input polling not yet implemented!"
 #endif  // SAI_PLAYER_COUNT
 
+	.section	.bss
+	.global	g_sai_io_dip
+g_sai_io_dip: ds.b 3
+	.section	.text
+
+	.global	sai_cps_io_init
+sai_cps_io_init:
+	sf	g_sai_io_dip
+	sf	g_sai_io_dip+1
+	sf	g_sai_io_dip+2
+	rts
+
 	.global	sai_cps_io_poll
 sai_cps_io_poll:
-	; TODO
+	lea	SAI_CPS_IO_BASE, a0
+	lea	g_sai_in, a1
+	; Read the DIPs
+
+	move.b	SAI_CPS_IO_DIP1(a0), g_sai_io_dip
+	move.b	SAI_CPS_IO_DIP2(a0), g_sai_io_dip+1
+	move.b	SAI_CPS_IO_DIP3(a0), g_sai_io_dip+2
+
+	; Get system inputs into d1
+	moveq	#$FFFFFFFF, d1
+	move.b	SAI_CPS_IO_SYS(a0), d1
+
+	; Player 1
+	moveq	#$FFFFFFFF, d0
+	move.b	SAI_CPS_IO_PL+1(a0), d0
+	not.l	d0
+	btst	#SAI_CPS1_IO_SW_COIN1_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
+	btst	#SAI_CPS1_IO_SW_START1_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	btst	#SAI_CPS1_IO_SW_TEST_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_TEST, d0
+0:
+	btst	#SAI_CPS1_IO_SW_SERVICE_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_SERVICE, d0
+0:
+	move.w	d0, SaiInput.now(a1)
+
+	; Player 2
+	lea	SaiInput.len(a1), a1
+	moveq	#$FFFFFFFF, d0
+	move.b	SAI_CPS_IO_PL(a0), d0
+	not.l	d0
+	btst	#SAI_CPS1_IO_SW_COIN2_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
+	btst	#SAI_CPS1_IO_SW_START2_BIT, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	move.w	d0, SaiInput.now(a1)
+
 	rts
