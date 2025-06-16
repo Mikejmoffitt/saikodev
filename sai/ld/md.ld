@@ -4,8 +4,12 @@ __DYNAMIC = 0;
 
 MEMORY
 {
-	rom :	ORIGIN = 0x00000000, LENGTH = 0x00400000
-	ram :	ORIGIN = 0xFFFF0000, LENGTH = 0x00010000
+	rom (rx) :	ORIGIN = 0x00000000, LENGTH = 0x00400000
+	exp (rx) :	ORIGIN = 0x00400000, LENGTH = 0x00600000
+	z80mem (rw) :	ORIGIN = 0x00A00000, LENGTH = 0x00002000
+	io (rw) :		ORIGIN = 0x00A10000, LENGTH = 0x00008000
+	vdp (rw) :	ORIGIN = 0x00C00000, LENGTH = 0x00000010
+	ram (rwx) :	ORIGIN = 0xFFFF0000, LENGTH = 0x00010000
 }
 
 PROVIDE (__stack = 0x00000000);
@@ -36,7 +40,7 @@ SECTIONS
 	} > ram
 	_sdata = SIZEOF (.data);
 
-	.bss 0xFFFF0000 + SIZEOF (.data) :
+	.bss (NOLOAD) :
 	{
 		. = ALIGN(0x2);
 		_start = . ;
