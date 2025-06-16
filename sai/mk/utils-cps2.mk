@@ -20,23 +20,23 @@ $(OUTDIR)/rom/03.bin: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	$(BSPLIT) x $(WRKDIR)/prgag $(@D)/09.bin
 	$(BSPLIT) x $(WRKDIR)/prgah $(@D)/10.bin
 # Graphics
-	cp $(RESDIR)/spr.chr $(WRKDIR)/chr.bin
-	$(BINPAD) $(WRKDIR)/chr.bin 0x2000000
-	$(BSPLIT) s $(WRKDIR)/chr.bin $(WRKDIR)/chr_h.bin $(WRKDIR)/chr_l.bin 8
-	$(BSPLIT) s $(WRKDIR)/chr_h.bin $(WRKDIR)/chr_0.bin $(WRKDIR)/chr_2.bin 4
-	$(BSPLIT) s $(WRKDIR)/chr_l.bin $(WRKDIR)/chr_4.bin $(WRKDIR)/chr_6.bin 4
-	$(SPLIT) -b 4194304 $(WRKDIR)/chr_0.bin $(WRKDIR)/chr_0_
-	$(SPLIT) -b 4194304 $(WRKDIR)/chr_2.bin $(WRKDIR)/chr_2_
-	$(SPLIT) -b 4194304 $(WRKDIR)/chr_4.bin $(WRKDIR)/chr_4_
-	$(SPLIT) -b 4194304 $(WRKDIR)/chr_6.bin $(WRKDIR)/chr_6_
-	mv $(WRKDIR)/chr_0_aa $(@D)/13.bin
-	mv $(WRKDIR)/chr_2_aa $(@D)/15.bin
-	mv $(WRKDIR)/chr_4_aa $(@D)/17.bin
-	mv $(WRKDIR)/chr_6_aa $(@D)/19.bin
-	mv $(WRKDIR)/chr_0_ab $(@D)/14.bin
-	mv $(WRKDIR)/chr_2_ab $(@D)/16.bin
-	mv $(WRKDIR)/chr_4_ab $(@D)/18.bin
-	mv $(WRKDIR)/chr_6_ab $(@D)/20.bin
+	cp $(RESDIR)/gfx.chr $(WRKDIR)/gfx.bin
+	$(BINPAD) $(WRKDIR)/gfx.bin 0x2000000
+	$(BSPLIT) s $(WRKDIR)/gfx.bin $(WRKDIR)/gfx_h.bin $(WRKDIR)/gfx_l.bin 4
+	$(BSPLIT) s $(WRKDIR)/gfx_h.bin $(WRKDIR)/gfx_0.bin $(WRKDIR)/gfx_2.bin 2
+	$(BSPLIT) s $(WRKDIR)/gfx_l.bin $(WRKDIR)/gfx_4.bin $(WRKDIR)/gfx_6.bin 2
+	$(SPLIT) -b 4194304 $(WRKDIR)/gfx_0.bin $(WRKDIR)/gfx_0_
+	$(SPLIT) -b 4194304 $(WRKDIR)/gfx_2.bin $(WRKDIR)/gfx_2_
+	$(SPLIT) -b 4194304 $(WRKDIR)/gfx_4.bin $(WRKDIR)/gfx_4_
+	$(SPLIT) -b 4194304 $(WRKDIR)/gfx_6.bin $(WRKDIR)/gfx_6_
+	mv $(WRKDIR)/gfx_0_aa $(@D)/13.bin
+	mv $(WRKDIR)/gfx_2_aa $(@D)/15.bin
+	mv $(WRKDIR)/gfx_4_aa $(@D)/17.bin
+	mv $(WRKDIR)/gfx_6_aa $(@D)/19.bin
+	mv $(WRKDIR)/gfx_0_ab $(@D)/14.bin
+	mv $(WRKDIR)/gfx_2_ab $(@D)/16.bin
+	mv $(WRKDIR)/gfx_4_ab $(@D)/18.bin
+	mv $(WRKDIR)/gfx_6_ab $(@D)/20.bin
 # Sound CPU
 	dd if=/dev/zero bs=32K count=4 of=$(@D)/01.bin
 	dd if=/dev/zero bs=32K count=4 of=$(@D)/02.bin
