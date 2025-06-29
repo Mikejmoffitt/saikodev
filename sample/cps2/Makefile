@@ -39,7 +39,7 @@ include $(SAI)/mk/utils-cps2.mk
 
 # Linker -----------------------------------------------------------------------
 
-LDSCRIPT := $(SAI)/ld/cps.ld
+LDSCRIPT := $(SAI)/ld/cps2.ld
 LDFLAGS +=
 LIBS +=
 

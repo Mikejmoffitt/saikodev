@@ -4,29 +4,31 @@
 #include	"sai/memmap.h"
 
 sai_crt0_begin:
-	; Clear work RAM
-	lea	WRAM_BASE, a0
-	move.w	#(WRAM_SIZE/(4*4))-1, d7
+	; Clear bss
+	lea	(__bss_start).l, a0
+	move.w	#__bss_size, d7
+	beq.s	no_bss_clear
+	lsr.w	#1, d7
+	subq.w	#1, d7
 	moveq	#0, d0
-.clr_loop:
-	.rept	4
-	move.l	d0, (a0)+
-	.endr
-	dbra	d7, .clr_loop
+0:
+	move.w	d0, (a0)+
+	dbra	d7, 0b
+no_bss_clear:
 
 	; copy data to work RAM
-	lea	(_stext).l, a0  ; Data follows text section
+	lea	(__data_src).l, a0  ; Data follows text section
 	lea	WRAM_BASE, a1  ; .data is at start of WRAM
-	move.w	#_sdata, d0
-	beq.s	.no_data_copy
+	move.w	#__data_size, d0
+	beq.s	no_data_copy
 	lsr.w	#1, d0
 	subq.w	#1, d0
 
-.copy_data:
+0:
 	move.w	(a0)+, (a1)+
-	dbra	d0, .copy_data
+	dbra	d0, 0b
 
-.no_data_copy:
+no_data_copy:
 	lea	__stack, sp
 	moveq	#0, d0
 	move.l	d0, d1

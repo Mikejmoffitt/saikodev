@@ -26,6 +26,7 @@ start:
 	cps2_wdog_pet
 
 	calla6	sai_min_input_init
+	calla6	sai_min_cps2_io_init
 	calla6	sai_min_cps_ppu_init
 	calla6	sai_min_cps2_obj_init
 	calla6	sai_min_pal_init

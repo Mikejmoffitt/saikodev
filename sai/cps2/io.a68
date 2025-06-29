@@ -17,6 +17,17 @@
 
 	.section	.text
 
+	.global	sai_cps2_io_init
+sai_cps2_io_init:
+	calla6_safe	sai_min_cps2_io_init
+	rts
+
+	.global	sai_min_cps2_io_init
+sai_min_cps2_io_init:
+	lea	SAI_CPS_IO_BASE, a0
+	clr.w	SAI_CPS2_IO_SRM(a0)
+	jmp	(a6)
+
 	.global	sai_cps2_io_poll
 sai_cps2_io_poll:
 	cps2_wdog_pet
