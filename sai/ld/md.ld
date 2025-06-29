@@ -9,7 +9,7 @@ MEMORY
 	z80mem (rw) :	ORIGIN = 0x00A00000, LENGTH = 0x00002000
 	io (rw) :		ORIGIN = 0x00A10000, LENGTH = 0x00008000
 	vdp (rw) :	ORIGIN = 0x00C00000, LENGTH = 0x00000010
-	ram (rwx) :	ORIGIN = 0xFFFF0000, LENGTH = 0x00010000
+	ram (rw) :	ORIGIN = 0xFFFF0000, LENGTH = 0x00010000
 }
 
 PROVIDE (__stack = 0x00000000);
@@ -19,34 +19,40 @@ SECTIONS
 {
 	.text 0x00000000 :
 	{
+		__text_start = .;
 		KEEP(*(.text.keepboot)) *(.text .text.*)
 		. = ALIGN(0x2);
-		_etext = .;
+		__text_end = .;
 		. = ALIGN(0x2);
+		__rodata_start = .;
 		*(.rodata .rodata.*)
 		. = ALIGN(0x2);
+		__rodata_end = .;
 		*(.lit)
 	} > rom
 
-	_stext = SIZEOF (.text);
+	__text_size = SIZEOF (.text);
+	__data_src = .;
 
 	.data 0xFFFF0000 :
 	AT ( ADDR (.text) + SIZEOF (.text) )
 	{
-		. = ALIGN(0x2);
+		__data_start = .;
 		*(.data .data.*)
 		. = ALIGN(0x2);
-		_edata = .;
+		__data_end = .;
 	} > ram
-	_sdata = SIZEOF (.data);
+
+	__data_size = SIZEOF (.data);
 
 	.bss (NOLOAD) :
 	{
 		. = ALIGN(0x2);
-		_start = . ;
+		__bss_start = .;
 		*(.bss .bss.*)
 		. = ALIGN(0x2);
-		_bend = . ;
-		end = . ;
+		__bss_end = .;
 	} > ram
+
+	__bss_size = SIZEOF (.bss);
 }

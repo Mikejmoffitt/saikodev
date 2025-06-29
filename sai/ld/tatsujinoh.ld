@@ -4,11 +4,11 @@ __DYNAMIC = 0;
 
 MEMORY
 {
-	rom :	ORIGIN = 0x00000000, LENGTH = 0x00080000
-	ram :	ORIGIN = 0x00E00000, LENGTH = 0x00004000
+	rom :	ORIGIN = 0x00000000, LENGTH = 0x00100000
+	ram :	ORIGIN = 0x00100000, LENGTH = 0x00010000
 }
 
-PROVIDE (__stack = 0x00E04000);
+PROVIDE (__stack = 0x00110000);
 
 SECTIONS
 {
@@ -29,7 +29,7 @@ SECTIONS
 	__text_size = SIZEOF (.text);
 	__data_src = .;
 
-	.data 0x00E00000 :
+	.data 0x00100000 :
 	AT ( ADDR (.text) + SIZEOF (.text) )
 	{
 		__data_start = .;
