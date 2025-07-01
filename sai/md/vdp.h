@@ -26,21 +26,23 @@ extern "C"
 // Memory
 //
 
+// Registers data for MODE1-MODE4. The command is baked in as well.
+extern uint16_t g_sai_vdp_reg_mode[4];  // $80, $81, $8B, $8C modeset bits.
 // VRAM locations for tables (name, sprite, scroll). 32-bit addresses are used
 // for compatibility with 128K VRAM.
 extern uint32_t g_sai_vdp_ntbase[3];     // Nametable base addresses (A, B, W).
 extern uint32_t g_sai_vdp_sprbase;       // Sprite base address.
 extern uint32_t g_sai_vdp_hsbase;        // Horizontal scroll address.
-
-// Registers data for MODE1-MODE4. The command is baked in as well.
-extern uint16_t g_sai_vdp_reg_mode[4];  // $80, $81, $8B, $8C modeset bits.
+// The current plane size enum. Used for VRAM offset calculations.
+extern uint16_t g_sai_vdp_planesize;
 
 #else
+	.extern	g_sai_vdp_reg_mode
 	.extern	g_sai_vdp_ntbase
 	.extern	g_sai_vdp_sprbase
 	.extern	g_sai_vdp_hsbase
+	.extern	g_sai_vdp_planesize
 
-	.extern	g_sai_vdp_reg_mode
 #endif  // __ASSEMBLER__
 
 #ifndef __ASSEMBLER__
@@ -58,6 +60,13 @@ static inline void sai_vdp_set_reg(uint8_t reg, uint8_t val);
 static inline uint16_t sai_vdp_get_status(void);
 static inline void sai_vdp_wait_dma(void);
 
+// VRAM address control.
+static inline void sai_vdp_set_addr_vramw(uint32_t addr);
+static inline void sai_vdp_set_addr_cramw(uint16_t addr);
+static inline void sai_vdp_set_addr_vsramw(uint16_t addr);
+static inline void sai_vdp_write_word(uint16_t data);
+static inline void sai_vdp_set_autoinc(uint8_t bytes);
+
 // Table address config.
 static inline void sai_vdp_set_plane_base(uint16_t plane, uint32_t addr);
 static inline void sai_vdp_set_spr_base(uint32_t addr);
@@ -65,6 +74,7 @@ static inline void sai_vdp_set_hscroll_base(uint32_t addr);
 static inline uint32_t sai_vdp_get_plane_base(uint16_t plane);
 static inline uint32_t sai_vdp_get_sprite_base(void);
 static inline uint32_t sai_vdp_get_hscroll_base(void);
+static inline uint32_t sai_vdp_calc_plane_addr(uint16_t plane, uint16_t x, uint16_t y);
 
 // Interrupts. Returns the prior enablement status.
 static inline bool sai_vdp_set_vint_en(bool enabled);
@@ -126,10 +136,18 @@ static inline void sai_vdp_set_window_left(uint8_t width);
 //
 // -----------------------------------------------------------------------------
 
+static inline void sai_vdp_write_ctrl32(uint32_t val)
+{
+	volatile uint32_t *port_ctrl32 = (volatile uint32_t *)(VDP_CTRL);
+	*port_ctrl32 = val;
+	SAI_BARRIER();
+}
+
 static inline void sai_vdp_write_ctrl(uint16_t val)
 {
 	volatile uint16_t *port_ctrl = (volatile uint16_t *)(VDP_CTRL);
 	*port_ctrl = val;
+	SAI_BARRIER();
 }
 
 static inline void sai_vdp_set_reg(uint8_t reg, uint8_t val)
@@ -151,6 +169,34 @@ static inline void sai_vdp_wait_dma(void)
 	{
 		__asm__ volatile ("\tnop\n");
 	}
+}
+
+// VRAM address control.
+static inline void sai_vdp_set_addr_vramw(uint32_t addr)
+{
+	sai_vdp_write_ctrl32(VDP_CTRL_ADDR(addr) | VDP_VRAM_ADDR_CMD);
+}
+
+static inline void sai_vdp_set_addr_cramw(uint16_t addr)
+{
+	sai_vdp_write_ctrl32(VDP_CTRL_ADDR(addr) | VDP_CRAM_ADDR_CMD);
+}
+
+static inline void sai_vdp_set_addr_vsramw(uint16_t addr)
+{
+	sai_vdp_write_ctrl32(VDP_CTRL_ADDR(addr) | VDP_VSRAM_ADDR_CMD);
+}
+
+static inline void sai_vdp_write_word(uint16_t data)
+{
+	volatile uint16_t *port_data = (volatile uint16_t *)(VDP_DATA);
+	*port_data = data;
+	SAI_BARRIER();
+}
+
+static inline void sai_vdp_set_autoinc(uint8_t bytes)
+{
+	sai_vdp_set_reg(VDP_AUTOINC, bytes);
 }
 
 // Bases and Planes
@@ -182,6 +228,29 @@ static inline uint32_t sai_vdp_get_sprite_base(void)
 static inline uint32_t sai_vdp_get_hscroll_base(void)
 {
 	return g_sai_vdp_hsbase;
+}
+
+static inline uint32_t sai_vdp_calc_plane_addr(uint16_t plane, uint16_t x, uint16_t y)
+{
+	const uint32_t base = g_sai_vdp_ntbase[plane];
+	switch (g_sai_vdp_planesize)
+	{
+		case VDP_PLANESIZE_32x32:
+		case VDP_PLANESIZE_32x64:
+		case VDP_PLANESIZE_32x128:
+			return base + (x*2) + (y*2*32);
+		case VDP_PLANESIZE_64x32:
+		case VDP_PLANESIZE_64x64:
+		case VDP_PLANESIZE_64x128:
+			return base + (x*2) + (y*2*64);
+		case VDP_PLANESIZE_128x32:
+		case VDP_PLANESIZE_128x64:
+		case VDP_PLANESIZE_128x128:
+			return base + (x*2) + (y*2*128);
+
+		default:
+			return base;
+	}
 }
 
 // Interrupt config
@@ -234,6 +303,7 @@ static inline void sai_vdp_set_vscroll_mode(uint8_t mode)
 
 static inline void sai_vdp_set_plane_size(uint8_t size)
 {
+	g_sai_vdp_planesize = size;
 	sai_vdp_set_reg(VDP_PLANESIZE, size);
 }
 

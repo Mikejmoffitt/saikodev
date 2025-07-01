@@ -21,6 +21,8 @@
        __typeof__ (b) _b = (b); \
        _a < _b ? _a : _b; })
 
+#define SAI_BARRIER() __asm__ __volatile__("": : :"memory")
+
 /* Macro used for calling subroutines without RAM in startup code. */
 #ifdef __ASSEMBLER__
 

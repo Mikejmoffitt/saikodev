@@ -171,6 +171,8 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_PLANESIZE_UNDx128  0x32
 #define VDP_PLANESIZE_128x128  0x33
 
+#define VDP_PLANESIZE_DEFAULT  VDP_PLANESIZE_64x32
+
 // Table address shift and mask values
 #define VDP_SCRA_SHIFT         (13)
 #define VDP_SCRA_MASK          (0xE000)
@@ -194,6 +196,9 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_VSCROLL_PLANE 0
 #define VDP_VSCROLL_CELL (VDP_MODESET3_VCELL)
 
+#define VDP_HSCROLL_DEFAULT 0
+#define VDP_VSCROLL_DEFAULT 0
+
 // Tile attributes
 #define VDP_PRIO 0x8000
 #define VDP_HF 0x0800
@@ -213,7 +218,6 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_VRAM_ADDR_CMD      (0x40000000)
 #define VDP_CRAM_ADDR_CMD      (0xC0000000)
 #define VDP_VSRAM_ADDR_CMD     (0x40000010)
-
 #ifndef __ASSEMBLER__
 #define VDP_CTRL_ADDR(_addr) ((((uint32_t)(_addr) & 0x3FFF) << 16) | \
                              (((uint32_t)(_addr) & 0xC000) >> 14))

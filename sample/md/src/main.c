@@ -7,6 +7,23 @@
 #define TEST_FONT_PAL 0
 #define TEST_SPR_PAL 1
 
+static inline void print_string(uint32_t vram_addr, const uint16_t attr_base,
+                                const char *str)
+{
+	sai_vdp_set_autoinc(2);
+	sai_vdp_set_addr_vramw(vram_addr);
+
+	char val;
+	while ((val = *str))
+	{
+		if (val >= ' ')
+		{
+			sai_vdp_write_word((val-' ') + attr_base);
+		}
+		str++;
+	}
+}
+
 static void run_test_color_anim(void)
 {
 	static int16_t s_val = 0;
@@ -55,11 +72,74 @@ static void move_test_sprite(void)
 	                           /*hflip=*/false,
 	                           /*vflip=*/false,
 	                           TEST_SPR_PAL,
-	                           /*prio=*/true);
+	                           /*prio=*/false);
 	sai_vdp_spr_draw(s_x+128,          s_y+128,          attr_base+(SPR_MD_FRAME_OFFS*0), SPR_MD_SIZE);
 	sai_vdp_spr_draw(s_x+128+SPR_MD_W, s_y+128,          attr_base+(SPR_MD_FRAME_OFFS*1), SPR_MD_SIZE);
 	sai_vdp_spr_draw(s_x+128,          s_y+128+SPR_MD_H, attr_base+(SPR_MD_FRAME_OFFS*2), SPR_MD_SIZE);
 	sai_vdp_spr_draw(s_x+128+SPR_MD_W, s_y+128+SPR_MD_H, attr_base+(SPR_MD_FRAME_OFFS*3), SPR_MD_SIZE);
+}
+
+static void draw_initial_text(void)
+{
+	const uint16_t attr = VDP_ATTR(VDP_TILE(TEST_BG_VRAM_FONT_ADDR),
+	                      /*hflip=*/false,
+	                      /*vflip=*/false,
+	                      TEST_FONT_PAL,
+	                      /*prio=*/false);
+
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 0, 0),
+	             attr, "Hello World!");
+
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 1, 22),
+	             attr, "Inputs");
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 1, 24),
+	             attr, "1: ");
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 1, 25),
+	             attr, "2: ");
+
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 8, 8),
+	             attr | VDP_ATTR(0, false, false, 0, /*prio=*/true),
+	             "High Priority");
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 9, 9),
+	             attr, "Low Priority");
+}
+
+static inline void set_input_str(uint16_t in, char *str)
+{
+	str[0] = in & SAI_BTN_UP ? 'U' : '.';
+	str[1] = in & SAI_BTN_DOWN ? 'D' : '.';
+	str[2] = in & SAI_BTN_LEFT ? 'L' : '.';
+	str[3] = in & SAI_BTN_RIGHT ? 'R' : '.';
+
+	str[5] = in & SAI_BTN_A ? 'A' : '.';
+	str[6] = in & SAI_BTN_B ? 'B' : '.';
+	str[7] = in & SAI_BTN_C ? 'C' : '.';
+	str[8] = in & SAI_BTN_X ? 'X' : '.';
+	str[9] = in & SAI_BTN_Y ? 'Y' : '.';
+	str[10] = in & SAI_BTN_Z ? 'Z' : '.';
+
+	str[12] = in & SAI_BTN_START ? 'S' : '.';
+	str[13] = in & SAI_BTN_MODE ? 'M' : '.';
+	str[15] = in & SAI_BTN_6B ? '6' : '.';
+	str[16] = in & SAI_BTN_UNPLUGGED ? 'U' : '.';
+}
+
+static void draw_inputs(void)
+{
+	const uint16_t attr = VDP_ATTR(VDP_TILE(TEST_BG_VRAM_FONT_ADDR),
+	                      /*hflip=*/false,
+	                      /*vflip=*/false,
+	                      TEST_FONT_PAL,
+	                      /*prio=*/false);
+
+	static char s_input_str[] = ".... ...... .. ..";
+
+	set_input_str(g_sai_in[0].now, s_input_str);
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 4, 24),
+	             attr, s_input_str);
+	set_input_str(g_sai_in[1].now, s_input_str);
+	print_string(sai_vdp_calc_plane_addr(VDP_PLANE_A, 4, 25),
+	             attr, s_input_str);
 }
 
 void __attribute__((noreturn)) main(void)
@@ -71,8 +151,11 @@ void __attribute__((noreturn)) main(void)
 	                          SPR_MD_CHR_WORDS, 2);
 	sai_vdp_dma_transfer_vram(TEST_BG_VRAM_FONT_ADDR, wrk_gfx_chr+BG_FONT_CHR_OFFS,
 	                          BG_FONT_CHR_WORDS, 2);
+	draw_initial_text();
+
 	while (true)
 	{
+		draw_inputs();
 		run_test_color_anim();
 		move_test_sprite();
 		sai_finish();
