@@ -1,5 +1,5 @@
 #
-# Saikodev System C1 sample project Makefile
+# Saikodev Mega Drive / Genesis sample project Makefile
 #
 # You may copy this and modify as you see fit for your own project.
 #
@@ -32,7 +32,7 @@ PROJECT_OUTPUT := $(OUTDIR)/$(PROJECT_NAME).bin
 
 # Saikodev Build Rules and Sources ---------------------------------------------
 
-include $(SAI)/c2/SourcesC1.mk
+include $(SAI)/c2/Sources.mk
 include $(SAI)/mk/m68k-flags.mk
 include $(SAI)/mk/utils.mk
 include $(SAI)/mk/utils-c1.mk
@@ -68,6 +68,11 @@ clean:
 
 # Prebuild should depend on any targets that are required before compilation.
 .PHONY: prebuild
-prebuild:
+prebuild: $(WRKDIR)/gfx.chr
 
 include $(SAI)/mk/build-rules.mk
+
+.PHONY: $(WRKDIR)/gfx.chr
+$(WRKDIR)/gfx.chr: png/gfx.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	$(VELELLA) $<
