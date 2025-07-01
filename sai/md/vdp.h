@@ -74,6 +74,8 @@ static inline void sai_vdp_set_hscroll_base(uint32_t addr);
 static inline uint32_t sai_vdp_get_plane_base(uint16_t plane);
 static inline uint32_t sai_vdp_get_sprite_base(void);
 static inline uint32_t sai_vdp_get_hscroll_base(void);
+static inline uint16_t sai_vdp_get_plane_w(void);  // In tiles.
+static inline uint16_t sai_vdp_get_plane_h(void);  // "
 static inline uint32_t sai_vdp_calc_plane_addr(uint16_t plane, uint16_t x, uint16_t y);
 
 // Interrupts. Returns the prior enablement status.
@@ -118,10 +120,6 @@ static inline void sai_vdp_set_sms_hl(bool enabled);
 static inline void sai_vdp_set_plane_size(uint8_t size);
 static inline void sai_vdp_set_hscroll_mode(uint8_t mode);
 static inline void sai_vdp_set_vscroll_mode(uint8_t mode);
-
-// Get the current plane dimensions in cells (pixels / 8).
-static inline uint16_t sai_vdp_get_plane_width(void);
-static inline uint16_t sai_vdp_get_plane_height(void);
 
 // Enable the window plane, and have it draw from the column/line specified with
 // `cell`. Call any of these with 0 to disable the horizontal or vertical window.
@@ -230,27 +228,52 @@ static inline uint32_t sai_vdp_get_hscroll_base(void)
 	return g_sai_vdp_hsbase;
 }
 
-static inline uint32_t sai_vdp_calc_plane_addr(uint16_t plane, uint16_t x, uint16_t y)
+static inline uint16_t sai_vdp_get_plane_w(void)
 {
-	const uint32_t base = g_sai_vdp_ntbase[plane];
 	switch (g_sai_vdp_planesize)
 	{
 		case VDP_PLANESIZE_32x32:
 		case VDP_PLANESIZE_32x64:
 		case VDP_PLANESIZE_32x128:
-			return base + (x*2) + (y*2*32);
+			return 32;
 		case VDP_PLANESIZE_64x32:
 		case VDP_PLANESIZE_64x64:
 		case VDP_PLANESIZE_64x128:
-			return base + (x*2) + (y*2*64);
+			return 64;
 		case VDP_PLANESIZE_128x32:
 		case VDP_PLANESIZE_128x64:
 		case VDP_PLANESIZE_128x128:
-			return base + (x*2) + (y*2*128);
-
+			return 128;
 		default:
-			return base;
+			return 0;
 	}
+}
+
+static inline uint16_t sai_vdp_get_plane_h(void)
+{
+	switch (g_sai_vdp_planesize)
+	{
+		case VDP_PLANESIZE_32x32:
+		case VDP_PLANESIZE_64x32:
+		case VDP_PLANESIZE_128x32:
+			return 32;
+		case VDP_PLANESIZE_32x64:
+		case VDP_PLANESIZE_64x64:
+		case VDP_PLANESIZE_128x64:
+			return 64;
+		case VDP_PLANESIZE_32x128:
+		case VDP_PLANESIZE_64x128:
+		case VDP_PLANESIZE_128x128:
+			return 128;
+		default:
+			return 0;
+	}
+}
+
+static inline uint32_t sai_vdp_calc_plane_addr(uint16_t plane, uint16_t x, uint16_t y)
+{
+	const uint32_t base = g_sai_vdp_ntbase[plane];
+	return base + (x*2) + (y*2*sai_vdp_get_plane_w());
 }
 
 // Interrupt config
