@@ -68,6 +68,11 @@ clean:
 
 # Prebuild should depend on any targets that are required before compilation.
 .PHONY: prebuild
-prebuild:
+prebuild: $(WRKDIR)/gfx.chr
 
 include $(SAI)/mk/build-rules.mk
+
+.PHONY: $(WRKDIR)/gfx.chr
+$(WRKDIR)/gfx.chr: png/gfx.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	$(VELELLA) $<

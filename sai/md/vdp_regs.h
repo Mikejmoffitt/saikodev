@@ -76,7 +76,7 @@ v... .... VR128 - VRAM 128K mode. Enables bus for second set of VRAM.
 #define VDP_MODESET2_M5        SAI_BITVAL(2)
 #define VDP_MODESET2_SMSSZ     SAI_BITVAL(1)
 #define VDP_MODESET2_SMSMG     SAI_BITVAL(0)
-#define VDP_MODESET2_DEFAULT   (VDP_MODESET2_M5 | VDP_MODESET2_M1)
+#define VDP_MODESET2_DEFAULT   (VDP_MODESET2_DISP | VDP_MODESET2_M5 | VDP_MODESET2_M1)
 /*
 $8B - Mode Set Register 3
 a... .... ADMUX - Drives color bus with pixel data when set, else CPU address.
@@ -206,6 +206,8 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
                   (((_pal) & 0x3) << VDP_PALSHIFT) | ((_prio) ? VDP_PRIO : 0)))
 #define VDP_SIZE(w, h) (((h-1) & 0x3) | (((w-1) & 0x3) << 2))
 #define VDP_SPR_COUNT 80
+
+#define VDP_TILE(address) ((address)>>5)
 
 // Register manipulation.
 #define VDP_VRAM_ADDR_CMD      (0x40000000)

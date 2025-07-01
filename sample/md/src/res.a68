@@ -1,0 +1,7 @@
+	.section	.rodata
+	.global	wrk_gfx_pal
+wrk_gfx_pal:
+	.incbin	"wrk/gfx.pal"
+	.global	wrk_gfx_chr
+wrk_gfx_chr:
+	.incbin	"wrk/gfx.chr"
