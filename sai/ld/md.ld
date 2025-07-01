@@ -34,7 +34,7 @@ SECTIONS
 	__text_size = SIZEOF (.text);
 	__data_src = .;
 
-	.data 0x00100000 :
+	.data 0xFFFF0000 :
 	AT ( ADDR (.text) + SIZEOF (.text) )
 	{
 		__data_start = .;
