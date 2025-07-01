@@ -23,8 +23,8 @@
 #define SAI_BTN_Y              (SAI_BITVAL(9))
 #define SAI_BTN_X              (SAI_BITVAL(10))
 #define SAI_BTN_MODE           (SAI_BITVAL(11))
-#define SAI_BTN_6B             (SAI_BITVAL(14))
-#define SAI_BTN_UNPLUGGED      (SAI_BITVAL(15))
+#define SAI_BTN_6B             (SAI_BITVAL(15))
+#define SAI_BTN_UNPLUGGED      (SAI_BITVAL(14))
 
 //
 // System C/C2/18

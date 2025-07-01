@@ -1,5 +1,6 @@
 #include	"sai/md/io.h"
 #include	"sai/input.h"
+#include	"sai/input_bits.h"
 
 ; "Time" to allow TH pin to settle
 #define SAI_MD_PAD_NOP_COUNT 3
@@ -129,12 +130,12 @@ update_pad_sub:
 	ori.w	#$F0FF, d1
 	and.w	d1, d0
 	; Mark highest bit to indicate a 6-button controller.
-	andi.w	#~(SAI_BITVAL(15)), d0
+	andi.w	#~SAI_BTN_6B, d0
 	bra.s	store_pad
 
 store_pad_unplugged:
 	; Mark second-highest bit for "unplugged/maybe sms" status.
-	andi.w	#~(SAI_BITVAL(14)), d0
+	andi.w	#~SAI_BTN_UNPLUGGED, d0
 	; Fall-through intended.
 store_pad:
 	move.b	#$00, (a1)  ; TH back to low
