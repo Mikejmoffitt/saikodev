@@ -238,11 +238,8 @@ static inline uint16_t sai_vdp_get_plane_w(void)
 			return 32;
 		case VDP_PLANESIZE_64x32:
 		case VDP_PLANESIZE_64x64:
-		case VDP_PLANESIZE_64x128:
 			return 64;
 		case VDP_PLANESIZE_128x32:
-		case VDP_PLANESIZE_128x64:
-		case VDP_PLANESIZE_128x128:
 			return 128;
 		default:
 			return 0;
@@ -259,11 +256,8 @@ static inline uint16_t sai_vdp_get_plane_h(void)
 			return 32;
 		case VDP_PLANESIZE_32x64:
 		case VDP_PLANESIZE_64x64:
-		case VDP_PLANESIZE_128x64:
 			return 64;
 		case VDP_PLANESIZE_32x128:
-		case VDP_PLANESIZE_64x128:
-		case VDP_PLANESIZE_128x128:
 			return 128;
 		default:
 			return 0;
