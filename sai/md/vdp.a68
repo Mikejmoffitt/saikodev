@@ -63,6 +63,18 @@ sai_min_vdp_init:
 	move.w	d1, VDP_OFFS_CTRL(a1)
 	bra.s	0b
 1:
+
+	; Clear VRAM.
+	move.l	#VDP_VRAM_ADDR_CMD | VDP_CTRL_ADDR(0), VDP_OFFS_CTRL(a1)
+	moveq	#0, d0
+	moveq	#(VDP_VRAM_SIZE_128K/(4*4))-1, d1
+2:
+	.rept	4
+	move.l	d0, VDP_OFSF_DATA(a1)
+	.endr
+	dbf	d1, 2b
+
+
 	move.l	#VDP_VRAM_ADDR_CMD | VDP_CTRL_ADDR(VRAM_HSCR_BASE_DEFAULT), VDP_OFFS_CTRL(a1)
 	.rept	2
 	move.w	#VDP_HSCROLL_DEFAULT, VDP_OFFS_DATA(a1)
@@ -73,12 +85,14 @@ sai_min_vdp_init:
 	move.w	#VDP_VSCROLL_DEFAULT, VDP_OFFS_DATA(a1)
 	.endr
 
+	; The display starts disabled, so re-enable it before exiting.
+	move.w	#VDP_MODESET2_DEFAULT, VDP_OFFS_CTRL(a1)
 
 	jmp	(a6)
 
 vdp_init_reg_tbl:
 	dc.w	VDP_REGST(VDP_MODESET1,  VDP_MODESET1_DEFAULT)
-	dc.w	VDP_REGST(VDP_MODESET2,  VDP_MODESET2_DEFAULT)
+	dc.w	VDP_REGST(VDP_MODESET2,  VDP_MODESET2_DEFAULT & ~(VDP_MODESET2_DISP))
 	dc.w	VDP_REGST(VDP_MODESET3,  VDP_MODESET3_DEFAULT)
 	dc.w	VDP_REGST(VDP_MODESET4,  VDP_MODESET4_DEFAULT)
 	dc.w	VDP_REGST(VDP_SCRABASE,  ((VRAM_SCRA_BASE_DEFAULT >> VDP_SCRA_SHIFT) << 3))
