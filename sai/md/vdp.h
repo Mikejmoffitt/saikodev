@@ -106,6 +106,7 @@ static inline uint16_t sai_vdp_get_vcount(void);
 static inline void sai_vdp_set_shadow_highlight(bool enabled);
 static inline void sai_vdp_set_left_column_blank(bool enabled);
 static inline void sai_vdp_set_interlace_mode(uint8_t mode);
+static inline void sai_vdp_set_width(bool h40);
 
 // Misc. configuration options
 static inline void sai_vdp_set_128k_vram_mode(bool enabled);
@@ -402,6 +403,19 @@ static inline void sai_vdp_set_interlace_mode(uint8_t mode)
 {
 	g_sai_vdp_reg_mode[3] &= ~(VDP_MODESET4_LSM1 | VDP_MODESET4_LSM0);
 	g_sai_vdp_reg_mode[3] |= mode;
+	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[3]);
+}
+
+static inline void sai_vdp_set_width(bool h40)
+{
+	if (h40)
+	{
+		g_sai_vdp_reg_mode[3] |= (VDP_MODESET4_RS0 | VDP_MODESET4_RS1);
+	}
+	else
+	{
+		g_sai_vdp_reg_mode[3] &= ~(VDP_MODESET4_RS0 | VDP_MODESET4_RS1);
+	}
 	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[3]);
 }
 
