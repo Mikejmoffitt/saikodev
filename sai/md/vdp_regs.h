@@ -211,7 +211,7 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #else
 #define VDP_CTRL_ADDR(_addr) ((((_addr) & 0x3FFF) << 16) | (((_addr) & 0xC000) >> 14))
 #endif  // __ASSEMBLER__
-#define VDP_REGST(regno, value) (((regno << 8) | 0x8000) | (value & 0xFF))
+#define VDP_REGST(regno, value) ((((regno) << 8) | 0x8000) | ((value) & 0xFF))
 
 // Indices into NT array and/or args into layer functions
 #define VDP_PLANE_A            0
