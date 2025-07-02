@@ -153,23 +153,10 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 // Plane size
 #define VDP_PLANESIZE_32x32    0x00
 #define VDP_PLANESIZE_64x32    0x01
-#define VDP_PLANESIZE_UNDx32   0x02
 #define VDP_PLANESIZE_128x32   0x03
-
 #define VDP_PLANESIZE_32x64    0x10
 #define VDP_PLANESIZE_64x64    0x11
-#define VDP_PLANESIZE_UNDx64   0x12
-#define VDP_PLANESIZE_128x64   0x13
-
-#define VDP_PLANESIZE_32xUND   0x20
-#define VDP_PLANESIZE_64xUND   0x21
-#define VDP_PLANESIZE_UNDxUND  0x22
-#define VDP_PLANESIZE_128xUND  0x23
-
 #define VDP_PLANESIZE_32x128   0x30
-#define VDP_PLANESIZE_64x128   0x31
-#define VDP_PLANESIZE_UNDx128  0x32
-#define VDP_PLANESIZE_128x128  0x33
 
 #define VDP_PLANESIZE_DEFAULT  VDP_PLANESIZE_64x32
 
