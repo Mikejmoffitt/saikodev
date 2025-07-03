@@ -35,38 +35,41 @@ void sai_vdp_csp_draw(SaiMdCspParam *s)
 
 void sai_vdp_csp_draw_fast(SaiMdCspParam *s)
 {
-	const bool use_dma = s->dma_chr_words > 0;
-
 	const SaiMdCspRef *ref = &s->ref[s->frame];
-	const SaiMdCspSpr *spr = (SaiMdCspSpr *)((const uint8_t *)(s->spr)+ref->spr_list_offs);
-
-	const uint16_t tile_index = ref->tile_index;
-	const uint16_t tile_base = use_dma ? s->tile_base : s->tile_base+tile_index;
-	const uint16_t attr_base = s->attr;
-
-	int16_t x = s->x;
-	int16_t y = s->y;
-
-	for (uint16_t i = 0; i < ref->spr_count; i++)
+	if (ref->spr_count > 0)
 	{
-		const uint16_t attr_comb = (attr_base ^ spr->attr);
-		const bool hf = (attr_comb & VDP_HF) ? true : false;
-		const bool vf = (attr_comb & VDP_VF) ? true : false;
-		const uint16_t attr = attr_comb + tile_base;
-		x += (hf) ? spr->flip_dx : spr->dx;
-		y += (vf) ? spr->flip_dy : spr->dy;
+		const bool use_dma = s->dma_chr_words > 0;
 
-		if (sai_vdp_spr_draw(x, y, attr, spr->size)) break;
-		spr++;
+		const SaiMdCspSpr *spr = (SaiMdCspSpr *)((const uint8_t *)(s->spr)+ref->spr_list_offs);
+
+		const uint16_t tile_index = ref->tile_index;
+		const uint16_t tile_base = use_dma ? s->tile_base : s->tile_base+tile_index;
+		const uint16_t attr_base = s->attr;
+
+		int16_t x = s->x;
+		int16_t y = s->y;
+
+		for (uint16_t i = 0; i < ref->spr_count; i++)
+		{
+			const uint16_t attr_comb = (attr_base ^ spr->attr);
+			const bool hf = (attr_comb & VDP_HF) ? true : false;
+			const bool vf = (attr_comb & VDP_VF) ? true : false;
+			const uint16_t attr = attr_comb + tile_base;
+			x += (hf) ? spr->flip_dx : spr->dx;
+			y += (vf) ? spr->flip_dy : spr->dy;
+
+			if (sai_vdp_spr_draw(x, y, attr, spr->size)) break;
+			spr++;
+		}
+
+		// Judge whether we need to schedule a DMA and do so.
+		if (!use_dma) return;
+
+		const bool new_frame = s->frame != s->frame_last;
+		if (!new_frame) return;
+		sai_vdp_dma_transfer_vram(s->vram_base,
+		                          &s->chr[VDP_ADDR_FROM_TILE(tile_index)],
+		                          ref->tile_words, 2);
 	}
-
-	// Judge whether we need to schedule a DMA and do so.
-	if (!use_dma) return;
-
-	const bool new_frame = s->frame != s->frame_last;
-	if (!new_frame) return;
 	s->frame_last = s->frame;
-	sai_vdp_dma_transfer_vram(s->vram_base, &s->chr[VDP_ADDR_FROM_TILE(tile_index)],
-							  s->dma_chr_words, 2);
-
 }
