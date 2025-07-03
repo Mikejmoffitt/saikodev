@@ -8,7 +8,6 @@ void sai_vdp_csp_init(SaiMdCspParam *s,
                      bool use_dma)
 {
 	const SaiMdCspHeader *header = (const SaiMdCspHeader *)map;
-	const uint16_t ref_count = header->ref_count;
 
 	s->vram_base = vram_base;
 	s->chr = chr;
