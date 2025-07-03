@@ -68,8 +68,14 @@ static inline void sai_vdp_write_word(uint16_t data);
 static inline void sai_vdp_set_autoinc(uint8_t bytes);
 
 // Table address config.
+// Different bases have different resolutions.
+// Plane A: Multiple of 0x2000
+// Plane B: Multiple of 0x2000
+// Plane W: Multiple of 0x0800
+// HScroll: Multiple of 0x0400
+// Sprites: Multiple of 0x0200
 static inline void sai_vdp_set_plane_base(uint16_t plane, uint32_t addr);
-static inline void sai_vdp_set_spr_base(uint32_t addr);
+static inline void sai_vdp_set_sprite_base(uint32_t addr);
 static inline void sai_vdp_set_hscroll_base(uint32_t addr);
 static inline uint32_t sai_vdp_get_plane_base(uint16_t plane);
 static inline uint32_t sai_vdp_get_sprite_base(void);
@@ -204,7 +210,7 @@ static inline void sai_vdp_set_plane_base(uint16_t plane, uint32_t addr)
 	g_sai_vdp_ntbase[plane] = addr;
 }
 
-static inline void sai_vdp_set_spr_base(uint32_t addr)
+static inline void sai_vdp_set_sprite_base(uint32_t addr)
 {
 	g_sai_vdp_sprbase = addr;
 }
