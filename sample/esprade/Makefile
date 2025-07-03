@@ -64,7 +64,7 @@ all: $(PROJECT_OUTPUT)
 .DEFAULT_GOAL := all
 
 clean:
-	rm -rf $(OUTDIR) $(OBJDIR) $(SAIOBJDIR) $(WRKDIR)
+	rm -rf $(OUTDIR) $(OBJDIR) $(SAIOBJDIR) $(WRKDIR) $(RESDIR)
 
 # Prebuild should depend on any targets that are required before compilation.
 .PHONY: prebuild
