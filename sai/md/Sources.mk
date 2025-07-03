@@ -20,9 +20,12 @@ SAI_SOURCES_ASM := \
 	$(SAI)/md/tmss.a68 \
 	$(SAI)/sai.a68 \
 	$(SAI)/input.a68 \
+#
 
 SAI_SOURCES_C := \
-	$(SAI)/md/vdp_dma_queue.c
+	$(SAI)/md/vdp_dma_queue.c \
+	$(SAI)/md/vdp_csp.c \
+#
 
 SAI_SOURCES_CPP := 
 

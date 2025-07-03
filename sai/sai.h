@@ -21,6 +21,7 @@ extern "C"
 #include "sai/md/vdp.h"
 #include "sai/md/vdp_dma_queue.h"
 #include "sai/md/vdp_spr.h"
+#include "sai/md/vdp_csp.h"
 #if SAI_TARGET == SAI_TARGET_MD
 #include "sai/md/io.h"
 #include "sai/md/pal.h"

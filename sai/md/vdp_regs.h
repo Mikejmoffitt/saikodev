@@ -200,6 +200,7 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_SPR_COUNT 80
 
 #define VDP_TILE(address) ((address)>>5)
+#define VDP_ADDR_FROM_TILE(tile) ((tile)<<5)
 
 // Register manipulation.
 #define VDP_VRAM_ADDR_CMD      (0x40000000)

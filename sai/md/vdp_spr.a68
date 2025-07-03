@@ -59,9 +59,17 @@ sai_vdp_spr_finish:
 	moveq	#0, d0
 	move.w	g_sai_vdp_spr_count, d0  ; becomes transfer count parameter
 	bne.s	0f
-	; If no sprites were drawn, terminate the list.
-	move.l	d0, SaiVdpSpr.y(a0)  ; also covers link. d0 is 0!
-	moveq	#1, d0  ; Set transfer count to 1
+	; Empty list: basically pretend there is one sprite
+	clr.l	SaiVdpSpr.y(a0)
+	moveq	#1, d0  ; transfer count of 1.
+0:
+	; Terminate the list if it's not entirely full.
+	move.w	d0, d1
+	cmpi.w	#VDP_SPR_COUNT, d1
+	bcc.s	0f
+	subq.w	#1, d1
+	lsl.w	#3, d1
+	sf	SaiVdpSpr.link(a0, d1.w)
 0:
 	move.l	d0, -(sp)
 	bsr.w	sai_vdp_dma_transfer_spr_vram
