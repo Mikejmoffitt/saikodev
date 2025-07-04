@@ -86,8 +86,6 @@ sai_min_md_pad_init:
 ; a1 points to the pad data port (byte address).
 	.global	update_pad_sub
 update_pad_sub:
-	; Get old data in there
-	move.w	SaiInput.now(a0), SaiInput.prev(a0)
 
 	SAI_MD_Z80_BUSREQ
 	; First step - x1CBRLDU into d0

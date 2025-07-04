@@ -103,6 +103,11 @@
 //                 attr,                         // Base attributes.
 //                 /*use_dma=*/true);
 //
+// It is not necessary to call sai_vdp_csp_transfer() here. It is however safe
+// to do so; the call will do nothing as that function is only for fixed mode.
+// The call is made safe in such a case so that only the use_dma parameter
+// must be changed during init to change an object from one mode to another.
+//
 // 3) perform draw calls
 //
 // The usage of the parameter data for drawing sprites is the same as for
@@ -173,17 +178,17 @@ typedef struct SaiMdCspParam
 
 // Set up a CSP parameter struct.
 void sai_vdp_csp_init(SaiMdCspParam *s,
-                     const uint8_t *chr,
-                     const uint8_t *map,
-                     uint32_t vram_base,
-                     uint16_t attr,
-                     bool use_dma);
+                      const uint8_t *chr,
+                      const uint8_t *map,
+                      uint32_t vram_base,
+                      uint16_t attr,
+                      bool use_dma);
 
 
 // Copies tile data into VRAM. For fixed usage, this copies all tile data at
 // once, and should be called after init (though, it may be skipped for
 // repeated usage of the same data.)
-// For DMA usage, it is not necessary to manually call this function.
+// For DMA usage, it is not necessary to call this function.
 static inline void sai_vdp_csp_transfer(SaiMdCspParam *s);
 
 // Draws a CSP metasprite using the method specified in the struct.
@@ -208,6 +213,7 @@ static inline uint16_t sai_vdp_csp_get_dma_vram_words(const uint8_t *map);
 
 static inline void sai_vdp_csp_transfer(SaiMdCspParam *s)
 {
+	if (s->fixed_chr_words == 0) return;
 	sai_vdp_dma_transfer_vram(s->vram_base, s->chr, s->fixed_chr_words, 2);
 }
 

@@ -123,6 +123,7 @@ sai_finish:
 ;
 ; I/O Poll
 ;
+	bsr.w	sai_input_pre_poll
 #if SAI_TARGET == SAI_TARGET_MD
 	bsr.w	sai_md_pad_poll
 #elif SAI_TARGET == SAI_TARGET_C1 || SAI_TARGET == SAI_TARGET_C2
@@ -138,6 +139,5 @@ sai_finish:
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
 	bsr.w	sai_at_io_poll
 #endif  // SAI_TARGET
-
-	bsr.w	sai_input_update_edges
+	bsr.w	sai_input_post_poll
 	rts

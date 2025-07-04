@@ -29,7 +29,8 @@ typedef struct SaiInput
 extern SaiInput g_sai_in[SAI_PLAYER_COUNT];
 
 void sai_input_init(void);
-void sai_input_update_edges(void);
+void sai_input_pre_poll(void);
+void sai_input_post_poll(void);
 
 #else
 

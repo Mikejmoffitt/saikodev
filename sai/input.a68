@@ -22,9 +22,21 @@ sai_min_input_init:
 	dbf	d1, 0b
 	jmp	(a6)
 
+
 ; a0.l = SaiInput
-	.global	sai_input_update_edges
-sai_input_update_edges:
+	.global	sai_input_pre_poll
+sai_input_pre_poll:
+	lea	g_sai_in, a0
+	move.w	SaiInput.now(a0), SaiInput.prev(a0)
+	.rept	SAI_PLAYER_COUNT-1
+	lea	SaiInput.len(a0), a0
+	move.w	SaiInput.now(a0), SaiInput.prev(a0)
+	.endr
+	rts
+
+; a0.l = SaiInput
+	.global	sai_input_post_poll
+sai_input_post_poll:
 	lea	g_sai_in, a0
 
 	.rept	SAI_PLAYER_COUNT-1
@@ -33,17 +45,17 @@ sai_input_update_edges:
 	.endr
 	; fall-through to the sub
 edge_update_sub:
-	move.l	SaiInput.now(a0), d0
-	move.l	d0, d1
-	swap	d1
+	move.l	SaiInput.now(a0), d0  ; now in upper, prev in lower
+	move.l	d0, d1                ; copy
+	swap	d1                    ; now in lower
 	not.w	d1
 	and.w	d1, d0
-	move.w	d0, SaiInput.pos(a0)
+	move.w	d0, SaiInput.neg(a0)
 
 	move.l	SaiInput.now(a0), d0
 	move.l	d0, d1
 	swap	d0
 	not.w	d1
 	and.w	d1, d0
-	move.w	d0, SaiInput.neg(a0)
+	move.w	d0, SaiInput.pos(a0)
 	rts
