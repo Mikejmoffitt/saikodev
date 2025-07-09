@@ -39,7 +39,7 @@ sai_vdp_dma_process_cmd:
 	move.w	d0, (a1)  ; src3
 
 #if SAI_TARGET==SAI_TARGET_MD
-	SAI_MD_Z80_BUSREQ_WAIT
+	SAI_MD_Z80_BUSREQ
 #endif  // SAI_TARGET
 	move.l	(a0), (a1)   ; DmaCmd.ctrl32
 #if SAI_TARGET==SAI_TARGET_MD
@@ -52,7 +52,7 @@ dma_fill:
 	move.w	d0, (a1)  ; PRM_SRC3
 
 #if SAI_TARGET==SAI_TARGET_MD
-	SAI_MD_Z80_BUSREQ_WAIT
+	SAI_MD_Z80_BUSREQ
 #endif  // SAI_TARGET
 
 	move.l	DmaCmd.ctrl32(a0), (a1)
