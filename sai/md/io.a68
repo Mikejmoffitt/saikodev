@@ -17,9 +17,9 @@
 
 	.section	.text
 
-//
-// Z80 Functions
-//
+;
+; Z80 Functions
+;
 
 	.global	sai_md_z80_init
 sai_md_z80_init:
@@ -60,9 +60,32 @@ z80_stub:
 
 	.align	2
 
-//
-// Gamepad functions
-//
+; C function (const uint8_t *prg_data, uint16_t prg_bytes)
+	.global	sai_md_z80_load
+sai_md_z80_load:
+
+	SAI_MD_Z80_RESET_ASSERT
+	SAI_MD_Z80_BUSREQ
+	SAI_MD_Z80_RESET_DEASSERT
+
+	lea	MD_Z80_WRAM, a0
+	move.l	4(sp), a1
+	move.w	8+2(sp), d0
+	subq.w	#1, d0
+0:
+	move.b	(a1)+, (a0)+
+	dbf	d0, 0b
+
+	SAI_MD_Z80_RESET_WAIT
+	SAI_MD_Z80_RESET_DEASSERT
+	SAI_MD_Z80_BUSREL
+
+	rts
+
+
+;
+; Gamepad functions
+;
 
 	.global	sai_md_pad_init
 sai_md_pad_init:

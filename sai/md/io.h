@@ -44,7 +44,12 @@ void sai_md_pad_poll(void);
 //
 // Sub-cpu functions
 //
+
+// Clears Z80 memory and installs a stub program.
 void sai_md_z80_init(void);
+
+// Loads a program into Z80 memory and resets it.
+void sai_md_z80_load(const uint8_t *prg_data, uint16_t prg_bytes);
 
 // Returns true if the Z80 bus request has completed.
 static inline bool sai_md_z80_bus_taken(void);
