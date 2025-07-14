@@ -33,12 +33,12 @@ COMMON_FLAGS += -DSAI_TARGET=$(SAI_TARGET)
 
 # For C.
 CFLAGS := $(COMMON_FLAGS)
-CFLAGS += -std=gnu2x
+CFLAGS += -std=gnu23
 CFLAGS += -Wno-strict-aliasing
 
 # For C++.
 CPPFLAGS := $(COMMON_FLAGS)
-CPPFLAGS += -std=gnu++2b
+CPPFLAGS += -std=gnu++23
 
 # For ASM.
 ASFLAGS := $(COMMON_FLAGS) -I$(OBJDIR)
