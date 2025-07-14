@@ -35,6 +35,7 @@ COMMON_FLAGS += -DSAI_TARGET=$(SAI_TARGET)
 CFLAGS := $(COMMON_FLAGS)
 CFLAGS += -std=gnu23
 CFLAGS += -Wno-strict-aliasing
+CFLAGS += --embed-dir=$(shell pwd)
 
 # For C++.
 CPPFLAGS := $(COMMON_FLAGS)
