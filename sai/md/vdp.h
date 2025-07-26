@@ -65,6 +65,7 @@ static inline void sai_vdp_set_addr_vramw(uint32_t addr);
 static inline void sai_vdp_set_addr_cramw(uint16_t addr);
 static inline void sai_vdp_set_addr_vsramw(uint16_t addr);
 static inline void sai_vdp_write_word(uint16_t data);
+static inline void sai_vdp_write_longword(uint32_t data);
 static inline void sai_vdp_set_autoinc(uint8_t bytes);
 
 // Table address config.
@@ -195,6 +196,13 @@ static inline void sai_vdp_set_addr_vsramw(uint16_t addr)
 static inline void sai_vdp_write_word(uint16_t data)
 {
 	volatile uint16_t *port_data = (volatile uint16_t *)(VDP_DATA);
+	*port_data = data;
+	SAI_BARRIER();
+}
+
+static inline void sai_vdp_write_longword(uint32_t data)
+{
+	volatile uint32_t *port_data = (volatile uint32_t *)(VDP_DATA);
 	*port_data = data;
 	SAI_BARRIER();
 }
@@ -383,12 +391,14 @@ static inline uint16_t sai_vdp_get_hvcount(void)
 
 static inline uint16_t sai_vdp_get_hcount(void)
 {
-	return sai_vdp_get_hvcount() & 0x00FF;
+	volatile uint8_t *port_hv_byte = (volatile uint8_t *)(VDP_HVCOUNT+1);
+	return *port_hv_byte;
 }
 
 static inline uint16_t sai_vdp_get_vcount(void)
 {
-	return sai_vdp_get_hvcount() >> 8;
+	volatile uint8_t *port_hv_byte = (volatile uint8_t *)(VDP_HVCOUNT);
+	return *port_hv_byte;
 }
 
 static inline void sai_vdp_set_shadow_highlight(bool enabled)
