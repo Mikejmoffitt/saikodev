@@ -168,10 +168,11 @@ sai_vdp_update_scroll_base:
 	move.w	d0, VDP_OFFS_CTRL(a1)
 	rts
 
-	.global	sai_vdp_debug_set
-; d1.w = number
-; d0.w = number
-sai_vdp_debug_port_sel:
+	.global	sai_vdp_debug_set_impl
+; d0.w = [value][number]
+sai_vdp_debug_set_impl:
+	move.w	d0, d1
+	swap	d0
 	lsl.w	#8, d1
 	move.w	d1, (VDP_DBG_SEL).l
 	ori.b	#0, d1

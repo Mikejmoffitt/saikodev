@@ -484,6 +484,18 @@ static inline void sai_vdp_set_sms_hl(bool enabled)
 	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[0]);
 }
 
+// VDP Debug
+
+extern void sai_vdp_debug_set_impl(void);  // uses d0.w, d1.w
+static inline void sai_vdp_debug_set(uint16_t reg, uint16_t val)
+{
+	register uint32_t d0 asm ("d0") = reg | (val << 16);
+	asm volatile ("bsr.w sai_vdp_debug_set_impl"
+	              :
+	              : "d" (d0)
+	              : "cc" );
+}
+
 #endif
 
 #ifdef __cplusplus
