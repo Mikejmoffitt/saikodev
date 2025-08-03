@@ -54,11 +54,11 @@ static inline void sai_pal_load(uint16_t dest, const void *src, uint16_t count)
 {
 	// TODO: runtime error check for debug build
 	if ((dest+count) > 4) return;
-	const uint16_t pal_line = dest*16;
+	const uint16_t pal_offs = dest*16;
 
 	const uint32_t *src32 = (const uint32_t *)(src);
-	uint32_t *dest32 = (uint32_t *)(&g_sai_pal[pal_line]);
-	uint16_t dirty_bit_mark = SAI_BITVAL(pal_line);
+	uint32_t *dest32 = (uint32_t *)(&g_sai_pal[pal_offs]);
+	uint16_t dirty_bit_mark = SAI_BITVAL(dest);
 
 	while (count--)
 	{

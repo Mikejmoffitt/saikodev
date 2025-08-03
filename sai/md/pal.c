@@ -10,7 +10,7 @@ void sai_pal_poll(void)
 {
 	// The g_sai_pal_dirty bitfield is broken down case by case here because
 	// consecutive palette lines can be uploaded in one DMA transfer.
-	switch (g_sai_pal_dirty)
+	switch (g_sai_pal_dirty & 0xF)
 	{
 		case 0x0:  // ....
 			return;
