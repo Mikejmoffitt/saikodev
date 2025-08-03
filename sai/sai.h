@@ -68,6 +68,7 @@ void sai_init(void);
 // * schedule transfers
 // * input polling
 void sai_finish(void);
+
 #endif  // __ASSEMBLER__
 
 #ifdef __cplusplus

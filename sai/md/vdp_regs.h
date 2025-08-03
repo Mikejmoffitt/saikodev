@@ -223,3 +223,152 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #define VDP_INTERLACE_NONE     0
 #define VDP_INTERLACE_NORMAL   (VDP_MODESET4_LSM0)
 #define VDP_INTERLACE_DOUBLE   (VDP_MODESET4_LSM0 | VDP_MODESET4_LSM1)
+
+/*
+-----------------------------------------------------------------------------
+Debug registers. Selected with VDPPORT_DBG_SEL, written with VDPPORT_DBG_DATA
+Unlike regular VDP registers, these are word-sized (16-bit).
+-----------------------------------------------------------------------------
+
+Register $00 - PSG debug and layer mixing
+.sss .... .... .... SPRST - Sprite render state bits. Function unknown.
+.... cc.. .... .... PSOCN - PSG Override attenuation source channel.
+.... ..p. .... .... PSOVR - PSG Override - has all PSG channels share volume.
+.... ...l l... .... LYSEL - Select layer to display with SOLO.
+.... .... .S.. .... SOLO  - Hide all but one layer, selected by LYSEL.
+.... .... ..j. .... JUNK5 - Seems to corrupt VRAM address access. See notes.
+.... .... .... k... KILL1 - Seems to halt the game, or interrupts.
+.... .... .... ..j. JUNK1 - Halts, fills the screen with a junk pattern.
+
+LYSEL should be 00 in normal circumstances, but if it is used without setting
+SOLO, the VDP will still try to display the selected layer, which cases the
+layer data to have a bus conflict with the output from the normal rendering
+pipeline. The end result is usually a logical AND between the color indices,
+but as this relies on analog behavior of a bus conflict, it's not stable, and
+is not recommended. It may even be bad for the VDP!
+
+At the moment this register is written, the remainder of the output line
+buffer may be filled with a repeating junk pattern. It may be a scroll table.
+
+JUNK5 is interesting. It has the following effects that I can observe:
+* The screen is filled with garbage data
+* Sprites lose their horizontal position, adopting arbitrary values
+* VRAM is corrupted in a predictable pattern, from my testing in H40:
+  Tile $0000, $0020, $0041, $0061, $0082, $00A2... so on and so forth
+  Within each tile, bytes are corrupt in this order:
+  Every even tile in the pattern: $01, $04, $0B, $0E
+  Every odd tile in the pattern: $11, $14, $1B, $1E
+
+  Going by VRAM addresses (addressing byte-wise):
+  $0001, $0004, $000B, $000E, $0411, $0414, $041B, $041E, $0801, $0804... etc
+
+  The value of the junk data written is not yet clear.
+
+  If I enable this register during active display, and then disable it
+  shortly after (~a few scanlines' duration), it does not appear to corrupt
+  VRAM, at least not near $0000 where it is plainly obvious.
+*/
+
+#define VDP_DBG00_JUNK0   0x0001
+#define VDP_DBG00_DMAST   0x0002
+#define VDP_DBG00_SOLO    0x0040
+#define VDP_DBG00_LYSEL0  0x0080
+#define VDP_DBG00_LYSEL1  0x0100
+#define VDP_DBG00_PSOVR   0x0200
+#define VDP_DBG00_PSOCN0  0x0400
+#define VDP_DBG00_PSOCN1  0x0800
+#define VDP_DBG00_SPRST0  0x1000
+#define VDP_DBG00_SPRST1  0x2000
+#define VDP_DBG00_SPRST2  0x4000
+
+/*
+Register $01 - Clock and counter functions
+u... .... .... .... UNKF
+.u.. .... .... .... UNKE
+..u. .... .... .... UNKD
+...u .... .... .... UNKC
+.... u... .... .... UNKB
+.... .s.. .... .... SCBAD - Modifies scroll plane B's pixel data addressing.
+.... ..s. .... .... SCAAD - Modifies scroll plane A's pixel data addressing.
+.... ...t .... .... TILEF - Changes tile fetch addressing.
+.... .... h... .... HSCRL - Makes Hscroll table read from address 0 (?)
+.... .... .jjj .... JUNK  - Causes a moving pattern of junk.
+.... .... .... u... UNK3  - Seems to lock up.
+.... .... .... .v.. VCTST - Makes V counter increment very pixel. Not useful.
+.... .... .... ..e. EDCKO - Makes EDCLK output DCLK. Not useful on MD.
+.... .... .... ...z Z80CK - Doubles the Z80 and PSG clock to about 7.67Mhz!
+*/
+#define VDP_DBG01_Z80CK   0x0001
+#define VDP_DBG01_EDCKO   0x0002
+#define VDP_DBG01_VCTST   0x0004
+#define VDP_DBG01_JUNK0   0x0010
+#define VDP_DBG01_JUNK1   0x0020
+#define VDP_DBG01_JUNK2   0x0040
+#define VDP_DBG01_HSCRL   0x0080
+#define VDP_DBG01_UNKF    0x8000
+#define VDP_DBG01_UNKE    0x4000
+#define VDP_DBG01_UNKD    0x2000
+#define VDP_DBG01_UNKC    0x1000
+#define VDP_DBG01_UNKB    0x0800
+#define VDP_DBG01_UNKA    0x0400
+#define VDP_DBG01_UNK9    0x0200
+#define VDP_DBG01_UNK8    0x0100
+
+/*
+SCBAA/SCAAD notes:
+Observed effects:
+* Scroll plane repeatedly fetches (or displays) four pixels out of a 16
+  pixel length of tile data.
+* The other plane may fetch pixel data for what should be horizontally
+  adjacent tiles.
+* The other plane's pixel data seems to find its way into the plane data.
+* The behavior of the above is dependent on the lower four bits of the
+  horizontal scroll.
+* Depending on how far the horizontal scroll is set, data from the sprite
+  pixel fetch may appear to the right in what is normally blanked. This data
+  is presented as if it is part of the scroll plane's fetched pixel data, so
+  it assumes the attributes described by the scroll plane nametable.
+
+TILEF notes:
+* Every other column seems to have its tile layout data offset, so that the
+  plane looks as though it's been coarsely interlaced vertically.
+* In some cases, completely wrong tiles are fetched
+* Data lingering from sprite pixel fetches sometimes appears in tiles
+
+HSCRL notes:
+* I think there is more to this than the H scroll table being redirected.
+* Some tiles horizontally wobble within their boundaries unreliably.
+* Sprite fetches affect the strange corrupted horizontal value.
+
+Writing to this register frequently seems to increase the likelihood of a
+crash or freeze, be it through corrupting the raster counters or halting the
+Z80 (not yet investigated in detail).
+
+Register $02 - Unknown
+Reading from this register returns a walking bit pattern in the lower byte.
+
+Register $03 - Unknown
+Writing to this mid-screen screws up horizontal sync temporarily.
+
+Register $04 - Unknown
+
+Register $05 - Unknown
+Writing to this mid-screen has a subtle effect on the horizontal scroll value
+used for Plane B
+
+Register $06 - Unknown
+Writing to this mid-screen causes a small streak of junk pixel data to appear
+that seems to come from sprite pixel data.
+
+Register $07 - Unknown
+Similar effect to reg $06.
+
+Register $08 - Unknown
+Very subtle corruption of sprite pixel data at the instant it is written.
+*/
+
+// Debug bits
+#define VDP_DEBUG_LYSEL_NONE    0x00
+#define VDP_DEBUG_LYSEL_SPRITE  0x01
+#define VDP_DEBUG_LYSEL_PLANE_A 0x02
+#define VDP_DEBUG_LYSEL_PLANE_B 0x03
