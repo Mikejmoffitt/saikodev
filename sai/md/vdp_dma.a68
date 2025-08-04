@@ -60,7 +60,11 @@ dma_fill:
 #if SAI_TARGET==SAI_TARGET_MD
 	SAI_MD_Z80_BUSREL
 #endif  // SAI_TARGET
+
+	; Touching the VDP while a fill is in progress will send it off the
+	; rails so let's just wait for it to finish here.
 0:
-	btst	#1, 1(a1)
+	move.w	(a1), d0  ; a1 is already at VDP_OFFS_STATUS.
+	andi.w	#VDP_STATUS_DMA, d0
 	bne.s	0b
 	rts

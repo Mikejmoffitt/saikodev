@@ -1,6 +1,27 @@
 	#pragma once
 #include "sai/macro.h"
 
+//
+// Memory-mapped IO
+//
+#define VDP_OFFS_DATA          (0x00)
+#define VDP_OFFS_CTRL          (0x04)
+#define VDP_OFFS_STATUS        (0x04)
+#define VDP_OFFS_HVCOUNT       (0x08)
+#define VDP_OFFS_DBG_SEL       (0x18)
+#define VDP_OFFS_DBG_DATA      (0x1C)
+
+#define VDP_DATA               (VDP_BASE+VDP_OFFS_DATA)
+#define VDP_CTRL               (VDP_BASE+VDP_OFFS_CTRL)
+#define VDP_STATUS             (VDP_BASE+VDP_OFFS_STATUS)
+#define VDP_HVCOUNT            (VDP_BASE+VDP_OFFS_HVCOUNT)
+#define VDP_DBG_SEL            (VDP_BASE+VDP_OFFS_DBG_SEL)
+#define VDP_DBG_DATA           (VDP_BASE+VDP_OFFS_DBG_DATA)
+
+//
+// Default VRAM base values
+//
+
 /* 0000-BFFF (1536 tiles) free */
 #define VRAM_SCRA_BASE_DEFAULT  0xC000
 #define VRAM_SCRW_BASE_DEFAULT  0xD000
@@ -8,6 +29,91 @@
 /* F000-F7FF (64 tiles) free */
 #define VRAM_HSCR_BASE_DEFAULT  0xF800
 #define VRAM_SPR_BASE_DEFAULT   0xFC00
+
+//
+// Macros and Aliases
+//
+
+// Indices into NT array and/or args into layer functions
+#define VDP_PLANE_A            0
+#define VDP_PLANE_B            1
+#define VDP_PLANE_WINDOW       2
+
+// Status register
+#define VDP_STATUS_PAL         SAI_BITVAL(0)
+#define VDP_STATUS_DMA         SAI_BITVAL(1)
+#define VDP_STATUS_HB          SAI_BITVAL(2)
+#define VDP_STATUS_VB          SAI_BITVAL(3)
+#define VDP_STATUS_OD          SAI_BITVAL(4)
+#define VDP_STATUS_SC          SAI_BITVAL(5)
+#define VDP_STATUS_SO          SAI_BITVAL(6)
+#define VDP_STATUS_VI          SAI_BITVAL(7)
+#define VDP_STATUS_FIFO_FULL   SAI_BITVAL(8)
+#define VDP_STATUS_FIFO_EMPTY  SAI_BITVAL(9)
+
+// Plane size
+#define VDP_PLANESIZE_32x32    0x00
+#define VDP_PLANESIZE_64x32    0x01
+#define VDP_PLANESIZE_128x32   0x03
+#define VDP_PLANESIZE_32x64    0x10
+#define VDP_PLANESIZE_64x64    0x11
+#define VDP_PLANESIZE_32x128   0x30
+
+#define VDP_PLANESIZE_DEFAULT  VDP_PLANESIZE_64x32
+
+// Table address shift and mask values
+#define VDP_SCRA_SHIFT         (13)
+#define VDP_SCRA_MASK          (0xE000)
+#define VDP_SCRW_SHIFT         (11)
+#define VDP_SCRB_MASK          (0xE000)
+#define VDP_SCRB_SHIFT         (13)
+#define VDP_SCRW_MASK          (0xF000)
+#define VDP_SCRW_MASK_H32      (0xF800)
+#define VDP_SPR_SHIFT          (9)
+#define VDP_SPR_MASK           (0xFC00)
+#define VDP_SPR_MASK_H32       (0xFE00)
+#define VDP_HSCR_SHIFT         (10)
+#define VDP_HSCR_MASK          (0xFC00)
+
+// Scroll mode bits
+#define VDP_HSCROLL_PLANE 0
+#define VDP_HSCROLL_UNDEF (VDP_MODESET3_HS0)
+#define VDP_HSCROLL_CELL (VDP_MODESET3_HS1)
+#define VDP_HSCROLL_LINE (VDP_MODESET3_HS0 | VDP_MODESET3_HS1)
+
+#define VDP_VSCROLL_PLANE 0
+#define VDP_VSCROLL_CELL (VDP_MODESET3_VCELL)
+
+#define VDP_HSCROLL_DEFAULT 0
+#define VDP_VSCROLL_DEFAULT 0
+
+// Tile attributes
+#define VDP_PRIO 0x8000
+#define VDP_HF 0x0800
+#define VDP_VF 0x1000
+#define VDP_PALSHIFT 13
+
+// Attributes and sprite props
+#define VDP_ATTR(_tile, _hflip, _vflip, _pal, _prio) (((_tile) & 0x7FF) | \
+                 (((_hflip) ? VDP_HF : 0) | ((_vflip) ? VDP_VF : 0) | \
+                  (((_pal) & 0x3) << VDP_PALSHIFT) | ((_prio) ? VDP_PRIO : 0)))
+#define VDP_SIZE(w, h) (((h-1) & 0x3) | (((w-1) & 0x3) << 2))
+#define VDP_SPR_COUNT 80
+
+#define VDP_TILE(address) ((address)>>5)
+#define VDP_ADDR_FROM_TILE(tile) ((tile)<<5)
+
+// Register manipulation.
+#define VDP_VRAM_ADDR_CMD      (0x40000000)
+#define VDP_CRAM_ADDR_CMD      (0xC0000000)
+#define VDP_VSRAM_ADDR_CMD     (0x40000010)
+#ifndef __ASSEMBLER__
+#define VDP_CTRL_ADDR(_addr) ((((uint32_t)(_addr) & 0x3FFF) << 16) | \
+                             (((uint32_t)(_addr) & 0xC000) >> 14))
+#else
+#define VDP_CTRL_ADDR(_addr) ((((_addr) & 0x3FFF) << 16) | (((_addr) & 0xC000) >> 14))
+#endif  // __ASSEMBLER__
+#define VDP_REGST(regno, value) ((((regno) << 8) | 0x8000) | ((value) & 0xFF))
 
 // Register indices by name
 #define VDP_MODESET1  0x00
@@ -34,6 +140,11 @@
 #define VDP_DMASRC1   0x15
 #define VDP_DMASRC2   0x16
 #define VDP_DMASRC3   0x17
+
+// Resolution Settings
+#define VDP_INTERLACE_NONE     0
+#define VDP_INTERLACE_NORMAL   (VDP_MODESET4_LSM0)
+#define VDP_INTERLACE_DOUBLE   (VDP_MODESET4_LSM0 | VDP_MODESET4_LSM1)
 
 // Register bits
 
@@ -118,111 +229,6 @@ r... .... RS1   - Select external dot clock (EDCLK). Used for H40 on MD.
 #else
 #define VDP_MODESET4_DEFAULT   (VDP_MODESET4_RS0 | VDP_MODESET4_RS1)
 #endif  // SAI_TARGET
-
-//
-// Macros and Aliases
-//
-
-// Memory-mapped IO
-#define VDP_OFFS_DATA          (0x00)
-#define VDP_OFFS_CTRL          (0x04)
-#define VDP_OFFS_STATUS        (0x04)
-#define VDP_OFFS_HVCOUNT       (0x08)
-#define VDP_OFFS_DBG_SEL       (0x18)
-#define VDP_OFFS_DBG_DATA      (0x1C)
-
-#define VDP_DATA               (VDP_BASE+VDP_OFFS_DATA)
-#define VDP_CTRL               (VDP_BASE+VDP_OFFS_CTRL)
-#define VDP_STATUS             (VDP_BASE+VDP_OFFS_STATUS)
-#define VDP_HVCOUNT            (VDP_BASE+VDP_OFFS_HVCOUNT)
-#define VDP_DBG_SEL            (VDP_BASE+VDP_OFFS_DBG_SEL)
-#define VDP_DBG_DATA           (VDP_BASE+VDP_OFFS_DBG_DATA)
-
-// Status register
-#define VDP_STATUS_PAL         SAI_BITVAL(0)
-#define VDP_STATUS_DMA         SAI_BITVAL(1)
-#define VDP_STATUS_HB          SAI_BITVAL(2)
-#define VDP_STATUS_VB          SAI_BITVAL(3)
-#define VDP_STATUS_OD          SAI_BITVAL(4)
-#define VDP_STATUS_SC          SAI_BITVAL(5)
-#define VDP_STATUS_SO          SAI_BITVAL(6)
-#define VDP_STATUS_VI          SAI_BITVAL(7)
-#define VDP_STATUS_FIFO_FULL   SAI_BITVAL(8)
-#define VDP_STATUS_FIFO_EMPTY  SAI_BITVAL(9)
-
-// Plane size
-#define VDP_PLANESIZE_32x32    0x00
-#define VDP_PLANESIZE_64x32    0x01
-#define VDP_PLANESIZE_128x32   0x03
-#define VDP_PLANESIZE_32x64    0x10
-#define VDP_PLANESIZE_64x64    0x11
-#define VDP_PLANESIZE_32x128   0x30
-
-#define VDP_PLANESIZE_DEFAULT  VDP_PLANESIZE_64x32
-
-// Table address shift and mask values
-#define VDP_SCRA_SHIFT         (13)
-#define VDP_SCRA_MASK          (0xE000)
-#define VDP_SCRW_SHIFT         (11)
-#define VDP_SCRB_MASK          (0xE000)
-#define VDP_SCRB_SHIFT         (13)
-#define VDP_SCRW_MASK          (0xF000)
-#define VDP_SCRW_MASK_H32      (0xF800)
-#define VDP_SPR_SHIFT          (9)
-#define VDP_SPR_MASK           (0xFC00)
-#define VDP_SPR_MASK_H32       (0xFE00)
-#define VDP_HSCR_SHIFT         (10)
-#define VDP_HSCR_MASK          (0xFC00)
-
-// Scroll mode bits
-#define VDP_HSCROLL_PLANE 0
-#define VDP_HSCROLL_UNDEF (VDP_MODESET3_HS0)
-#define VDP_HSCROLL_CELL (VDP_MODESET3_HS1)
-#define VDP_HSCROLL_LINE (VDP_MODESET3_HS0 | VDP_MODESET3_HS1)
-
-#define VDP_VSCROLL_PLANE 0
-#define VDP_VSCROLL_CELL (VDP_MODESET3_VCELL)
-
-#define VDP_HSCROLL_DEFAULT 0
-#define VDP_VSCROLL_DEFAULT 0
-
-// Tile attributes
-#define VDP_PRIO 0x8000
-#define VDP_HF 0x0800
-#define VDP_VF 0x1000
-#define VDP_PALSHIFT 13
-
-// Attributes and sprite props
-#define VDP_ATTR(_tile, _hflip, _vflip, _pal, _prio) (((_tile) & 0x7FF) | \
-                 (((_hflip) ? VDP_HF : 0) | ((_vflip) ? VDP_VF : 0) | \
-                  (((_pal) & 0x3) << VDP_PALSHIFT) | ((_prio) ? VDP_PRIO : 0)))
-#define VDP_SIZE(w, h) (((h-1) & 0x3) | (((w-1) & 0x3) << 2))
-#define VDP_SPR_COUNT 80
-
-#define VDP_TILE(address) ((address)>>5)
-#define VDP_ADDR_FROM_TILE(tile) ((tile)<<5)
-
-// Register manipulation.
-#define VDP_VRAM_ADDR_CMD      (0x40000000)
-#define VDP_CRAM_ADDR_CMD      (0xC0000000)
-#define VDP_VSRAM_ADDR_CMD     (0x40000010)
-#ifndef __ASSEMBLER__
-#define VDP_CTRL_ADDR(_addr) ((((uint32_t)(_addr) & 0x3FFF) << 16) | \
-                             (((uint32_t)(_addr) & 0xC000) >> 14))
-#else
-#define VDP_CTRL_ADDR(_addr) ((((_addr) & 0x3FFF) << 16) | (((_addr) & 0xC000) >> 14))
-#endif  // __ASSEMBLER__
-#define VDP_REGST(regno, value) ((((regno) << 8) | 0x8000) | ((value) & 0xFF))
-
-// Indices into NT array and/or args into layer functions
-#define VDP_PLANE_A            0
-#define VDP_PLANE_B            1
-#define VDP_PLANE_WINDOW       2
-
-// Resolution Settings
-#define VDP_INTERLACE_NONE     0
-#define VDP_INTERLACE_NORMAL   (VDP_MODESET4_LSM0)
-#define VDP_INTERLACE_DOUBLE   (VDP_MODESET4_LSM0 | VDP_MODESET4_LSM1)
 
 /*
 -----------------------------------------------------------------------------

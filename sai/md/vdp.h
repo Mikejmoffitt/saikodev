@@ -124,11 +124,6 @@ static inline void sai_vdp_set_hs_input(bool enabled);
 static inline void sai_vdp_set_sms_vl(bool enabled);
 static inline void sai_vdp_set_sms_hl(bool enabled);
 
-// Scroll planes
-static inline void sai_vdp_set_plane_size(uint8_t size);
-static inline void sai_vdp_set_hscroll_mode(uint8_t mode);
-static inline void sai_vdp_set_vscroll_mode(uint8_t mode);
-
 // Enable the window plane, and have it draw from the column/line specified with
 // `cell`. Call any of these with 0 to disable the horizontal or vertical window.
 static inline void sai_vdp_set_window_top(uint8_t cell);

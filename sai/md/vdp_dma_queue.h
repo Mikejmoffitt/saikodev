@@ -35,6 +35,9 @@ void sai_vdp_dma_copy_vram(uint32_t dest, uint16_t src, uint16_t bytes, uint16_t
 // Execute DMA commands sitting in the queue.
 void sai_vdp_dma_flush(void);
 
+// Clears the specified plane to 0 by way of DMA fill.
+void sai_vdp_dma_clear_plane(uint16_t plane);
+
 #endif  // __ASSEMBLER__
 
 #ifdef __cplusplus

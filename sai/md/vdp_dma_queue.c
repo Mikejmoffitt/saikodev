@@ -193,7 +193,7 @@ void sai_vdp_dma_flush(void)
 		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
 		              :
 		              : "a" (a0)
-		              :  "d0", "a1", "memory", "cc" );
+		              : "d0", "a1", "memory", "cc" );
 	}
 	s_dma_prio_q_idx = 0;
 
@@ -205,11 +205,20 @@ void sai_vdp_dma_flush(void)
 		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
 		              :
 		              : "a" (a0)
-		              :  "d0", "a1", "memory", "cc" );
+		              : "d0", "a1", "memory", "cc" );
 		s_dma_q_read_idx = (s_dma_q_read_idx + 1) % DMA_QUEUE_DEPTH;
 	}
 
 	sai_vdp_set_hint_en(hint_en);
 	sai_vdp_set_vint_en(vint_en);
 	sai_vdp_set_thint_en(thint_en);
+}
+
+void sai_vdp_dma_clear_plane(uint16_t plane)
+{
+	const uint32_t base = g_sai_vdp_ntbase[plane];
+	const uint16_t bytes = sizeof(uint16_t) *
+	                       sai_vdp_get_plane_w() *
+	                       sai_vdp_get_plane_h();
+	sai_vdp_dma_fill_vram(base, 0, bytes, 1);
 }
