@@ -18,7 +18,7 @@ As so much is similar between these, I'd like to get my code in one place and sh
 Much of my source has C headers, with some inline functions, and then assembler code for implementations and memory definitions. Towards the sisyphean goal of cleaner software engineering, I want to avoid repeating myself whenever possible. Nearly all of my headers are bilingual, in that they can be directly included (as in #include) in either C or Assembler source files. I run the C Preprocessor on all assembler sources for this purpose. This means that #define statements, macros, and even symbol declarations come from the same file for both. When reasonable I also have struct definitions so that the assembler source is legible and more robust against refactor down the line.
 
 ### Assembly Expectations
-The GCC assembler has some good points, but it brings with it one very strong merit above all else: it emits linkable object files, with sections, relocation and all that. Other than that, we can do parallel assembly, declare static variabels that don't pollute the namespace, and use the C preprocessor - there are good things about it.
+The GCC assembler has some good points, but it brings with it one very strong merit above all else: it emits linkable object files, with sections, relocation and all that. Other than that, we can do parallel assembly, declare static variables that don't pollute the namespace, and use the C preprocessor - there are good things about it.
 However, at the end of the day, its main job is to consume the output from a compiler, and hand-written code seems to be more of an afterthought. Specifically, on the 68k side, there are a few chief frustrations for me:
 
 * Comments are either C style (`/* */`), C++ style (`//`), or pound (`#`). A semicolon (`;`) is a typical comment character and I prefer it (though I have seen `*` and `#`)
@@ -43,6 +43,11 @@ Even if the hardware is booting, it's frustrating to find that convenient tools 
 It's tempting to design not only a development "kit" but instead a whole *engine*, promising to run the same code with the same assets across many platforms. When working with old hardware like this, it is necessary to design with the constraints and strengths of the hardware in mind. The supported platforms vary greatly in their graphical capabilities and sound hardware. Working with a lowest common denominator could allow for a universal engine to be viable, but I think that would hamper the quality of anything made that targets it. In addition, the convenience of a generalized engine comes with consequences in complexity, and there is no room for that on hardware like this.
 
 As a result, while I want to write support code to make it easy to talk to the hardware, I am firmly not attempting to make any sort of universal sprite or background code that promises to work on all of the platforms below. I'd rather write usable platform-specific code and aim to make the interfaces similar if it helps, and stop at that point.
+
+## License
+The code in Saikodev and the development kit on the whole is licensed under The MIT License. You don't owe me anything for using it, I don't owe you support if you don't like it or if it has bugs. 
+
+If you release anything using this, especially if it's commercial, I would really appreciate credit if it has helped you.
 
 ## Comparisons against Similar Devkits
 Saikodev is not the only m68k-gcc centered development option available. Popular alternatives include
