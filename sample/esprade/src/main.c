@@ -45,7 +45,7 @@ static void move_test_sprite(void)
 	s_x += s_dx;
 	s_y += s_dy;
 
-	if (s_x + SPR_TIA_W >= 320)
+	if (s_x + SPR_ESPRADE_W >= 320)
 	{
 		sai_ymz_play(YMZ_BOUNCE_OFFS, 1);
 		s_dx = -1;
@@ -55,7 +55,7 @@ static void move_test_sprite(void)
 		sai_ymz_play(YMZ_BOUNCE_OFFS, 1);
 		s_dx = 1;
 	}
-	if (s_y + SPR_TIA_H >= 240)
+	if (s_y + SPR_ESPRADE_H >= 240)
 	{
 		sai_ymz_play(YMZ_BOUNCE2_OFFS, 2);
 		s_dy = -1;
@@ -68,17 +68,17 @@ static void move_test_sprite(void)
 
 	if (g_sai_in[0].now & SAI_BTN_C)
 	{
-		sai_sp013_draw_sc(s_x/8, s_y/8, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE, 0x20, 0x20);
+		sai_sp013_draw_sc(s_x/8, s_y/8, SP013_AT32(1, 3)|SPR_ESPRADE_CODE, SPR_ESPRADE_SIZE, 0x20, 0x20);
 	}
 	if (g_sai_in[0].now & SAI_BTN_B)
 	{
-		sai_sp013_draw_sc(s_x/4, s_y/4, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE, 0x40, 0x40);
+		sai_sp013_draw_sc(s_x/4, s_y/4, SP013_AT32(1, 3)|SPR_ESPRADE_CODE, SPR_ESPRADE_SIZE, 0x40, 0x40);
 	}
 	if (g_sai_in[0].now & SAI_BTN_A)
 	{
-		sai_sp013_draw_sc(s_x/2, s_y/2, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE, 0x80, 0x80);
+		sai_sp013_draw_sc(s_x/2, s_y/2, SP013_AT32(1, 3)|SPR_ESPRADE_CODE, SPR_ESPRADE_SIZE, 0x80, 0x80);
 	}
-	sai_sp013_draw(s_x, s_y, SP013_AT32(1, 3)|SPR_TIA_CODE, SPR_TIA_SIZE);
+	sai_sp013_draw(s_x, s_y, SP013_AT32(1, 3)|SPR_ESPRADE_CODE, SPR_ESPRADE_SIZE);
 }
 
 static void draw_initial_text(void)
@@ -140,7 +140,7 @@ void __attribute__((noreturn)) main(void)
 {
 	sai_init();
 	sai_ymz_init(wrk_ymz_dat);
-	sai_pal_load(0x01*16, &wrk_spr_pal[SPR_TIA_PAL_OFFS], SPR_TIA_PAL_LEN/16);
+	sai_pal_load(0x01*16, &wrk_spr_pal[SPR_ESPRADE_PAL_OFFS], SPR_ESPRADE_PAL_LEN/16);
 	sai_pal_load(0x40*16, &wrk_bga_pal[BGA_FONT_PAL_OFFS], BGA_FONT_PAL_LEN/16);
 
 	// Set plane A to 8x8 for string display
