@@ -44,6 +44,11 @@ It's tempting to design not only a development "kit" but instead a whole *engine
 
 As a result, while I want to write support code to make it easy to talk to the hardware, I am firmly not attempting to make any sort of universal sprite or background code that promises to work on all of the platforms below. I'd rather write usable platform-specific code and aim to make the interfaces similar if it helps, and stop at that point.
 
+## License
+The code in Saikodev and the development kit on the whole is licensed under The MIT License. You don't owe me anything for using it, I don't owe you support if you don't like it or if it has bugs. 
+
+If you release anything using this, especially if it's commercial, I would really appreciate credit if it has helped you.
+
 ## Comparisons against Similar Devkits
 Saikodev is not the only m68k-gcc centered development option available. Popular alternatives include
 
