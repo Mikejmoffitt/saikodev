@@ -21,7 +21,7 @@ Much of my source has C headers, with some inline functions, and then assembler 
 The GCC assembler has some good points, but it brings with it one very strong merit above all else: it emits linkable object files, with sections, relocation and all that. Other than that, we can do parallel assembly, declare static variabels that don't pollute the namespace, and use the C preprocessor - there are good things about it.
 However, at the end of the day, its main job is to consume the output from a compiler, and hand-written code seems to be more of an afterthought. Specifically, on the 68k side, there are a few chief frustrations for me:
 
-* Comments are either C style (/* */), C++ style (//), or pound (#). Just about everywhere else ';' is a typical comment character (though I have seen '*' and '#')
+* Comments are either C style (`/* */`), C++ style (`//`), or pound (`#`). A semicolon (`;`) is a typical comment character and I prefer it (though I have seen `*` and `#`)
 * Registers require a % prefix
 * Hexidecimal numbers only accept the C "0x" prefix, instead of the very common "$"
 * Local labels are limited to numbered names
