@@ -58,8 +58,11 @@ I will compare these options with Saikodev while trying to remain objective and 
 Common points with most of these is the presence of a C/C++ compiler, sample code, and usability on relatively modern computers.
 
 SGDK is feature-rich with support out of the box for semi-automatic conversion of graphical and audio assets, as well as support functions to cover ground for a lot of potential use cases. In exchange for that it may be a little heavier in size and speed at some points. It is often distributed in binary format as the majority of users are on Windows and expect to download an archive that's good to go; a much older version of GCC is often employed.
+
 Marsdev provides boot code and sample hardware interaction code not only for Megadrive but also for 32X (and recently, a little X68000). If SGDK is full of features and is one of the larger options, then Marsdev is rather one of the smaller and more barebones options. Like Saikodev it expects you to build GCC (using the convenient submodule maintained by the author) or bring your own copy, and as such the toolchain itself will be up to date.
+
 SGCC is DOS based and the tooling is distributed in binary format. I do not have experience using this and with the other options available I have not felt compelled to try. Some of the files are older than I am.
+
 MDK is an earlier attempt of mine towards goals similar to Saikodev, but I have elected to make a clean start and move away from it.
 
 ## Platforms
