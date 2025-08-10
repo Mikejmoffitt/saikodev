@@ -1,7 +1,7 @@
 
-MEGALOADER := $(UTILDIR)/debug/megaloader
+MEGALOADER := $(SAI_UTILDIR)/debug/megaloader
 
-$(MEGALOADER): $(UTILDIR)/debug/megaloader.c
+$(MEGALOADER): $(SAI_UTILDIR)/debug/megaloader.c
 	$(CC_HOST) -D_DEFAULT_SOURCE $< -o $@ $(HOSTCFLAGS)
 
 flash: $(OUTDIR)/$(PROJECT_NAME).bin $(MEGALOADER)
