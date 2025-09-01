@@ -1,5 +1,26 @@
 #pragma once
 
+//
+// Bilingual enums, with strict limits
+//
+#ifdef __ASSEMBLER__
+#define SAI_ENUMSTART .struct 0
+#else
+#define SAI_ENUMSTART enum{
+#endif  // __ASSEMBLER__
+
+#ifdef __ASSEMBLER__
+#define SAI_ENUMNEXT(name) name##: ds.b 1
+#else
+#define SAI_ENUMNEXT(name) name ,
+#endif  // __ASSEMBLER__
+
+#ifdef __ASSEMBLER__
+#define SAI_ENUMEND  // end of enum
+#else
+#define SAI_ENUMEND };
+#endif
+
 
 
 #define SAI_NUM_IS_POW2(x) ((x & (x - 1)) == 0)
