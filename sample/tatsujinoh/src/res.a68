@@ -1,0 +1,9 @@
+	.section	.rodata
+
+;	.global	wrk_gcu_pal
+;wrk_gcu_pal:
+;	.incbin	"wrk/gcu.pal"
+
+;	.global	wrk_text_pal
+;wrk_text_pal:
+;	.incbin	"wrk/text.pal"

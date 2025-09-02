@@ -1,0 +1,48 @@
+#include "sai/target.h"
+#include "sai/irq.h"
+#include "sai/memmap.h"
+#include "sai/toa/irq.h"
+#include "sai/toa/gcu.h"
+
+	.global	g_irq_vbl_callback
+
+	.global	_v_irq1
+	.global	_v_irq2
+	.global	_v_irq3
+	.global	_v_irq4
+	.global	_v_irq5
+	.global	_v_irq6
+	.global	_v_irq7
+
+	.section	.data
+
+g_irq_vbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+
+	.macro	toa_virq
+;
+; Interrupt ack
+;
+	move.w	#GCU_REG_IRQ_ACK, (GCU_BASE+GCU_REG_ADDR_OFFS).l
+	move.w	#$0000, (GCU_BASE+GCU_REG_DATA_OFFS).l
+	virq_handler g_irq_vbl_callback
+	.endm
+
+	.section	.text
+#if SAI_TARGET == SAI_TARGET_TATSUJIN_OH
+_v_irq2:
+	toa_virq
+
+_v_irq1:
+_v_irq3:
+_v_irq4:
+_v_irq5:
+_v_irq6:
+_v_irq7:
+	rte
+#endif  // SAI_TARGET
+
+	.global	sai_irq_init
+sai_irq_init:
+	move.l	#SAI_IRQ_HANDLER_UNUSED, g_irq_vbl_callback
+	rts
+

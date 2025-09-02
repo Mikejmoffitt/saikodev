@@ -1,0 +1,141 @@
+#include	"sai/toa/gcu.h"
+#include	"sai/toa/hw.h"
+#include	"sai/macro.h"
+#include	"sai/input.h"
+#define GCU_PLANE_BASE_X 0x1D6
+#define GCU_PLANE_BASE_Y 0x1EF
+
+	.section	.bss
+
+	.global g_sai_gcu_scroll
+; User scroll configuration.
+g_sai_gcu_scroll: ds.w SaiGcuPlaneCfg.len/2
+; Plane base offsets.
+s_scroll_offs:    ds.w SaiGcuPlaneCfg.len/2
+; Due to the sprite framebuffer a frame of delay must be added to the scroll.
+; This holds the sum of the offset + scroll setting from the prior frame.
+s_scroll_out_buffer:    ds.w SaiGcuPlaneCfg.len/2
+
+	.section	.text
+
+; clobbers a2.
+	.global	sai_min_gcu_init
+sai_min_gcu_init:
+	moveq	#GCU_REG_SCROLL_A_H, d0
+	lea	GCU_BASE+GCU_REG_ADDR_OFFS, a1
+	; Configuration registers
+	lea	config_tbl(pc), a0
+	move.w	#GCU_REG_INITIALIZE, GCU_REG_ADDR_OFFS-GCU_REG_ADDR_OFFS(a1)
+	moveq	#3-1, d1  ; three config register sections
+0:
+	move.w	(a0)+, GCU_REG_DATA_OFFS-GCU_REG_ADDR_OFFS(a1)
+	dbf	d1, 0b
+
+	; Scroll setup
+	lea	scroll_base_tbl(pc), a0
+	lea	s_scroll_offs, a2
+	moveq	#8-1, d1  ; eight scroll regs
+0:
+	; register select
+	move.w	d0, GCU_REG_ADDR_OFFS-GCU_REG_ADDR_OFFS(a1)
+	; read scroll value and send to GCU as well as store in offset table
+	swap	d0
+	move.w	(a0)+, d0
+	move.w	d0, GCU_REG_DATA_OFFS-GCU_REG_ADDR_OFFS(a1)
+	move.w	d0, (a2)+
+	swap	d0
+	addq.w	#1, d0
+
+	; Erase VRAM
+	move.w	#0, GCU_REG_ADDR_OFFS-GCU_REG_ADDR_OFFS(a1)
+	moveq	#0, d0
+	move.w	#((GCU_VRAM_PAGE_SIZE*4)/(2*4))-1, d1
+vram_clear_loop:
+0:
+	btst	#GCU_STATUS_BLANKING_BIT, (GCU_BASE+GCU_STATUS_OFFS).l
+	bne.b	0b
+	.rept	4
+	move.w	d0, GCU_REG_DATA_OFFS-GCU_REG_ADDR_OFFS(a1)
+	.endr
+	dbf	d1, vram_clear_loop
+
+	; Initial IRQ ack
+	moveq	#GCU_REG_IRQ_ACK, d0
+	move.w	d0, GCU_REG_ADDR_OFFS-GCU_REG_ADDR_OFFS(a1)
+	move.w	d0, GCU_REG_DATA_OFFS-GCU_REG_ADDR_OFFS(a1)
+
+	jmp	(a6)
+
+; Each plane needs a 2px horizontal offset as it takes 2px of time to fetch the
+; nametable and tile data for each plane in turn. The GCU pipelines the three
+; planes serially this way. Rather than correct for the timing offset in the
+; hardware, this is the responsibility of the programmer.
+scroll_base_tbl:
+	dc.w	GCU_PLANE_BASE_X+0, GCU_PLANE_BASE_Y    ; A
+	dc.w	GCU_PLANE_BASE_X+2, GCU_PLANE_BASE_Y    ; B
+	dc.w	GCU_PLANE_BASE_X+4, GCU_PLANE_BASE_Y    ; C
+	dc.w	GCU_PLANE_BASE_X-6, GCU_PLANE_BASE_Y+8  ; S
+
+; The meaning of all bits is not known, but some patterns can be found in all
+; words of the configuration stream. It is thought that this data is shited in
+; to a larger configuration register.
+;
+; fedc ba98 7654 3210
+; .l.. .... .... .... Configuration data latch (end of stream) ?
+; ..s. .... .... .... GCU Slave move
+; .... ..h. .... .... Vertical sync resets horizontal sync counter...?
+; .... .... .... SSSS Thought to be some sort of selection possibly
+config_tbl:
+	dc.w	$0003
+	dc.w	$0002
+	dc.w	$4000
+
+;
+; Initialization
+;
+
+	.global	sai_gcu_init
+sai_gcu_init:
+	; The init function clobbers a2 as well.
+	movem.l	a2/a6, -(sp)
+	calla6 sai_min_gcu_init
+	movem.l	(sp)+, a2/a6
+	rts
+
+	.global	sai_gcu_on_vbl
+sai_gcu_on_vbl:
+;
+; Write scroll to GCU
+;
+	move.l	a2, -(sp)
+	lea	s_scroll_out_buffer, a0
+	lea	GCU_BASE+GCU_REG_ADDR_OFFS, a1
+	lea	s_scroll_offs, a2
+
+	moveq	#GCU_REG_SCROLL_A_H, d0
+gcu_scroll_set_loop:
+	move.w	d0, GCU_REG_ADDR_OFFS-GCU_REG_ADDR_OFFS(a1)  ; regsel
+	move.w	(a0)+, d1  ; user scroll
+	add.w	(a2)+, d1  ; += base scroll
+	andi.w	#$1FF, d1  ; wrap (TODO: is this necessary?)
+	move.w	d1, GCU_REG_DATA_OFFS-GCU_REG_ADDR_OFFS(a1)
+	cmpi.w	#GCU_REG_SCROLL_S_V, d0
+	beq.s	0f
+	addq.w	#1, d0
+	bra.s	gcu_scroll_set_loop
+0:
+	move.l	(sp)+, a2
+
+;
+; Push scroll values to buffer
+;
+	movem.l	g_sai_gcu_scroll, d0-d1/a0-a1
+	movem.l	d0-d1/a0-a1, s_scroll_out_buffer
+
+;
+; Ack IRQ
+;
+	moveq	#GCU_REG_IRQ_ACK, d0
+	move.w	d0, GCU_BASE+GCU_REG_ADDR_OFFS
+	move.w	d0, GCU_BASE+GCU_REG_DATA_OFFS
+	rts

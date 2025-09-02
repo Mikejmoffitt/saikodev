@@ -1,0 +1,82 @@
+;
+; I/O code for Toaplan GCU-Based Hardware
+;
+#include	"sai/toa/io.h"
+#include	"sai/macro.h"
+#include	"sai/input.h"
+
+;
+; Toa I/O
+;
+
+// SAI_TOA_IO_OFFS_SW bits
+#define SWITCH_SERVICE 0
+#define SWITCH_TILT    1
+#define SWITCH_TEST    2
+#define SWITCH_COIN1   3
+#define SWITCH_COIN2   4
+#define SWITCH_START1  5
+#define SWITCH_START2  6
+
+#if TOA_PLAYER_COUNT > 2
+#error "Toa 3-player input polling not yet implemented!"
+#endif  // TOA_PLAYER_COUNT
+
+	.section	.text
+
+	.global	sai_toa_io_init
+sai_toa_io_init:
+	; TODO: Init coils
+	rts
+
+	.global	sai_toa_io_poll
+sai_toa_io_poll:
+	move.w	TOA_IO_BASE+SAI_TOA_IO_OFFS_SW, d1
+;
+; Player 1
+;
+	lea	g_sai_in, a0
+	move.w	SaiInput.now(a0), SaiInput.prev(a0)
+	moveq	#0, d0
+	move.b	TOA_IO_BASE+SAI_TOA_IO_OFFS_P1+1, d0
+
+	btst	#SWITCH_COIN1, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
+	btst	#SWITCH_START1, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	btst	#SWITCH_TEST, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_TEST, d0
+0:
+	btst	#SWITCH_SERVICE, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_SERVICE, d0
+0:
+	btst	#SWITCH_TILT, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_TILT, d0
+0:
+	move.w	d0, SaiInput.now(a0)
+
+;
+; Player 2
+;
+	lea	SaiInput.len(a0), a0
+	move.w	SaiInput.now(a0), SaiInput.prev(a0)
+	moveq	#0, d0
+	move.b	TOA_IO_BASE+SAI_TOA_IO_OFFS_P2+1, d0
+
+	btst	#SWITCH_COIN2, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
+	btst	#SWITCH_START2, d1
+	beq.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	move.w	d0, SaiInput.now(a0)
+	rts

@@ -14,6 +14,8 @@
 #include "sai/cps2/hw.h"
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
 #include "sai/at/hw.h"
+#elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
+#include "sai/toa/hw.h"
 #else
 #error "UNSUPPORTED TARGET!"
 #endif
