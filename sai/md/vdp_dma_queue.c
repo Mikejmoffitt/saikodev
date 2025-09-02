@@ -3,6 +3,8 @@
 #include "sai/md/vdp.h"
 #include "sai/macro.h"
 
+#define SAI_MD_VDP_DMA_QUEUE_DEPTH_DEFAULT 16
+
 #define VDP_CTRL_DMA_BIT     0x00000080
 #define VDP_CTRL_VRAM_READ   0x00000000
 #define VDP_CTRL_VRAM_WRITE  0x40000000
@@ -14,10 +16,12 @@
 #define VDP_DMA_SRC_FILL 0x80
 #define VDP_DMA_SRC_COPY 0xC0
 
-#define DMA_QUEUE_PRIO_DEPTH 2
-#define DMA_QUEUE_DEPTH 64
+#define SAI_MD_VDP_DMA_QUEUE_PRIO_DEPTH 2
+#ifndef SAI_MD_VDP_DMA_QUEUE_DEPTH
+#define SAI_MD_VDP_DMA_QUEUE_DEPTH SAI_MD_VDP_DMA_QUEUE_DEPTH_DEFAULT
+#endif  // SAI_MD_VDP_DMA_QUEUE_DEPTH
 // Used with modulo operator, so should be power of 2.
-_Static_assert(SAI_NUM_IS_POW2(DMA_QUEUE_DEPTH), "DMA queue depth != power of 2!");
+_Static_assert(SAI_NUM_IS_POW2(SAI_MD_VDP_DMA_QUEUE_DEPTH), "DMA queue depth != power of 2!");
 
 typedef enum DmaOp DmaOp;
 enum DmaOp
@@ -46,11 +50,11 @@ _Static_assert(sizeof(DmaCmd) == 0x10);
 
 // Special high priority sprite list(s) queue.
 static uint16_t s_dma_prio_q_idx;
-static DmaCmd s_dma_prio_q_cmd[DMA_QUEUE_PRIO_DEPTH];
+static DmaCmd s_dma_prio_q_cmd[SAI_MD_VDP_DMA_QUEUE_PRIO_DEPTH];
 // DMA queue ring buffer.
 static uint16_t s_dma_q_write_idx;
 static uint16_t s_dma_q_read_idx;
-static DmaCmd s_dma_q[DMA_QUEUE_DEPTH];
+static DmaCmd s_dma_q[SAI_MD_VDP_DMA_QUEUE_DEPTH];
 
 void sai_vdp_dma_init(void)
 {
@@ -206,7 +210,7 @@ void sai_vdp_dma_flush(void)
 		              :
 		              : "a" (a0)
 		              : "d0", "a1", "memory", "cc" );
-		s_dma_q_read_idx = (s_dma_q_read_idx + 1) % DMA_QUEUE_DEPTH;
+		s_dma_q_read_idx = (s_dma_q_read_idx + 1) % SAI_MD_VDP_DMA_QUEUE_DEPTH;
 	}
 
 	sai_vdp_set_hint_en(hint_en);

@@ -44,9 +44,14 @@ LDFLAGS +=
 LIBS +=
 
 # Compilation Flags ------------------------------------------------------------
-CFLAGS +=
-CPPFLAGS +=
-ASFLAGS +=
+
+USER_DEFINES :=
+# Uncomment this line to test direct sprite mode.
+# USER_DEFINES += -DSAI_MD_VDP_SPR_DIRECT
+
+CFLAGS += $(USER_DEFINES)
+CPPFLAGS += $(USER_DEFINES)
+ASFLAGS += $(USER_DEFINES)
 
 # User Sources -----------------------------------------------------------------
 

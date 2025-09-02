@@ -1,4 +1,5 @@
 #include	"sai/md/vdp_spr.h"
+#include	"sai/md/vdp_regs.h"
 #include	"sai/md/vdp_dma_queue.h"
 
 	.section	.bss
@@ -26,13 +27,19 @@ sai_vdp_spr_init:
 
 sai_min_vdp_spr_init:
 	moveq	#0, d0
+#ifndef SAI_MD_VDP_SPR_DIRECT
 	move.w	d0, g_sai_vdp_spr_count
+#else
+	move.w	#VDP_SPR_COUNT, g_sai_vdp_spr_count
+#endif  // SAI_MD_VDP_SPR_DIRECT
 	lea	g_sai_vdp_spr, a0
 	move.l	a0, g_sai_vdp_spr_next
 	moveq	#VDP_SPR_COUNT-1, d1
 0:
+#ifndef SAI_MD_VDP_SPR_DIRECT
 	addq.w	#1, d0
 	move.b	d0, SaiVdpSpr.link(a0)  ; Link points to the next.
+#endif  // SAI_MD_VDP_SPR_DIRECT
 	move.w	#2, SaiVdpSpr.x(a0)  ; X is set to 2 to avoid the line mask.
 	move.w	d0, SaiVdpSpr.y(a0)  ; it's not zero, but it's offscreen, so eh
 	lea	SaiVdpSpr.len(a0), a0
@@ -40,6 +47,7 @@ sai_min_vdp_spr_init:
 	jmp	(a6)
 
 sai_vdp_spr_start:
+#ifndef SAI_MD_VDP_SPR_DIRECT
 	lea	g_sai_vdp_spr, a0
 	move.l	a0, g_sai_vdp_spr_next
 	move.b	#1, SaiVdpSpr.link(a0)
@@ -52,13 +60,21 @@ sai_vdp_spr_start:
 	move.b	d1, SaiVdpSpr.link(a0, d0.w)
 	clr.w	g_sai_vdp_spr_count
 0:
+#else
+	move.l	#g_sai_vdp_spr, g_sai_vdp_spr_next
+#endif  // SAI_MD_VDP_SPR_DIRECT
 	rts
 
 sai_vdp_spr_finish:
-	lea	g_sai_vdp_spr, a0
+; Sprite count / transfer call parameter
 	moveq	#0, d0
-	move.w	g_sai_vdp_spr_count, d0  ; becomes transfer count parameter
-	bne.s	0f
+	move.w	g_sai_vdp_spr_count, d0
+;
+; Sprite list termination.
+;
+#ifndef SAI_MD_VDP_SPR_DIRECT
+	lea	g_sai_vdp_spr, a0
+	bne.s	0f  ; Z flag still set from the load of g_sai_vdp_spr_count.
 	; Empty list: basically pretend there is one sprite
 	clr.l	SaiVdpSpr.y(a0)
 	moveq	#1, d0  ; transfer count of 1.
@@ -71,6 +87,7 @@ sai_vdp_spr_finish:
 	lsl.w	#3, d1
 	sf	SaiVdpSpr.link(a0, d1.w)
 0:
+#endif  // SAI_MD_VDP_SPR_DIRECT
 	move.l	d0, -(sp)
 	bsr.w	sai_vdp_dma_transfer_spr_vram
 	addq.w	#4, sp

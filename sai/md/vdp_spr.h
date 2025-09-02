@@ -12,6 +12,27 @@ extern "C"
 
 #include "sai/md/vdp.h"
 
+//
+// Compiler flags:
+//
+// * SAI_MD_VDP_SPR_DIRECT
+//
+// Set this flag to tell Saikodev that you don't want it to set the link fields
+// or terminate the sprite list. The sprite buffer still exists, but it becomes
+// the programmer's responsibility to correctly terminate the sprite list and
+// hide unwanted sprites. 
+//
+// In direct mode, set g_sai_vdp_spr_count to the size of the sprite list that
+// you will transfer. By default, this will be set to the full sprite list size
+// (80) but if you are using less, set it accordingly (especially if using H32
+// mode, where only 64 sprites may be used). In direct mode, g_sai_vdp_spr_count
+// is not cleared upon calling sai_vdp_spr_finish(), so you may set it once.
+//
+// g_sai_vdp_spr_next is also still present, and you can use the drawing code
+// defined below, but keep in mind that unless you are careful you run the risk
+// of clobbering manual sprite list manipulations.
+//
+
 #ifndef __ASSEMBLER__
 
 typedef struct SaiVdpSpr
