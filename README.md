@@ -37,7 +37,7 @@ As for comments and the hexidecimal prefix, I handle these with a crude `gawk` c
 I want my support code to be convenient, but I don't want it to become a burden to the software it supports. My boot code is reasonably small, and the regular frame update code that runs the small functions specific to each harwdare are hand-written in assembly. I've tried to cleanly implement functionality that everything will need (input reading, sprite transfer/page flip, palette mangement) so that repeated implementation won't be needed, and I hope these implementations are compact and flexible enough for most users.
 
 ### Make Tools Available
-Even if the hardware is booting, it's frustrating to find that convenient tools may not exist for painless conversion of graphics data, or that there are no sound engines for the audio hardware. While games generally require bespoke tooling, whenever I've made something that's useful enough to be used more than once, I'd prefer to integrate it or otherwise make it easy to use for other projects sharing the same framework (see Velella)
+Even if the hardware is booting, it's frustrating to find that convenient tools may not exist for painless conversion of graphics data, or that there are no sound engines for the audio hardware. While games generally require bespoke tooling, whenever I've made something that's useful enough to be used more than once, I'd prefer to integrate it or otherwise make it easy to use for other projects sharing the same framework (see [Velella](https://github.com/mikejmoffitt/velella))
 
 ### Don't Overdo It
 It's tempting to design not only a development "kit" but instead a whole *engine*, promising to run the same code with the same assets across many platforms. When working with old hardware like this, it is necessary to design with the constraints and strengths of the hardware in mind. The supported platforms vary greatly in their graphical capabilities and sound hardware. Working with a lowest common denominator could allow for a universal engine to be viable, but I think that would hamper the quality of anything made that targets it. In addition, the convenience of a generalized engine comes with consequences in complexity, and there is no room for that on hardware like this.
@@ -70,17 +70,124 @@ SGCC is DOS based and the tooling is distributed in binary format. I do not have
 
 MDK is an earlier attempt of mine towards goals similar to Saikodev, but I have elected to make a clean start and move away from it.
 
-## Platforms
+# Platforms
 
 Saikodev is supported for the following hardware:
 
 * Sega Mega Drive / Genesis
 * Sega System C / C2
-* Sega System 16
+* Sega System 16B
 * Sega System 18
-* Sega System 24
+* Capcom CPS
 * Capcom CPS2
-* Atlus 013/038
+* Atlus 013/038 chipset
+* Toaplan GCU (GP9001) chipset
+
+## Implementation Status
+
+Different platforms are at different levels of feature-completeness. The meaning of "supported" and "unsupported" might require some disambiguation on a categorical basis.
+
+### Sega Mega drive / Genesis:
+☑ Startup, linker script, and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ VDP initialization and API
+☑ VDP DMA queue and API
+☑ VDP Sprite list management and API
+☑ VDP Graphics data conversin tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
+☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))
+☑ Controller polling
+☑ Palette management
+☐ Sound engine and tooling ([under development](https://github.com/mikejmoffitt/nezdrv))
+
+### Sega System C / C2:
+☑ Startup, linker script (with variant for System C), and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ VDP initialization and API
+☑ VDP DMA queue and API
+☑ VDP Sprite list management and API
+☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))
+☑ Input polling and special I/O
+☑ Palette management
+☐ Sound engine and tooling (need a 68k-native solution; it is possible to use [MDSDRV](https://github.com/superctr/MDSDRV))
+
+### Sega System 16B:
+☑ Startup, linker script, and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ Memory mapper configuration
+☐ S16B sprite list management and API
+☐ S16B Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
+☑ Input polling
+☑ Palette management
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+
+### Sega System 18:
+☑ Startup, linker script, and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ Memory mapper configuration
+☑ VDP initialization and API
+☑ VDP DMA queue and API
+☑ VDP Sprite list management and API
+☑ VDP Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
+☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))
+☐ S16B sprite list management and API
+☐ S16B Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
+☑ Input polling
+☑ Palette management
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+
+### Capcom CPS:
+☑ Startup, linker script, and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ PPU initialization and API
+☑ PPU Sprite list management and API
+☑ PPU Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella); still immature)
+☑ Input polling
+☑ Palette management
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+
+### Capcom CPS2:
+☑ Startup, linker script, and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ PPU initialization and API
+☐ PPU Sprite list management and API (it is not yet clear to me why they are not showing up. They used to.)
+☑ PPU Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella); still immature)
+☑ Input polling
+☑ Palette management
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+
+### Atlus 013/038:
+☑ Startup, linker script, and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ 013 initialization and API
+☑ 013 Sprite list management and API
+☑ 013 Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)
+☑ 038 initialization and API
+☑ 038 Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)
+☑ Input polling
+☑ Palette management
+☑ Sound playback code and tooling (Via [YMZTool](https://github.com/mikejmoffitt/ymztool))
+
+### Toaplan GCU:
+☑ Startup, linker script, and sample project
+☑ IRQ callbacks
+☐ Exception handling (error message, register display, stack print, etc)
+☑ GCU initialization and API
+☐ GCU Sprite list management and API
+☐ GCU Graphics data conversion tooling
+☐ Text PCG initialization and API
+☐ Text PCG Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)
+☑ Input polling
+☑ Palette management
+☐ Sound engine and tooling (need a 68k-native solution)
+
+# Usage
 
 ## Environment and Usage
 
@@ -243,4 +350,6 @@ Macros for defining palette entry words as R, G, B elements are exposed, as well
 Linker scripts live in `sai/ld`, rather than in hardware-specific directories. In the case of platforms like CPS and MD there is no meaningful boundary between "hardware" and "platform", but for arcade chipsets that were used across many boards with small changes, it is necessary to make this distinction. ESP Ra.De. and Guwange both use the Atlus chipset, but the memory map is not the same, and this matters to the linker script more than any other part of the project.
 
 
+# Contributing
 
+The more feature-rich platforms became that way as I wrote code to suit my needs. If you find yourself needing additional code to achieve certain functionality for a platform and feel it could be useful to others, please feel free to reach out or create a pull request. For the latter I will be a stickler about formatting and code style, but any input is appreciated.
