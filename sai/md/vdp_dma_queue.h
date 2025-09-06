@@ -19,7 +19,7 @@ extern "C"
 //
 // * SAI_MD_VDP_DMA_QUEUE_DEPTH
 //
-// The default value is 16, but you may override this value by defining it.
+// The default value is 32, but you may override this value by defining it.
 //
 
 #ifndef __ASSEMBLER__

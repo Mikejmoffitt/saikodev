@@ -158,7 +158,7 @@ typedef struct SaiMdCspParam
 {
 	// Data.
 	uint32_t vram_base;      // Base VRAM address used for tile data.
-	const uint8_t *chr;      // CHR data (used for DMA).
+	const uint16_t *chr;      // CHR data (used for DMA).
 	const SaiMdCspHeader *map;     // Mapping data.
 	const SaiMdCspRef *ref;  // Ref list.
 	const SaiMdCspSpr *spr;  // SPR list.
@@ -178,8 +178,8 @@ typedef struct SaiMdCspParam
 
 // Set up a CSP parameter struct.
 void sai_vdp_csp_init(SaiMdCspParam *s,
-                      const uint8_t *chr,
-                      const uint8_t *map,
+                      const uint16_t *chr,
+                      const uint16_t *map,
                       uint32_t vram_base,
                       uint16_t attr,
                       bool use_dma);
@@ -201,11 +201,11 @@ void sai_vdp_csp_draw_fast(SaiMdCspParam *s);
 // Mapping header access.
 //
 
-static inline uint16_t sai_vdp_csp_get_ref_count(const uint8_t *map);
-static inline const SaiMdCspRef *sai_vdp_csp_get_refs(const uint8_t *map);
-static inline const SaiMdCspSpr *sai_vdp_csp_get_sprs(const uint8_t *map);
-static inline uint16_t sai_vdp_csp_get_fixed_vram_words(const uint8_t *map);
-static inline uint16_t sai_vdp_csp_get_dma_vram_words(const uint8_t *map);
+static inline uint16_t sai_vdp_csp_get_ref_count(const uint16_t *map);
+static inline const SaiMdCspRef *sai_vdp_csp_get_refs(const uint16_t *map);
+static inline const SaiMdCspSpr *sai_vdp_csp_get_sprs(const uint16_t *map);
+static inline uint16_t sai_vdp_csp_get_fixed_vram_words(const uint16_t *map);
+static inline uint16_t sai_vdp_csp_get_dma_vram_words(const uint16_t *map);
 
 // -----------------------------------------------------------------------------
 // Static implementations
@@ -217,31 +217,31 @@ static inline void sai_vdp_csp_transfer(SaiMdCspParam *s)
 	sai_vdp_dma_transfer_vram(s->vram_base, s->chr, s->fixed_chr_words, 2);
 }
 
-static inline uint16_t sai_vdp_csp_get_ref_count(const uint8_t *map)
+static inline uint16_t sai_vdp_csp_get_ref_count(const uint16_t *map)
 {
 	const SaiMdCspHeader *header = (const SaiMdCspHeader *)map;
 	return header->ref_count;
 }
 
-static inline const SaiMdCspRef *sai_vdp_csp_get_refs(const uint8_t *map)
+static inline const SaiMdCspRef *sai_vdp_csp_get_refs(const uint16_t *map)
 {
 	const SaiMdCspHeader *header = (const SaiMdCspHeader *)map;
 	return &header->refs[0];
 }
 
-static inline const SaiMdCspSpr *sai_vdp_csp_get_sprs(const uint8_t *map)
+static inline const SaiMdCspSpr *sai_vdp_csp_get_sprs(const uint16_t *map)
 {
 	const SaiMdCspHeader *header = (const SaiMdCspHeader *)map;
-	return (SaiMdCspSpr *)(map + header->spr_list_base_offs);
+	return (SaiMdCspSpr *)(&map[header->spr_list_base_offs/2]);
 }
 
-static inline uint16_t sai_vdp_csp_get_fixed_vram_words(const uint8_t *map)
+static inline uint16_t sai_vdp_csp_get_fixed_vram_words(const uint16_t *map)
 {
 	const SaiMdCspHeader *header = (const SaiMdCspHeader *)map;
 	return header->fixed_vram_words;
 }
 
-static inline uint16_t sai_vdp_csp_get_dma_vram_words(const uint8_t *map)
+static inline uint16_t sai_vdp_csp_get_dma_vram_words(const uint16_t *map)
 {
 	const SaiMdCspHeader *header = (const SaiMdCspHeader *)map;
 	return header->dma_vram_words;

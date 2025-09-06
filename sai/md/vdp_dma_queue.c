@@ -3,7 +3,7 @@
 #include "sai/md/vdp.h"
 #include "sai/macro.h"
 
-#define SAI_MD_VDP_DMA_QUEUE_DEPTH_DEFAULT 16
+#define SAI_MD_VDP_DMA_QUEUE_DEPTH_DEFAULT 32
 
 #define VDP_CTRL_DMA_BIT     0x00000080
 #define VDP_CTRL_VRAM_READ   0x00000000

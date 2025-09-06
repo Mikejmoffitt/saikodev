@@ -1,8 +1,8 @@
 #include "sai/md/vdp_csp.h"
 
 void sai_vdp_csp_init(SaiMdCspParam *s,
-                     const uint8_t *chr,
-                     const uint8_t *map,
+                     const uint16_t *chr,
+                     const uint16_t *map,
                      uint32_t vram_base,
                      uint16_t attr,
                      bool use_dma)
@@ -38,8 +38,8 @@ void sai_vdp_csp_draw_fast(SaiMdCspParam *s)
 	if (ref->spr_count > 0)
 	{
 		const bool use_dma = s->dma_chr_words > 0;
-
-		const SaiMdCspSpr *spr = (SaiMdCspSpr *)((const uint8_t *)(s->spr)+ref->spr_list_offs);
+		const uint8_t *spr_u8 = (const uint8_t *)s->spr;
+		const SaiMdCspSpr *spr = (const SaiMdCspSpr *)(spr_u8 + ref->spr_list_offs);
 
 		const uint16_t tile_index = ref->tile_index;
 		const uint16_t tile_base = use_dma ? s->tile_base : s->tile_base+tile_index;
@@ -67,7 +67,7 @@ void sai_vdp_csp_draw_fast(SaiMdCspParam *s)
 		const bool new_frame = s->frame != s->frame_last;
 		if (!new_frame) return;
 		sai_vdp_dma_transfer_vram(s->vram_base,
-		                          &s->chr[VDP_ADDR_FROM_TILE(tile_index)],
+		                          &s->chr[VDP_ADDR_FROM_TILE(tile_index)/2],
 		                          ref->tile_words, 2);
 	}
 	s->frame_last = s->frame;

@@ -1,4 +1,4 @@
-	#pragma once
+#pragma once
 #include "sai/macro.h"
 
 //
@@ -98,10 +98,12 @@
                  (((_hflip) ? VDP_HF : 0) | ((_vflip) ? VDP_VF : 0) | \
                   (((_pal) & 0x3) << VDP_PALSHIFT) | ((_prio) ? VDP_PRIO : 0)))
 #define VDP_SIZE(w, h) (((h-1) & 0x3) | (((w-1) & 0x3) << 2))
-#define VDP_SPR_COUNT 80
 
 #define VDP_TILE(address) ((address)>>5)
 #define VDP_ADDR_FROM_TILE(tile) ((tile)<<5)
+
+#define VDP_SPR_COUNT 80
+#define VDP_SPR_STATIC_OFFS 128
 
 // Register manipulation.
 #define VDP_VRAM_ADDR_CMD      (0x40000000)
