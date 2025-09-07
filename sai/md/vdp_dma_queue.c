@@ -63,13 +63,15 @@ void sai_vdp_dma_init(void)
 	s_dma_prio_q_idx = 0;
 }
 
-// Calculate required register values for a transfer
+// Calculate required register values for a transfer.
+// If the queue cannot accept any more transfers, a flush begins.
 static inline void enqueue_int(DmaOp op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
 {
 	// A command slot is chosen from one of the two queues, based on the type.
 	DmaCmd *cmd;
 	if (op == DMA_OP_SPR_TRANSFER)
 	{
+		if (s_dma_prio_q_idx >= SAI_ARRAYSIZE(s_dma_prio_q_cmd)) sai_vdp_dma_flush();
 		if (s_dma_prio_q_idx >= SAI_ARRAYSIZE(s_dma_prio_q_cmd)) return;
 		cmd = &s_dma_prio_q_cmd[s_dma_prio_q_idx];
 		s_dma_prio_q_idx++;
@@ -79,6 +81,7 @@ static inline void enqueue_int(DmaOp op, uint32_t bus, uint32_t dest, uint32_t s
 		cmd = &s_dma_q[s_dma_q_write_idx];
 		s_dma_q_write_idx = (s_dma_q_write_idx + 1) %
 		                     SAI_ARRAYSIZE(s_dma_q);
+		if (s_dma_q_write_idx == s_dma_q_read_idx) sai_vdp_dma_flush();
 		if (s_dma_q_write_idx == s_dma_q_read_idx) return;
 	}
 

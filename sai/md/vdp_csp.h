@@ -171,10 +171,28 @@ typedef struct SaiMdCspParam
 	uint16_t dma_chr_words;
 	int16_t frame_last;      // Last frame draw/transferred (for DMA).
 } SaiMdCspParam;
+#else
+	.struct	0
+SaiMdCspParam.vram_base:       ds.l 1
+SaiMdCspParam.chr:             ds.l 1
+SaiMdCspParam.map:             ds.l 1
+SaiMdCspParam.ref:             ds.l 1
+SaiMdCspParam.spr:             ds.l 1
+SaiMdCspParam.tile_base:       ds.w 1
+SaiMdCspParam.attr:            ds.w 1
+SaiMdCspParam.x:               ds.w 1
+SaiMdCspParam.y:               ds.w 1
+SaiMdCspParam.fixed_chr_words: ds.w 1
+SaiMdCspParam.dma_chr_words:   ds.w 1
+SaiMdCspParam.frame_last:      ds.w 1
+SaiMdCspParam.len:
+	
+#endif // __ASSEMBLER__
 
 //
 // Interface
 //
+#ifndef __ASSEMBLER__
 
 // Set up a CSP parameter struct.
 void sai_vdp_csp_init(SaiMdCspParam *s,
