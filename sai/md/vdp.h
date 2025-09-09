@@ -368,7 +368,7 @@ static inline void sai_vdp_set_window_left(uint8_t cell)
 // Raster
 static inline void sai_vdp_set_disp(bool disp)
 {
-	if (blank) g_sai_vdp_reg_mode[1] |= VDP_MODESET2_DISP;
+	if (disp) g_sai_vdp_reg_mode[1] |= VDP_MODESET2_DISP;
 	else g_sai_vdp_reg_mode[1] &= ~(VDP_MODESET2_DISP);
 	sai_vdp_write_ctrl(g_sai_vdp_reg_mode[1]);
 }
