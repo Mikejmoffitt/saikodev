@@ -168,7 +168,7 @@ v... .... SMSVL - Columns 24-31 (but not 32-39) forced to a scroll of 0.
 #define VDP_MODESET1_VC0       SAI_BITVAL(3)
 #define VDP_MODESET1_M4        SAI_BITVAL(2)
 #define VDP_MODESET1_M3        SAI_BITVAL(1)
-#define VDP_MODESET1_DE        SAI_BITVAL(0)
+#define VDP_MODESET1_OVER      SAI_BITVAL(0)
 #define VDP_MODESET1_DEFAULT   (VDP_MODESET1_M4)
 /*
 $81 - Mode Set Register 2
