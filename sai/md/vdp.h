@@ -105,7 +105,7 @@ static inline void sai_vdp_set_window_right(uint8_t cells);
 static inline void sai_vdp_set_window_left(uint8_t cells);
 
 // Raster
-static inline void sai_vdp_set_blank(bool blank);
+static inline void sai_vdp_set_disp(bool disp);
 static inline void sai_vdp_set_bg_color(uint8_t idx);
 static inline uint16_t sai_vdp_get_hvcount(void);
 static inline uint16_t sai_vdp_get_hcount(void);
@@ -366,7 +366,7 @@ static inline void sai_vdp_set_window_left(uint8_t cell)
 }
 
 // Raster
-static inline void sai_vdp_set_blank(bool blank)
+static inline void sai_vdp_set_disp(bool disp)
 {
 	if (blank) g_sai_vdp_reg_mode[1] |= VDP_MODESET2_DISP;
 	else g_sai_vdp_reg_mode[1] &= ~(VDP_MODESET2_DISP);
