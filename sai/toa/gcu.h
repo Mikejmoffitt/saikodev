@@ -126,6 +126,40 @@ SaiGcuPlaneCfg.len:
 
 #endif  // __ASSEMBLER__
 
+//
+// GCU Sprites.
+//
+
+// The position data is lined up for Toaplan's 7bit fixed point system, which
+// is as precise as you can get while still allowing freedom to position in
+// and around a 320x240 screen.
+
+// $00 - 設定・色 attributes, color, etc.
+// fedc ba98 7654 3210
+// d... .... .... .... 表示              display
+// .m.. .... .... .... 連鎖              chain
+// ..y. .... .... .... Y反転             flip
+// ...x .... .... .... X反転             flip
+// .... pppp .... .... プライオリティー　priority
+// .... .... cccc cc.. 色　              color
+// .... .... .... ..CC パターンコード    pattern code (bits 16-17)
+
+// $01 - パターン pattern code. Many titles use this exclusively.
+// fedc ba98 7654 3210
+// CCCC CCCC CCCC CCCC パターンコード    pattern code (bits 0-15)
+
+// $02 - X立場 position and attributes
+// xxxx xxxx x... .... X立場　           position
+// .... .... .... ssss 幅-1              width-1
+
+// $03 - Y立場 position and attributes
+// yyyy yyyy y... .... Y立場　           position
+// .... .... .... ssss 丈-1              height-1
+
+//
+// GCU Background tiles.
+//
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

@@ -140,8 +140,8 @@ void __attribute__((noreturn)) main(void)
 {
 	sai_init();
 	sai_ymz_init(wrk_ymz_dat);
-	sai_pal_load(0x01*16, &wrk_spr_pal[SPR_ESPRADE_PAL_OFFS], SPR_ESPRADE_PAL_LEN/16);
-	sai_pal_load(0x40*16, &wrk_bga_pal[BGA_FONT_PAL_OFFS], BGA_FONT_PAL_LEN/16);
+	sai_pal_load(0x01*16, vel_get_wrk_spr_pal(SPR_ESPRADE), SPR_ESPRADE_PAL_LEN/16);
+	sai_pal_load(0x40*16, vel_get_wrk_bga_pal(BGA_FONT), BGA_FONT_PAL_LEN/16);
 
 	// Set plane A to 8x8 for string display
 	g_sai_bg038[0].flagy &= ~BG038_SCRY_TILE16;

@@ -110,10 +110,10 @@ static void draw_inputs(void)
 void __attribute__((noreturn)) main(void)
 {
 	sai_init();
-	sai_pal_load(0, (void *)(wrk_gfx_pal+SPR_CPS_PAL_OFFS), 1);
-	sai_pal_load(32, (void *)(wrk_gfx_pal+BG8_FONT_PAL_OFFS), 1);
-	sai_pal_load(64, (void *)(wrk_gfx_pal+BG8_FONT_PAL_OFFS), 1);
-	sai_pal_load(96, (void *)(wrk_gfx_pal+BG8_FONT_PAL_OFFS), 1);
+	sai_pal_load(0, vel_get_wrk_gfx_pal(SPR_CPS), 1);
+	sai_pal_load(32, vel_get_wrk_gfx_pal(BG8_FONT), 1);
+	sai_pal_load(64, vel_get_wrk_gfx_pal(BG8_FONT), 1);
+	sai_pal_load(96, vel_get_wrk_gfx_pal(BG8_FONT), 1);
 	draw_initial_text();
 
 	while (true)

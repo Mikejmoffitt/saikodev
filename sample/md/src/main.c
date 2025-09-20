@@ -169,11 +169,11 @@ static void draw_inputs(void)
 void __attribute__((noreturn)) main(void)
 {
 	sai_init();
-	sai_pal_load(TEST_FONT_PAL, wrk_gfx_pal+BG_FONT_PAL_OFFS, 1);
-	sai_pal_load(TEST_SPR_PAL, wrk_gfx_pal+SPR_MD_PAL_OFFS, 1);
-	sai_vdp_dma_transfer_vram(TEST_SPR_VRAM_ADDR, wrk_gfx_chr+SPR_MD_CHR_OFFS,
+	sai_pal_load(TEST_FONT_PAL, vel_get_wrk_gfx_pal(BG_FONT), 1);
+	sai_pal_load(TEST_SPR_PAL, vel_get_wrk_gfx_pal(SPR_MD), 1);
+	sai_vdp_dma_transfer_vram(TEST_SPR_VRAM_ADDR, vel_get_wrk_gfx_chr(SPR_MD),
 	                          SPR_MD_CHR_WORDS, 2);
-	sai_vdp_dma_transfer_vram(TEST_BG_VRAM_FONT_ADDR, wrk_gfx_chr+BG_FONT_CHR_OFFS,
+	sai_vdp_dma_transfer_vram(TEST_BG_VRAM_FONT_ADDR, vel_get_wrk_gfx_chr(BG_FONT),
 	                          BG_FONT_CHR_WORDS, 2);
 	draw_initial_text();
 
