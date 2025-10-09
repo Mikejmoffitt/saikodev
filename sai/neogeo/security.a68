@@ -1,0 +1,71 @@
+;
+; Neo-Geo security routine.
+;
+
+#include "sai/neogeo/hw.h"
+#include "sai/neogeo/reg.h"
+
+	.section	.text.security
+; ------------------------------------------------------------------------------
+;
+; Security Routine Pointer $182
+;
+; ------------------------------------------------------------------------------
+	dc.l	sai_neo_security_routine
+
+; ------------------------------------------------------------------------------
+;
+; Security Routine
+;
+; ------------------------------------------------------------------------------
+sai_neo_security_routine:
+	moveq	#0, d3
+	tst.w	$A14(a5)
+	bne.w	sec_type2
+	movea.l	$A04(a5), a0
+	move.w	$A08(a5), d7
+
+sec_lp1:
+	move.b	d0, (SAI_NEO_REG_DIPSW).l  ; Watchdog
+	move.w	(a0), d1
+	cmpi.b	#$FF, d1
+	beq.s	0f
+	move.w	2(a0), d0
+	cmp.b	$ACE(a5), d0
+	bne.s	0f
+	move.w	4(a0), d0
+	cmp.b	$ACF(a5), d0
+	bne.s	0f
+	cmp.b	$AD0(a5), d1
+	beq.s	1f
+0:
+	addq.l	#8, a0
+	dbf	d7,sec_lp1
+	move.w	d7, d3
+1:
+	rts
+
+sec_type2:
+	movea.l	$A04(a5), a0
+	move.w	$A08(a5), d7
+
+sec_lp2:
+	move.w	(a0), d1
+	lsr.w	#8, d1
+	cmpi.b	#$FF, d1
+	beq.s	0f
+	move.w	(a0), d0
+	cmp.b	$ACE(a5), d0
+	bne.s	0f
+	move.w	2(a0), d0
+	lsr.w	#8, d0
+	cmp.b	$ACF(a5), d0
+	bne.s	0f
+	cmp.b	$AD0(a5), d1
+	beq.s	1f
+0:
+	addq.l	#4, a0
+	dbf	d7, sec_lp2
+	move.w	d7, d3
+1:
+	rts

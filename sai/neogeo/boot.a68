@@ -1,0 +1,59 @@
+;
+; Saikodev Neo-Geo entry points.
+;
+; The four entry points must be provided by the user.
+;
+#include "sai/input.h"
+#include "sai/macro.h"
+#include "sai/memmap.h"
+#include "sai/target.h"
+#include "sai/neogeo/reg.h"
+#include "sai/neogeo/sysrom.h"
+
+	.extern	sai_crt0_begin
+
+	.section	.text
+
+	.global	start
+	.global	_start
+
+	.extern	sai_neo_entry_user
+	.extern	sai_neo_entry_player_start
+
+	.global	start
+start = SAI_NEO_SYSTEM_RESET
+
+	.global	startup_err
+
+_start:
+start:
+	move.w	#$2700, sr
+	lea	__stack, sp
+
+	.global sai_neo_entry_user_internal
+sai_neo_entry_user_internal:
+	; Set a flag in the BIOS memory as a bugfix that prevents the BIOS from
+	; calling user command #3 twice.
+	cmpi.b	#SAI_NEO_UREQ_TITLE, g_sai_neo_user_request
+	bne.s	0f
+	move.b	#$01, $10FEC5  ; TODO: real symbol name
+0:
+	jmp	(sai_crt0_begin).l
+
+	.global	sai_neo_entry_player_start_internal
+sai_neo_entry_player_start_internal:
+	jmp	(sai_neo_entry_player_start).l
+
+	.global sai_neo_entry_coin_sound_internal
+sai_neo_entry_coin_sound_internal:
+	; TODO: send pre-determined sound ID to Z80.
+	.global	sai_neo_entry_demo_end_internal
+sai_neo_entry_demo_end_internal:
+	rts
+
+
+softreset:
+	jmp	sai_crt0_begin
+
+startup_err:
+	jmp	start

@@ -1,0 +1,28 @@
+#include "sai/sai.h"
+
+	.section	.text
+	.align	2
+	.global	sai_neo_sdips_jp
+	.global	sai_neo_sdips_us
+	.global	sai_neo_sdips_eu
+sai_neo_sdips_jp:
+sai_neo_sdips_us:
+sai_neo_sdips_eu:
+	;       ................
+	.ascii "SAIKODEV SAMPLE!"
+	; Special Settings
+	dc.w	-1  ; Not used
+	dc.w	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	; Simple Settings
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used
+	dc.b	-1  ; Not used

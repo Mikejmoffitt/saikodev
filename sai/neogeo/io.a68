@@ -1,0 +1,86 @@
+;
+; I/O code for Neo-Geo.
+;
+#include	"sai/neogeo/io.h"
+#include	"sai/neogeo/sysrom.h"
+#include	"sai/neogeo/reg.h"
+#include	"sai/macro.h"
+#include	"sai/input.h"
+
+// SAI_TOA_IO_OFFS_SW bits
+#define SWITCH_SERVICE 0
+#define SWITCH_TILT    1
+#define SWITCH_TEST    2
+#define SWITCH_COIN1   3
+#define SWITCH_COIN2   4
+#define SWITCH_START1  5
+#define SWITCH_START2  6
+
+	.section	.text
+
+	.global	sai_neogeo_io_init
+sai_neogeo_io_init:
+	; TODO: Init coils
+	rts
+
+	.global	sai_neogeo_io_poll
+sai_neogeo_io_poll:
+	sf	SAI_NEO_REG_DIPSW  ; pet watchdog
+;
+; Player 1
+;
+	lea	g_sai_in, a0
+	move.w	SaiInput.now(a0), SaiInput.prev(a0)
+	moveq	#0, d0
+	move.b	REG_P1CNT, d0
+	move.w	REG_STATUS_A, d1
+	swap	d1
+	move.w	REG_STATUS_B, d1
+	not.b	d0
+
+	btst	#0, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	btst	#1, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_SELECT, d0
+0:
+	swap	d1
+	btst	#0, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
+	btst	#2, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_SERVICE, d0
+0:
+	swap	d1
+	move.w	d0, SaiInput.now(a0)
+
+;
+; Player 2
+;
+	lea	SaiInput.len(a0), a0
+	move.b	REG_P2CNT, d0
+	not.b	d0
+
+	btst	#2, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_START, d0
+0:
+	btst	#3, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_SELECT, d0
+0:
+	swap	d1
+	btst	#1, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_COIN, d0
+0:
+	btst	#2, d1
+	bne.s	0f
+	ori.w	#SAI_BTN_SERVICE, d0
+0:
+	move.w	d0, SaiInput.now(a0)
+	rts

@@ -1,0 +1,42 @@
+#include "sai/target.h"
+#include "sai/irq.h"
+#include "sai/neogeo/reg.h"
+#include "sai/neogeo/sysrom.h"
+
+	.global	g_irq_vbl_callback
+	.global	g_irq_timer_callback
+
+	.global	_v_irq1
+	.global	_v_irq2
+	.global	_v_irq3
+	.global	_v_irq4
+	.global	_v_irq5
+	.global	_v_irq6
+	.global	_v_irq7
+
+	.section	.data
+g_irq_vbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+g_irq_timer_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+
+	.section	.text
+_v_irq1:
+	move.w	#SAI_BITVAL(SAI_NEO_ACKBIT_VBLANK), SAI_NEO_REG_IRQACK
+	virq_handler g_irq_vbl_callback
+	jsr	SAI_NEO_SYSTEM_IO
+	rte
+_v_irq2:
+	move.w	#SAI_BITVAL(SAI_NEO_ACKBIT_TIMER), SAI_NEO_REG_IRQACK
+	irq_handler g_irq_timer_callback
+_v_irq3:
+_v_irq4:
+_v_irq5:
+_v_irq6:
+_v_irq7:
+	rte
+
+	.global	sai_irq_init
+sai_irq_init:
+	move.l	#SAI_IRQ_HANDLER_UNUSED, d0
+	move.l	d0, g_irq_vbl_callback
+	move.l	d0, g_irq_timer_callback
+	rts

@@ -1,4 +1,4 @@
-#include "sai/toa/pal.h"
+#include "sai/neogeo/pal.h"
 
 	.section	.text
 

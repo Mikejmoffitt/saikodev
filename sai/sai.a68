@@ -19,6 +19,11 @@ g_sai_vbl_wait_flag:              ds.b 1
 sai_init:
 	bsr.w	sai_irq_init
 	bsr.w	sai_input_init
+
+;
+; System-specific
+;
+
 #if ((SAI_TARGET == SAI_TARGET_MD) || (SAI_TARGET == SAI_TARGET_C1) || SAI_TARGET == SAI_TARGET_C2)
 	bsr.w	sai_vdp_init
 	bsr.w	sai_vdp_dma_init
@@ -74,6 +79,12 @@ sai_init:
 	bsr.w	sai_gcu_init
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init
+#rlif SAI_TARGET == SAI_TARGET_NEOGEO
+	// TODO: Init sprites
+	// TODO: I/O init
+	bsr.w	sai_neogeo_io_init
+	bsr.w	sai_pal_init
+	bsr.w	sai_palcmd_init
 #endif  // SAI_TARGET
 	sf	g_sai_vbl_wait_flag
 	rts
@@ -120,12 +131,16 @@ sai_finish:
 #elif SAI_TARGET == SAI_TARGET_ESPRADE
 	bsr.w	sai_sp013_finish
 	bsr.w	sai_irq_vbl_wait
-	bsr.w	sai_sp013_on_vbl
 	bsr.w	sai_palcmd_poll
+	bsr.w	sai_sp013_on_vbl
 	bsr.w	sai_bg038_on_vbl
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 	bsr.b	sai_irq_vbl_wait
 	bsr.w	sai_gcu_on_vbl
+	bsr.w	sai_palcmd_poll
+#elif SAI_TARGET == SAI_TARGET_NEOGEO
+	bsr.b	sai_irq_vbl_wait
+	; TODO: Sprites on VBL
 	bsr.w	sai_palcmd_poll
 #endif  // SAI_TARGET
 
@@ -149,6 +164,8 @@ sai_finish:
 	bsr.w	sai_at_io_poll
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 	bsr.w	sai_toa_io_poll
+#elif SAI_TARGET == SAI_TARGET_NEOGEO
+	; TODO: neo io poll
 #endif  // SAI_TARGET
 	bsr.w	sai_input_post_poll
 

@@ -18,9 +18,9 @@
 #define SWITCH_START1  5
 #define SWITCH_START2  6
 
-#if TOA_PLAYER_COUNT > 2
+#if SAI_PLAYER_COUNT > 2
 #error "Toa 3-player input polling not yet implemented!"
-#endif  // TOA_PLAYER_COUNT
+#endif  // SAI_PLAYER_COUNT
 
 	.section	.text
 

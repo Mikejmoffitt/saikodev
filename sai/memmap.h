@@ -16,6 +16,8 @@
 #include "sai/at/hw.h"
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 #include "sai/toa/hw.h"
+#elif SAI_TARGET == SAI_TARGET_NEOGEO
+#include "sai/neogeo/hw.h"
 #else
 #error "UNSUPPORTED TARGET!"
 #endif

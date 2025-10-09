@@ -1,0 +1,59 @@
+//
+// System RAM variables
+//
+
+#include "sai/neogeo/sysrom.h"
+
+	.global	g_sai_neo_system_mode
+	.global	g_sai_neo_mvs_flag
+	.global	g_sai_neo_country_code
+	.global	g_sai_neo_game_dip
+	.global	g_sai_neo_input_pl
+	.global	g_sai_neo_input_sys
+	.global	g_sai_neo_user_request
+	.global	g_sai_neo_user_mode_for_system
+	.global	g_sai_neo_credit_dec
+	.global	g_sai_neo_start_flag
+	.global	g_sai_neo_player_mode
+
+	.global	g_sai_neo_mess_ptr
+	.global	g_sai_neo_mess_busy
+	.global	g_sai_neo_card_command
+	.global	g_sai_neo_card_mode
+	.global	g_sai_neo_card_answer
+	.global	g_sai_neo_card_start
+	.global	g_sai_neo_card_size
+	.global	g_sai_neo_card_fcb
+	.global	g_sai_neo_card_sub
+
+	.global	g_sai_neo_date_time
+	.global	g_sai_neo_select_timer
+	.global	g_sai_neo_system_mode
+
+	.section	.sysram
+
+g_sai_neo_system_mode:         ds.b 1
+                               ds.b 1  // padding
+g_sai_neo_mvs_flag:            ds.b 1
+g_sai_neo_country_code:        ds.b 1
+g_sai_neo_game_dip:            ds.b 16  ; $10FDA4-$10FD93
+g_sai_neo_input_pl:            ds.b SaiNeoBiosInput.len*4
+g_sai_neo_input_sys:           ds.b 2
+g_sai_neo_user_request:        ds.b 1   ; $10FDAE
+g_sai_neo_user_mode_for_system:ds.b 1   ; $10FDAF
+g_sai_neo_credit_dec:          ds.l 1
+g_sai_neo_start_flag:          ds.w 1
+g_sai_neo_player_mode:         ds.b 4
+                               ds.b 4  // padding
+g_sai_neo_mess_ptr:            ds.l 1
+g_sai_neo_mess_busy:           ds.w 1
+g_sai_neo_card_command:        ds.b 1
+g_sai_neo_card_mode:           ds.b 1
+g_sai_neo_card_answer:         ds.w 1
+g_sai_neo_card_start:          ds.l 1
+g_sai_neo_card_size:           ds.w 1
+g_sai_neo_card_fcb:            ds.w 1
+g_sai_neo_card_sub:            ds.w 1
+
+g_sai_neo_date_time:           ds.b 8
+g_sai_neo_select_timer:        ds.b 1

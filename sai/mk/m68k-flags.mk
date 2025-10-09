@@ -22,10 +22,10 @@ COMMON_FLAGS += -ffreestanding
 COMMON_FLAGS += -ffunction-sections -fdata-sections -fconserve-stack
 COMMON_FLAGS += -fwrapv
 COMMON_FLAGS += -fno-gcse
-COMMON_FLAGS += -fms-extensions
 COMMON_FLAGS += -fno-web -fno-unit-at-a-time
 COMMON_FLAGS += -falign-functions=2
 COMMON_FLAGS += -flimit-function-alignment
+COMMON_FLAGS += -fno-tree-loop-optimize
 # TODO: investigate lto breaking some asm interop.
 #COMMON_FLAGS += -flto
 COMMON_FLAGS += -I$(SRCDIR) -I$(shell pwd) -I$(SAI)/..

@@ -1,0 +1,73 @@
+;
+; Neo-Geo header. Uses information provided through user defines.
+;
+
+#include "sai/neogeo/hw.h"
+#include "sai/neogeo/reg.h"
+#include "sai/neogeo/sysrom.h"
+
+; ------------------------------------------------------------------------------
+;
+; These symbols must be defined and made global by the user.
+;
+; ------------------------------------------------------------------------------
+
+;
+; Soft DIPs.
+;
+	.extern	sai_neo_sdips_jp
+	.extern	sai_neo_sdips_us
+	.extern	sai_neo_sdips_eu
+
+;
+; Entry points, handled by boot.a68
+;
+	.extern	sai_neo_entry_user_internal
+	.extern	sai_neo_entry_player_start_internal
+	.extern	sai_neo_entry_demo_end_internal
+	.extern	sai_neo_entry_coin_sound_internal
+
+	.section	.text.keepboot
+
+; ------------------------------------------------------------------------------
+;
+; Neo-Geo header $100
+;
+; ------------------------------------------------------------------------------
+	.asciz	"NEO-GEO"
+#ifdef SAI_NEO_NGH_ID
+	dc.w	SAI_NEO_NGH_ID
+#else
+	dc.w	0x315
+#endif  // SAI_NEO_NGH_ID
+	dc.l	$100000                 ; Rom size TODO: Use linker symbol
+	dc.l	WRAM_BASE               ; Backup RAM address
+	dc.w	$0                      ; Backup RAM size
+	dc.b	SAI_NEO_EYECATCH_SYSTEM ; Eyecatcher mode
+	dc.b	$0                      ; Logo tile offset
+
+; ------------------------------------------------------------------------------
+;
+; Soft DIP information (provided by main program)
+;
+; ------------------------------------------------------------------------------
+	dc.l	sai_neo_sdips_jp
+	dc.l	sai_neo_sdips_us
+	dc.l	sai_neo_sdips_eu
+
+; ------------------------------------------------------------------------------
+;
+; Entry points $122
+;
+; ------------------------------------------------------------------------------
+j_sai_neo_entry_user:
+	jmp	(sai_neo_entry_user_internal).l
+
+j_sai_neo_entry_player_start:
+	jmp	(sai_neo_entry_player_start_internal).l
+
+j_sai_neo_entry_demo_end:
+	jmp	(sai_neo_entry_demo_end_internal).l
+
+j_sai_neo_entry_coin_sound:
+	jmp	(sai_neo_entry_coin_sound_internal).l
