@@ -14,24 +14,34 @@
 	.global	_v_irq6
 	.global	_v_irq7
 
-	.section	.data
-g_irq_vbl_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
-g_irq_timer_callback:	dc.l SAI_IRQ_HANDLER_UNUSED
+	.section	.bss
+g_irq_vbl_callback:	ds.l 1
+g_irq_timer_callback:	ds.l 1
 
 	.section	.text
 _v_irq1:
+	btst	#7, g_sai_neo_system_mode
+	bne.s	0f
+	jmp	SAI_NEO_SYSTEM_INT1
+0:
 	move.w	#SAI_BITVAL(SAI_NEO_ACKBIT_VBLANK), SAI_NEO_REG_IRQACK
+	tst.l	g_irq_vbl_callback
+	beq.s	irq1_not_set
 	virq_handler g_irq_vbl_callback
+irq1_not_set:
 	jsr	SAI_NEO_SYSTEM_IO
 	rte
 _v_irq2:
 	move.w	#SAI_BITVAL(SAI_NEO_ACKBIT_TIMER), SAI_NEO_REG_IRQACK
+	tst.l	g_irq_timer_callback
+	beq.s	irq2_not_set
 	irq_handler g_irq_timer_callback
 _v_irq3:
 _v_irq4:
 _v_irq5:
 _v_irq6:
 _v_irq7:
+irq2_not_set:
 	rte
 
 	.global	sai_irq_init

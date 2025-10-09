@@ -11,7 +11,6 @@ SAI_SOURCES_ASM := \
 	$(SAI)/neogeo/boot.a68 \
 	$(SAI)/boot/crt0.a68 \
 	$(SAI)/boot/exceptions.a68 \
-	$(SAI)/boot/memcheck.a68 \
 	$(SAI)/neogeo/io.a68 \
 	$(SAI)/neogeo/irq.a68 \
 	$(SAI)/neogeo/pal.a68 \
