@@ -123,6 +123,7 @@ SaiNeoBiosInput.len:
 #ifndef __ASSEMBLER__
 
 extern uint8_t g_sai_neo_system_mode;
+extern uint8_t g_sai_neo_sysret_function;
 extern uint8_t g_sai_neo_mvs_flag;
 extern uint8_t g_sai_neo_country_code;
 extern uint8_t g_sai_neo_game_dip[16];

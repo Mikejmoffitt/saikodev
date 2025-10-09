@@ -32,10 +32,10 @@ sai_neogeo_io_poll:
 	lea	g_sai_in, a0
 	move.w	SaiInput.now(a0), SaiInput.prev(a0)
 	moveq	#0, d0
-	move.b	REG_P1CNT, d0
-	move.w	REG_STATUS_A, d1
+	move.b	SAI_NEO_REG_P1CNT, d0
+	move.b	SAI_NEO_REG_STATUS_A, d1
 	swap	d1
-	move.w	REG_STATUS_B, d1
+	move.b	SAI_NEO_REG_STATUS_B, d1
 	not.b	d0
 
 	btst	#0, d1
@@ -62,7 +62,7 @@ sai_neogeo_io_poll:
 ; Player 2
 ;
 	lea	SaiInput.len(a0), a0
-	move.b	REG_P2CNT, d0
+	move.b	SAI_NEO_REG_P2CNT, d0
 	not.b	d0
 
 	btst	#2, d1

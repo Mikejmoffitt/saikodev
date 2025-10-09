@@ -33,7 +33,7 @@
 	.section	.sysram
 
 g_sai_neo_system_mode:         ds.b 1
-                               ds.b 1  // padding
+g_sai_neo_sysret_function:     ds.b 1
 g_sai_neo_mvs_flag:            ds.b 1
 g_sai_neo_country_code:        ds.b 1
 g_sai_neo_game_dip:            ds.b 16  ; $10FDA4-$10FD93

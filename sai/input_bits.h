@@ -145,6 +145,7 @@
 //
 // SNK Neo-Geo
 //
+#elif SAI_TARGET == SAI_TARGET_NEOGEO
 
 #define SAI_BTN_UP             (SAI_BITVAL(0))
 #define SAI_BTN_DOWN           (SAI_BITVAL(1))

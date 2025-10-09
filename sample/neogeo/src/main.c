@@ -38,7 +38,7 @@ static void run_test_color_anim(void)
 		s_delta = 4;
 	}
 
-	sai_pal_set(1, SAI_PAL888(0, s_val, s_val));
+	sai_pal_set((256*16)-1, SAI_PAL888(0, s_val, s_val));
 }
 
 static void move_test_sprite(void)
@@ -127,6 +127,35 @@ static void draw_inputs(void)
 
 static void mainloop(bool attract)
 {
+}
+
+// This is the main "USER" routine for the game.
+void main(void)
+{
+	bool attract = false;
+	switch (g_sai_neo_user_request)
+	{
+		case SAI_NEO_UREQ_INIT:
+			// Set up Soft DIPs, etc.
+			g_sai_neo_user_mode_for_system = SAI_NEO_USERMODE_INIT;
+			sai_neo_system_return();
+			break;
+
+		case SAI_NEO_UREQ_EYE_CATCH:
+			// Eyecatcher animation. Not used in this sample.
+			sai_neo_system_return();
+			break;
+
+		case SAI_NEO_UREQ_ATTRACT:
+			// Show attract mode, demo play, how to play, score table, etc.
+			// On AES, this is where the game itself takes place.
+			attract = true;
+			break;
+
+		case SAI_NEO_UREQ_TITLE:
+			// Show the title screen, proceed to the game.
+			break;
+	}
 	sai_init();
 
 	g_sai_neo_user_mode_for_system = attract ?
@@ -150,35 +179,9 @@ static void mainloop(bool attract)
 		sai_finish();
 		if (attract) attract_timer++;
 	}
-}
-
-// This is the main "USER" routine for the game.
-void main(void)
-{
-	switch (g_sai_neo_user_request)
-	{
-		case SAI_NEO_UREQ_INIT:
-			// Set up Soft DIPs, etc.
-			g_sai_neo_user_mode_for_system = SAI_NEO_USERMODE_INIT;
-			break;
-
-		case SAI_NEO_UREQ_EYE_CATCH:
-			// Eyecatcher animation. Not used in this sample.
-			break;
-
-		case SAI_NEO_UREQ_ATTRACT:
-			// Show attract mode, demo play, how to play, score table, etc.
-			// On AES, this is where the game itself takes place.
-			mainloop(true);
-			break;
-
-		case SAI_NEO_UREQ_TITLE:
-			// Show the title screen, proceed to the game.
-			mainloop(false);
-			break;
-	}
 
 	sai_neo_system_return();
+
 }
 
 // This function is called by the BIOS if a player has hit start and has

@@ -22,10 +22,10 @@ extern "C"
 // Sprites can use all palettes. The FIX layer is able to use the first 16.
 
 
-#define SAI_PAL555(r, g, b)  (((((r)&0xF)<<8)|(((g)&0xF)<<4)|(((b)&0xF)<<8)) | \
-                              ((r & 0x10) << 10) | \
-                              ((g & 0x10) << 9) | \
-                              ((b & 0x10) << 8))
+#define SAI_PAL555(r, g, b)  ((((((r)>>1)&0xF)<<8)|((((g)>>1)&0xF)<<4)|((((b)>>1)&0xF)<<0)) | \
+                              (((r) & 0x1) << 14) | \
+                              (((g) & 0x1) << 13) | \
+                              (((b) & 0x1) << 12))
 #define SAI_PAL444(r, g, b) (SAI_PAL555((r)<<1, (g)<<1, (b)<<1))
 #define SAI_PAL888(r, g, b) (SAI_PAL555((r)>>3, (g)>>3, (b)>>3))
 #define SAI_PAL333(r, g, b) (SAI_PAL555((r)<<2, (g)<<2, (b)<<2))

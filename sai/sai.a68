@@ -165,7 +165,7 @@ sai_finish:
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 	bsr.w	sai_toa_io_poll
 #elif SAI_TARGET == SAI_TARGET_NEOGEO
-	; TODO: neo io poll
+	bsr.w	sai_neogeo_io_poll
 #endif  // SAI_TARGET
 	bsr.w	sai_input_post_poll
 
