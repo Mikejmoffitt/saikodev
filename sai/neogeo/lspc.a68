@@ -1,0 +1,22 @@
+#include "sai/neogeo/lspc.h"
+#include "sai/neogeo/sysrom.h"
+
+	.section	.text
+	.global	sai_neo_lspc_init
+sai_neo_lspc_init:
+	; TODO; If neo-geo CD, enable display
+	moveq	#0, d0
+	move.w	d0, SAI_NEO_REG_VRAMADDR
+	move.w	d0, SAI_NEO_REG_VRAMRW
+	move.w	#1, SAI_NEO_REG_VRAMMOD
+	move.w	d0, SAI_NEO_REG_LSPCMODE  ; Disable timer ints, etc.
+	move.l	d0, SAI_NEO_REG_TIMERHIGH  ; Writes low as well
+	move.w	#1, SAI_NEO_REG_TIMERSTOP  ; Pal compat, but wahtever
+	; Not strictly LSPC-specific, but system/video related registers worth poking.
+	move.b	d0, SAI_NEO_REG_NOSHADOW
+	move.b	d0, SAI_NEO_REG_SWPROM
+	move.b	d0, SAI_NEO_REG_CRDLOCK1
+	move.b	d0, SAI_NEO_REG_CRDLOCK2
+	move.b	d0, SAI_NEO_REG_CRDNORMAL
+	move.b	d0, SAI_NEO_REG_SRAMLOCK
+	rts

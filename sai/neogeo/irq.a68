@@ -1,5 +1,6 @@
 #include "sai/target.h"
 #include "sai/irq.h"
+#include "sai/neogeo/irq.h"
 #include "sai/neogeo/reg.h"
 #include "sai/neogeo/sysrom.h"
 
@@ -31,12 +32,17 @@ _v_irq1:
 irq1_not_set:
 	jsr	SAI_NEO_SYSTEM_IO
 	rte
+
 _v_irq2:
 	move.w	#SAI_BITVAL(SAI_NEO_ACKBIT_TIMER), SAI_NEO_REG_IRQACK
 	tst.l	g_irq_timer_callback
 	beq.s	irq2_not_set
 	irq_handler g_irq_timer_callback
+	rte
+
 _v_irq3:
+	move.w	#SAI_BITVAL(SAI_NEO_ACKBIT_RESET), SAI_NEO_REG_IRQACK
+	; fall-through
 _v_irq4:
 _v_irq5:
 _v_irq6:

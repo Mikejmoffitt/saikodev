@@ -75,6 +75,27 @@ clean:
 
 # Prebuild should depend on any targets that are required before compilation.
 .PHONY: prebuild
-prebuild:
+prebuild: $(RESDIR)/fix.s1 # $(RESDIR)/spr.c1
 
 include $(SAI)/mk/build-rules.mk
+
+# Resource data
+
+# Sprite data comes from Velella packed in 32-bit chunks, so bsplit is used to
+# split it wordwise into two 16-bit files.
+# C1 and C2 can be further split (ordinarily, using split) to fit ROM sockets
+# of lower capacity.
+.PHONY: $(RESDIR)/spr.c1
+$(RESDIR)/spr.c1: png/spr.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	mkdir -p $(@D)
+	$(VELELLA) $<
+	$(BSPLIT) s $(WRKDIR)/spr.chr $(@D)/spr.c1 $(@D)/spr.c2 2
+	mv $(WRKDIR)/spr.chr $@
+
+.PHONY: $(RESDIR)/fix.s1
+$(RESDIR)/fix.s1: png/fix.ini $(VELELLA)
+	mkdir -p $(WRKDIR)
+	mkdir -p $(@D)
+	$(VELELLA) $<
+	mv $(WRKDIR)/fix.chr $@

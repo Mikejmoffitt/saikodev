@@ -61,6 +61,7 @@ extern "C"
 #include "sai/toa/text.h"
 #elif SAI_TARGET == SAI_TARGET_NEOGEO
 #include "sai/neogeo/io.h"
+#include "sai/neogeo/fix.h"
 #include "sai/neogeo/pal.h"
 #include "sai/neogeo/sysrom.h"
 #include "sai/neogeo/reg.h"

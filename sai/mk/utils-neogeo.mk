@@ -12,8 +12,8 @@ $(OUTDIR)/rom/241-p1.p1: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	$(BSPLIT) x $(PROJECT_OUTPUT) $@
 # Upper bank (TODO)
 	cp $(PROJECT_OUTPUT) $(@D)/241-p2.sp2
-# FIX data TODO
-	dd if=/dev/zero of=$(@D)/241-s1.s1 bs=128K count=1
+# FIX data
+	cp $(RESDIR)/fix.s1 $(@D)/241-s1.s1
 # Z80 program TODO
 	dd if=/dev/zero of=$(@D)/241-m1.m1 bs=128K count=1
 # ADPCM Data TODO

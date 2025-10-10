@@ -77,6 +77,8 @@ SAI_ENUMEND
 #define SAI_NEO_HOW_TO_PLAY        (SYSROM_BASE+0x474)
 #define SAI_NEO_CHECKSUM_DEBUG     (SYSROM_BASE+0x47A)
 
+#define SAI_NEO_FIX_CLEAR          (SYSROM_BASE+0x4C2)
+
 //
 // Native player status struct as populated by SAI_NEO_SYSTEM_IO
 //

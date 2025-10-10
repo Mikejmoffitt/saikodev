@@ -85,6 +85,8 @@ sai_init:
 	bsr.w	sai_neogeo_io_init
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init
+	bsr.w	sai_fix_init
+	bsr.w	sai_lspc_init
 #endif  // SAI_TARGET
 	sf	g_sai_vbl_wait_flag
 	rts

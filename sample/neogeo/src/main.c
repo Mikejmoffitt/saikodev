@@ -1,4 +1,5 @@
 #include "sai/sai.h"
+#include "res.h"
 
 static inline void print_string_fix(uint16_t vram_addr, const uint16_t attr_base,
                                     const char *str)
@@ -94,6 +95,17 @@ static void draw_initial_text(void)
 	              BG038_AT32(0, 3), "High Priority");
 	print_string_fix((BG038_A_VRAM_BASE + GCU_VRAM_OFFS(9, 9)),
 	              BG038_AT32(0, 2), "Low Priority");*/
+
+	volatile uint16_t *vramaddr = (volatile uint16_t *)(SAI_NEO_REG_VRAMADDR);
+	volatile uint16_t *vramrw = (volatile uint16_t *)(SAI_NEO_REG_VRAMRW);
+	volatile uint16_t *vrammod = (volatile uint16_t *)(SAI_NEO_REG_VRAMMOD);
+
+	*vramaddr = FIX_ADDR(16, 16);
+	*vrammod = FIX_OFFS(1, 0);
+	for (uint16_t i = 0; i < 26; i++)
+	{
+		*vramrw = 'A' + i;
+	}
 }
 
 static inline void set_input_str(uint16_t in, char *str)
@@ -122,11 +134,6 @@ static void draw_inputs(void)
 	set_input_str(g_sai_in[1].now, s_input_str);
 	print_string_fix(GCU_VRAM_A_BASE + GCU_VRAM_OFFS(2, 13),
 	              attr, s_input_str);*/
-}
-
-
-static void mainloop(bool attract)
-{
 }
 
 // This is the main "USER" routine for the game.
@@ -164,14 +171,13 @@ void main(void)
 
 	uint16_t attract_timer = 0;
 
-//	sai_pal_load(0x01*16, &wrk_spr_pal[SPR_ESPRADE_PAL_OFFS], SPR_ESPRADE_PAL_LEN/16);
-//	sai_pal_load(0x40*16, &wrk_bga_pal[BGA_FONT_PAL_OFFS], BGA_FONT_PAL_LEN/16);
+	sai_pal_load(0x00*16, &wrk_fix_pal[FIX_FONT_PAL_OFFS], FIX_FONT_PAL_LEN/16);
 
 	sai_finish();
 
 	draw_initial_text();
 
-	while (attract_timer < 60*10)
+	while (attract_timer < 60*60*60)
 	{
 		draw_inputs();
 		run_test_color_anim();

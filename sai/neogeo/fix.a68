@@ -1,0 +1,9 @@
+#include "sai/neogeo/fix.h"
+#include "sai/neogeo/sysrom.h"
+
+	.section	.text
+	.global	sai_neo_fix_init
+sai_neo_fix_init:
+	jsr	SAI_NEO_FIX_CLEAR
+	st	SAI_NEO_REG_BRDFIX  ; Default to built-in FIX
+	rts

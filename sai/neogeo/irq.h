@@ -10,6 +10,16 @@ extern "C"
 
 #include "sai/target.h"
 #include "sai/irq.h"
+#include "sai/macro.h"
+
+//
+// IRQ Ack bits
+//
+SAI_ENUMSTART
+SAI_ENUMNEXT(SAI_NEO_ACKBIT_RESET)
+SAI_ENUMNEXT(SAI_NEO_ACKBIT_TIMER)
+SAI_ENUMNEXT(SAI_NEO_ACKBIT_VBLANK)
+SAI_ENUMEND
 
 #ifndef __ASSEMBLER__
 

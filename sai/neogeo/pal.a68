@@ -17,4 +17,5 @@ sai_min_pal_init:
 	move.l	d0, (a0)+
 	.endr
 	dbf	d1, 0b
+	st	SAI_NEO_REG_PALBANK0
 	jmp	(a6)

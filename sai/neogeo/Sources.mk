@@ -12,7 +12,9 @@ SAI_SOURCES_ASM := \
 	$(SAI)/boot/crt0.a68 \
 	$(SAI)/boot/exceptions.a68 \
 	$(SAI)/neogeo/io.a68 \
+	$(SAI)/neogeo/fix.a68 \
 	$(SAI)/neogeo/irq.a68 \
+	$(SAI)/neogeo/lspc.a68 \
 	$(SAI)/neogeo/pal.a68 \
 	$(SAI)/neogeo/sysrom.a68 \
 	$(SAI)/sai.a68 \

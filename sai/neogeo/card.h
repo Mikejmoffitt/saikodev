@@ -4,6 +4,11 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif  // __cplusplus
+
 #include "sai/neogeo/hw.h"
 #include "sai/macro.h"
 #include "sai/sysrom.h"
@@ -44,3 +49,7 @@ SAI_ENUMEND
 #else
 
 #endif  // __ASSEMBLER__
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus
