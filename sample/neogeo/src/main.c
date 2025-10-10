@@ -100,11 +100,19 @@ static void draw_initial_text(void)
 	volatile uint16_t *vramrw = (volatile uint16_t *)(SAI_NEO_REG_VRAMRW);
 	volatile uint16_t *vrammod = (volatile uint16_t *)(SAI_NEO_REG_VRAMMOD);
 
-	*vramaddr = FIX_ADDR(16, 16);
+	*vramaddr = FIX_ADDR(0, 2);
 	*vrammod = FIX_OFFS(1, 0);
-	for (uint16_t i = 0; i < 26; i++)
+	for (uint16_t i = 0; i < 16; i++)
 	{
-		*vramrw = 'A' + i;
+		*vramrw = i;
+	}
+
+	*vramaddr = FIX_ADDR(2, 4);
+	*vrammod = FIX_OFFS(1, 0);
+	static const char str_neo[] = "Oh no it's neo geo";
+	for (uint16_t i = 0; i < sizeof(str_neo); i++)
+	{
+		*vramrw = str_neo[i];
 	}
 }
 
@@ -177,7 +185,7 @@ void main(void)
 
 	draw_initial_text();
 
-	while (attract_timer < 60*60*60)
+	while (true)
 	{
 		draw_inputs();
 		run_test_color_anim();

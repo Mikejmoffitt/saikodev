@@ -91,11 +91,11 @@ $(RESDIR)/spr.c1: png/spr.ini $(VELELLA)
 	mkdir -p $(@D)
 	$(VELELLA) $<
 	$(BSPLIT) s $(WRKDIR)/spr.chr $(@D)/spr.c1 $(@D)/spr.c2 2
-	mv $(WRKDIR)/spr.chr $@
+	cp $(WRKDIR)/spr.chr $@
 
 .PHONY: $(RESDIR)/fix.s1
 $(RESDIR)/fix.s1: png/fix.ini $(VELELLA)
 	mkdir -p $(WRKDIR)
 	mkdir -p $(@D)
 	$(VELELLA) $<
-	mv $(WRKDIR)/fix.chr $@
+	cp $(WRKDIR)/fix.chr $@
