@@ -76,10 +76,11 @@ sai_init:
 	bsr.w	sai_palcmd_init
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 	bsr.w	sai_toa_io_init
+	bsr.w	sai_toa_text_init
 	bsr.w	sai_gcu_init
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init
-#rlif SAI_TARGET == SAI_TARGET_NEOGEO
+#elif SAI_TARGET == SAI_TARGET_NEOGEO
 	// TODO: Init sprites
 	// TODO: I/O init
 	bsr.w	sai_neogeo_io_init
@@ -138,6 +139,7 @@ sai_finish:
 	bsr.w	sai_bg038_on_vbl
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 	bsr.b	sai_irq_vbl_wait
+	bsr.w	sai_toa_text_on_vbl
 	bsr.w	sai_gcu_on_vbl
 	bsr.w	sai_palcmd_poll
 #elif SAI_TARGET == SAI_TARGET_NEOGEO

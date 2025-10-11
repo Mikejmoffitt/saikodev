@@ -68,7 +68,7 @@ clean:
 
 # Prebuild should depend on any targets that are required before compilation.
 .PHONY: prebuild
-prebuild: # $(RESDIR)/gcu.chr $(RESDIR)/text.chr
+prebuild: $(WRKDIR)/txt.chr # $(RESDIR)/gcu.chr 
 
 include $(SAI)/mk/build-rules.mk
 
@@ -78,11 +78,10 @@ $(RESDIR)/gcu.chr: png/gcu.ini $(VELELLA)
 	mkdir -p $(WRKDIR)
 	mkdir -p $(@D)
 	$(VELELLA) $<
-	mv $(WRKDIR)/gcu.chr $(@D)
+	cp $(WRKDIR)/gcu.chr $(@D)
 
-.PHONY: $(RESDIR)/text.chr
-$(RESDIR)/text.chr: png/text.ini $(VELELLA)
+.PHONY: $(RESDIR)/txt.chr
+$(WRKDIR)/txt.chr: png/txt.ini $(VELELLA)
 	mkdir -p $(WRKDIR)
 	mkdir -p $(@D)
 	$(VELELLA) $<
-	mv $(WRKDIR)/text.chr $(@D)

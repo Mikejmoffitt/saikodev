@@ -4,6 +4,10 @@
 ;wrk_gcu_pal:
 ;	.incbin	"wrk/gcu.pal"
 
-;	.global	wrk_text_pal
-;wrk_text_pal:
-;	.incbin	"wrk/text.pal"
+	.global	wrk_txt_pal
+wrk_txt_pal:
+	.incbin	"wrk/txt.pal"
+
+	.global	wrk_txt_chr
+wrk_txt_chr:
+	.incbin	"wrk/txt.chr"

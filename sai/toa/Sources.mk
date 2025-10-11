@@ -10,10 +10,11 @@ SAI_SOURCES_ASM := \
 	$(SAI)/boot/crt0.a68 \
 	$(SAI)/boot/exceptions.a68 \
 	$(SAI)/boot/memcheck.a68 \
+	$(SAI)/toa/gcu.a68 \
 	$(SAI)/toa/io.a68 \
 	$(SAI)/toa/irq.a68 \
 	$(SAI)/toa/pal.a68 \
-	$(SAI)/toa/gcu.a68 \
+	$(SAI)/toa/text.a68 \
 	$(SAI)/sai.a68 \
 	$(SAI)/input.a68 \
 	$(SAI)/palcmd.a68 \

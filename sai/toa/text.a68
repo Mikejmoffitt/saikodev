@@ -1,0 +1,71 @@
+#include "sai/toa/text.h"
+#include "sai/toa/io.h"
+
+	.section	.bss
+	.global	g_sai_toa_text_bank
+g_sai_toa_text_bank: ds.b 1
+
+	.section	.text
+
+	.global	sai_toa_text_init
+sai_toa_text_init:
+	movem.w	d2/d7, -(sp)
+	lea	TVRAM_BASE+TVRAM_VADDR_OFFS, a0
+	lea	TVRAM_BASE+TVRAM_HADDR_OFFS, a1
+	move.w	#$9000, d0
+	move.w	#$01D5, d1
+	move.w	#(256/4)-1, d7
+
+sai_toa_text_init_loop:
+	TEXT_WAIT_ACCESS d2
+	.rept	4
+	move.w	d0, (a0)+
+	move.w	d1, (a1)+
+	addq.w	#1, d0
+	.endr
+	dbf	d7, sai_toa_text_init_loop
+	movem.w	(sp)+, d2/d7
+	rts
+	
+	.global	sai_toa_text_wait_access_asm
+sai_toa_text_wait_access_asm:
+	TEXT_WAIT_ACCESS
+	rts
+
+	.global	sai_toa_text_on_vbl
+sai_toa_text_on_vbl:
+	move.b	g_sai_toa_text_bank, TOA_IO_BASE+SAI_TOA_IO_OFFS_TEXT_BANK+1
+	rts
+
+
+	.global	sai_toa_text_load_chr
+; sai_toa_text_load_chr(const uint16_t *chr, uint32_t bytes,
+;                       uint32_t tile_index);
+sai_toa_text_load_chr:
+	movea.l	4(sp), a0  ; source data
+	move.l	8(sp), d0
+	movem.l	d2-d7/a2, -(sp)
+	movea.l	a0, a1
+	adda.l	d0, a1  ; end address of source data
+
+	lea	TVRAM_BASE+TVRAM_CHR_OFFS, a2
+	adda.l	12(sp), a2
+
+tcg_tile_copy_loop:
+	TEXT_WAIT_ACCESS d0
+	movem.l	(a0)+, d0-d7
+	movep.l	d0, 1+$00(a2)
+	movep.l	d1, 1+$08(a2)
+	movep.l	d2, 1+$10(a2)
+	movep.l	d3, 1+$18(a2)
+	movep.l	d4, 1+$20(a2)
+	movep.l	d5, 1+$28(a2)
+	movep.l	d6, 1+$30(a2)
+	movep.l	d7, 1+$38(a2)
+	adda.w	#4*8*2, a2
+	cmpa.l	a0, a1
+	bne.s	tcg_tile_copy_loop
+
+	movem.l	(sp)+, d2-d7/a2
+	rts
+
