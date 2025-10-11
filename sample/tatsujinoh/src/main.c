@@ -45,10 +45,11 @@ static void move_test_sprite(void)
 	static int16_t s_dy = 1;
 	static int16_t s_x = 0;
 	static int16_t s_y = 0;
+
 	s_x += s_dx;
 	s_y += s_dy;
 
-	if (s_x + 32 >= GCU_RASTER_W)
+	if (s_x + GCU_BIGSPRITE_SRC_TEX_W >= GCU_RASTER_W)
 	{
 		s_dx = -1;
 	}
@@ -56,7 +57,7 @@ static void move_test_sprite(void)
 	{
 		s_dx = 1;
 	}
-	if (s_y + 32 >= GCU_RASTER_H)
+	if (s_y + GCU_BIGSPRITE_SRC_TEX_H >= GCU_RASTER_H)
 	{
 		s_dy = -1;
 	}
@@ -65,7 +66,10 @@ static void move_test_sprite(void)
 		s_dy = 1;
 	}
 
-//	sai_sp013_draw(s_x, s_y, SP013_AT32(1, 3)|SPR_ESPRADE_CODE, SPR_ESPRADE_SIZE);
+	sai_gcu_spr_draw(GCU_AT32(1, 0) | GCU_BIGSPRITE_CODE,
+	                 GCU_SPR_STATIC_OFFS_FIX+(s_x<<GCU_SPR_FIXPX_BITS),
+	                 GCU_SPR_STATIC_OFFS_FIX+(s_y<<GCU_SPR_FIXPX_BITS),
+	                 GCU_BIGSPRITE_SIZE);
 }
 
 static void draw_initial_text(void)
@@ -116,7 +120,7 @@ void __attribute__((noreturn)) main(void)
 {
 	sai_init();
 	sai_pal_load(0x40+0x01, &wrk_txt_pal[TXT_FONT_PAL_OFFS], TXT_FONT_PAL_LEN/16);
-//	sai_pal_load(0x40, &wrk_bga_pal[BGA_FONT_PAL_OFFS], BGA_FONT_PAL_LEN/16);
+	sai_pal_load(0x01, &wrk_gcu_pal[GCU_FILLER_PAL_OFFS], GCU_FILLER_PAL_LEN/16);
 	sai_toa_text_load_chr(vel_get_wrk_txt_chr(TXT_FONT),
 	                      TXT_FONT_CHR_BYTES,
 	                      0);

@@ -33,6 +33,12 @@ extern "C"
 #define GCU_VRAM_C_BASE    (0x1000)
 #define GCU_VRAM_SPR_BASE  (0x1800)
 
+#define GCU_SPR_COUNT 256
+#define GCU_SPR_FIXPX_BITS 7
+#define GCU_SPR_FIXPX SAI_BITVAL(GCU_SPR_FIXPX_BITS)
+#define GCU_SPR_STATIC_OFFS 96
+#define GCU_SPR_STATIC_OFFS_FIX ((GCU_SPR_STATIC_OFFS)<<GCU_SPR_FIXPX_BITS)
+
 //
 // Register indices
 //
@@ -81,7 +87,8 @@ extern "C"
 
 // Pal:   $00 - $3F
 // Prio:    0 -   7
-#define GCU_ATTR(pal, prio) (((prio)<<8) | ((pal)<<2))
+#define GCU_ATTR(pal, prio) (GCU_DF | ((prio)<<8) | ((pal)<<2))
+#define GCU_AT32(pal, prio) (GCU_ATTR(pal, prio)<<16)
 #define GCU_SIZE(x, y) (((y)<<16)|(x))
 
 #define GCU_VRAM_OFFS(x, y) ((((x)+((y)*(GCU_PLANE_W_TILES)))*2) & (GCU_VRAM_PAGE_SIZE-1))
@@ -93,9 +100,8 @@ extern "C"
 // checked using an I/O port.
 static inline void sai_gcu_wait_access(void)
 {
-	// Check using the GCU status.
-	asm volatile ("0: btst #GCU_STATUS_BLANKING_BIT, (GCU_BASE+GCU_STATUS_OFFS).l; "
-	              "bne.s 0b;" : : : "cc");
+	const volatile uint16_t *gcu_status = (const volatile uint16_t *)(GCU_BASE+GCU_STATUS_OFFS);
+	while (!(*gcu_status & SAI_BITVAL(GCU_STATUS_BLANKING_BIT))) {}
 }
 
 //
@@ -116,9 +122,12 @@ void sai_gcu_on_vbl(void);
 #else
 
 	.struct	0
+
 SaiGcuPlaneCfg.x:      ds.w 1
 SaiGcuPlaneCfg.y:      ds.w 1
 SaiGcuPlaneCfg.len:
+
+	.extern	g_sai_gcu_scroll
 
 	.extern	sai_min_gcu_init
 	.extern	sai_gcu_init
@@ -129,6 +138,69 @@ SaiGcuPlaneCfg.len:
 //
 // GCU Sprites.
 //
+
+#ifndef __ASSEMBLER__
+
+typedef struct GcuSpr
+{
+	union
+	{
+		struct
+		{
+			uint16_t attr;
+			uint16_t code;
+		};
+		uint32_t atcode;
+	};
+	uint16_t x;
+	uint16_t y;
+} GcuSpr;
+
+extern uint16_t g_sai_gcu_spr_count;  // Count of sprites drawn.
+extern uint16_t g_sai_gcu_spr_next;   // VRAM index of the next sprite.
+
+static inline void sai_gcu_spr_draw(uint32_t attrcode, uint16_t x, uint16_t y, uint32_t size)
+{
+	if (g_sai_gcu_spr_count >= GCU_SPR_COUNT) return;
+
+	volatile uint16_t *gcu_addr   = (volatile uint16_t *)(GCU_BASE+GCU_ADDR_OFFS);
+	volatile uint16_t *gcu_data   = (volatile uint16_t *)(GCU_BASE+GCU_DATA_OFFS);
+	volatile uint32_t *gcu_data32 = (volatile uint32_t *)(GCU_BASE+GCU_DATA_OFFS);
+
+	sai_gcu_wait_access();
+
+	*gcu_addr = g_sai_gcu_spr_next;
+	*gcu_data32 = attrcode;
+	// The size code is added like this in order to support the Toaplan
+	// technique of baking the position offset to center a sprite in the unused
+	// bits of the size data.
+	*gcu_data32 = ((size & 0xFFFF0000) + (x << 16)) | ((size & 0x0000FFFF) + y);
+
+	g_sai_gcu_spr_next += sizeof(GcuSpr)/sizeof(uint16_t);
+	g_sai_gcu_spr_count++;
+}
+
+// Sprite setup code
+void sai_gcu_spr_init(void);
+void sai_gcu_spr_finish(void);
+
+#else
+
+	.struct	0
+
+GcuSpr.attr:           ds.w 1
+GcuSpr.code:           ds.w 1
+GcuSpr.x:              ds.w 1
+GcuSpr.y:              ds.w 1
+GcuSpr.len:
+
+	.extern	g_sai_gcu_spr_count
+	.extern	g_sai_gcu_spr_next
+
+	.extern	sai_gcu_spr_init
+	.extern	sai_gcu_spr_finish
+
+#endif  // __ASSEMBLER__
 
 // The position data is lined up for Toaplan's 7bit fixed point system, which
 // is as precise as you can get while still allowing freedom to position in

@@ -1,8 +1,8 @@
 	.section	.rodata
 
-;	.global	wrk_gcu_pal
-;wrk_gcu_pal:
-;	.incbin	"wrk/gcu.pal"
+	.global	wrk_gcu_pal
+wrk_gcu_pal:
+	.incbin	"wrk/gcu.pal"
 
 	.global	wrk_txt_pal
 wrk_txt_pal:
