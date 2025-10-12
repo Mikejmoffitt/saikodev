@@ -122,6 +122,7 @@ extern SaiGcuPlaneCfg g_sai_gcu_scroll[4];
 // Sets up GCU with initial register configuration.
 void sai_gcu_init(void);
 void sai_gcu_on_vbl(void);
+void sai_gcu_clear_plane(uint16_t plane_id);
 
 #else
 
@@ -136,6 +137,7 @@ SaiGcuPlaneCfg.len:
 	.extern	sai_min_gcu_init
 	.extern	sai_gcu_init
 	.extern	sai_gcu_on_vbl
+	.extern	sai_gcu_clear_plane
 
 #endif  // __ASSEMBLER__
 
@@ -168,7 +170,6 @@ static inline void sai_gcu_spr_draw(uint32_t attrcode, uint16_t x, uint16_t y, u
 	if (g_sai_gcu_spr_count >= GCU_SPR_COUNT) return;
 
 	volatile uint16_t *gcu_addr   = (volatile uint16_t *)(GCU_BASE+GCU_ADDR_OFFS);
-	volatile uint16_t *gcu_data   = (volatile uint16_t *)(GCU_BASE+GCU_DATA_OFFS);
 	volatile uint32_t *gcu_data32 = (volatile uint32_t *)(GCU_BASE+GCU_DATA_OFFS);
 
 	sai_gcu_wait_access();
@@ -179,6 +180,24 @@ static inline void sai_gcu_spr_draw(uint32_t attrcode, uint16_t x, uint16_t y, u
 	// technique of baking the position offset to center a sprite in the unused
 	// bits of the size data.
 	*gcu_data32 = ((size & 0xFFFF0000) + (x << 16)) | ((size & 0x0000FFFF) + y);
+
+	g_sai_gcu_spr_next += sizeof(GcuSpr)/sizeof(uint16_t);
+	g_sai_gcu_spr_count++;
+}
+
+static inline void sai_gcu_spr_draw_st(const GcuSpr *spr)
+{
+	if (g_sai_gcu_spr_count >= GCU_SPR_COUNT) return;
+
+	volatile uint16_t *gcu_addr   = (volatile uint16_t *)(GCU_BASE+GCU_ADDR_OFFS);
+	volatile uint32_t *gcu_data32 = (volatile uint32_t *)(GCU_BASE+GCU_DATA_OFFS);
+	const uint32_t *spr32 = (const uint32_t *)(spr);
+
+	sai_gcu_wait_access();
+
+	*gcu_addr = g_sai_gcu_spr_next;
+	*gcu_data32 = *spr32++;
+	*gcu_data32 = *spr32;
 
 	g_sai_gcu_spr_next += sizeof(GcuSpr)/sizeof(uint16_t);
 	g_sai_gcu_spr_count++;
