@@ -1,4 +1,6 @@
 #include	"sai/toa/gcu.h"
+#include	"sai/toa/gcu_spr.h"
+#include	"sai/toa/gcu_bg.h"
 #include	"sai/toa/hw.h"
 #include	"sai/macro.h"
 #include	"sai/input.h"
@@ -30,6 +32,10 @@ s_scroll_out_buffer:    ds.w 4*SaiGcuPlaneCfg.len/2
 
 	.macro	GCU_CLEAR_VRAM_WORDS baseaddr, words
 	; Erase sprite table VRAM
+0:
+	btst	#GCU_STATUS_BLANKING_BIT, GCU_STATUS_OFFS(a1)
+	bne.b	0b
+
 	move.w	\baseaddr, GCU_ADDR_OFFS(a1)
 	moveq	#0, d0
 	move.w	#(\words/2)-1, d1
@@ -46,15 +52,19 @@ s_scroll_out_buffer:    ds.w 4*SaiGcuPlaneCfg.len/2
 ; clobbers a2.
 	.global	sai_min_gcu_init
 sai_min_gcu_init:
+	moveq	#-1, d0
+0:
+	.rept	16
+	nop
+	.endr
+	dbf	d0, 0b
 	moveq	#GCU_REG_SCROLL_A_H, d0
 	lea	GCU_BASE, a1
 	; Configuration registers
-	lea	config_tbl(pc), a0
-	move.w	#GCU_REG_INITIALIZE, GCU_REG_ADDR_OFFS(a1)
-	moveq	#3-1, d1  ; three config register sections
-0:
-	move.w	(a0)+, GCU_REG_DATA_OFFS(a1)
-	dbf	d1, 0b
+	move.w	#GCU_REG_CONFIG, GCU_REG_ADDR_OFFS(a1)
+	move.w	#SAI_BITVAL(GCU_CONFIG_RESET1_BIT)|SAI_BITVAL(GCU_CONFIG_RESET0_BIT), GCU_REG_DATA_OFFS(a1)
+	move.w	#SAI_BITVAL(GCU_CONFIG_RESET1_BIT), GCU_REG_DATA_OFFS(a1)
+	move.w	#SAI_BITVAL(GCU_CONFIG_B14_BIT), GCU_REG_DATA_OFFS(a1)
 
 	; Scroll setup
 	lea	scroll_base_tbl(pc), a0
@@ -72,10 +82,10 @@ sai_min_gcu_init:
 	addq.w	#1, d0
 	dbf	d1, 0b
 
-	GCU_CLEAR_VRAM_WORDS GCU_VRAM_A_BASE, GCU_VRAM_PAGE_SIZE
-	GCU_CLEAR_VRAM_WORDS GCU_VRAM_B_BASE, GCU_VRAM_PAGE_SIZE
-	GCU_CLEAR_VRAM_WORDS GCU_VRAM_C_BASE, GCU_VRAM_PAGE_SIZE
-	GCU_CLEAR_VRAM_WORDS GCU_VRAM_SPR_BASE, (GCU_SPR_COUNT*GcuSpr.len/2)
+	GCU_CLEAR_VRAM_WORDS GCU_VRAM_A_BASE, GCU_BG_PAGE_WORDS
+	GCU_CLEAR_VRAM_WORDS GCU_VRAM_B_BASE, GCU_BG_PAGE_WORDS
+	GCU_CLEAR_VRAM_WORDS GCU_VRAM_C_BASE, GCU_BG_PAGE_WORDS
+	GCU_CLEAR_VRAM_WORDS GCU_VRAM_SPR_BASE, GCU_SPR_PAGE_WORDS
 
 	; Initial IRQ ack
 	moveq	#GCU_REG_IRQ_ACK, d0
@@ -94,20 +104,6 @@ scroll_base_tbl:
 	dc.w	GCU_PLANE_BASE_X+4, GCU_PLANE_BASE_Y    ; C
 	dc.w	GCU_PLANE_BASE_X-10+GCU_SPR_STATIC_OFFS, GCU_PLANE_BASE_Y+GCU_SPR_STATIC_OFFS  ; S
 
-; The meaning of all bits is not known, but some patterns can be found in all
-; words of the configuration stream. It is thought that this data is shited in
-; to a larger configuration register.
-;
-; fedc ba98 7654 3210
-; .l.. .... .... .... Configuration data latch (end of stream) ?
-; ..s. .... .... .... GCU Slave move
-; .... ..h. .... .... Vertical sync resets horizontal sync counter...?
-; .... .... .... SSSS Thought to be some sort of selection possibly
-config_tbl:
-	dc.w	$0003
-	dc.w	$0002
-	dc.w	$4000
-
 ;
 ; Initialization
 ;
@@ -122,45 +118,64 @@ sai_gcu_init:
 
 	.global	sai_gcu_on_vbl
 sai_gcu_on_vbl:
-;
 ; Write scroll to GCU
-;
 	move.l	a2, -(sp)
 	lea	s_scroll_out_buffer, a0
-	lea	GCU_BASE+GCU_REG_ADDR_OFFS, a1
+	lea	GCU_BASE, a1
 	lea	s_scroll_offs, a2
 
 	moveq	#GCU_REG_SCROLL_A_H, d0
 gcu_scroll_set_loop:
-	move.w	d0, GCU_REG_ADDR_OFFS-GCU_REG_ADDR_OFFS(a1)  ; regsel
+	move.w	d0, GCU_REG_ADDR_OFFS(a1)  ; regsel
 	move.w	(a0)+, d1  ; user scroll
 	add.w	(a2)+, d1  ; += base scroll
 	andi.w	#$1FF, d1  ; wrap (TODO: is this necessary?)
-	move.w	d1, GCU_REG_DATA_OFFS-GCU_REG_ADDR_OFFS(a1)
+	move.w	d1, GCU_REG_DATA_OFFS(a1)
 	cmpi.w	#GCU_REG_SCROLL_S_V, d0
 	beq.s	0f
 	addq.w	#1, d0
 	bra.s	gcu_scroll_set_loop
 0:
 	move.l	(sp)+, a2
-
-;
 ; Push scroll values to buffer
-;
 	movem.l	g_sai_gcu_scroll, d0-d1/a0-a1
 	movem.l	d0-d1/a0-a1, s_scroll_out_buffer
-
-;
-; Ack IRQ
-;
-	moveq	#GCU_REG_IRQ_ACK, d0
-	move.w	d0, GCU_BASE+GCU_REG_ADDR_OFFS
-	move.w	d0, GCU_BASE+GCU_REG_DATA_OFFS
 	rts
 
 ;
+; Plane VRAM clear
+;
+	.global	sai_gcu_clear_plane
+sai_gcu_clear_plane:
+	lea	GCU_BASE, a1
+	move.w	4+2(sp), d0
+	add.w	d0, d0
+	add.w	d0, d0
+	move.w	gcu_plane_addr_tbl(pc, d0.w), d1
+	move.w	gcu_plane_addr_tbl+2(pc, d0.w), d0
+	move.w	d0, GCU_ADDR_OFFS(a1)
+	moveq	#0, d0
+0:
+	btst	#GCU_STATUS_BLANKING_BIT, GCU_STATUS_OFFS(a1)
+	bne.b	0b
+
+	.rept	4
+	move.w	d0, GCU_DATA_OFFS(a1)
+	.endr
+	dbf	d1, 0b
+	rts
+
+gcu_plane_addr_tbl:
+	dc.w GCU_VRAM_A_BASE,   ((GCU_BG_PAGE_WORDS)/4)-1
+	dc.w GCU_VRAM_B_BASE,   ((GCU_BG_PAGE_WORDS)/4)-1
+	dc.w GCU_VRAM_C_BASE,   ((GCU_BG_PAGE_WORDS)/4)-1
+	dc.w GCU_VRAM_SPR_BASE, ((GCU_SPR_PAGE_WORDS)/4)-1
+
+; -----------------------------------------------------------------------------
+;
 ; Sprite code
 ;
+; -----------------------------------------------------------------------------
 
 	.global	sai_gcu_spr_init
 sai_gcu_spr_init:
@@ -178,7 +193,7 @@ sai_gcu_spr_init:
 ; d1.w = count
 sai_gcu_spr_init_erase:
 	movem.l	d2-d3, -(sp)
-	lea	GCU_BASE+GCU_DATA_OFFS, a0
+	lea	GCU_BASE, a0
 	moveq	#GCU_STATUS_BLANKING_BIT, d3
 	moveq	#0, d2  ; blank data
 
@@ -186,11 +201,11 @@ sai_gcu_spr_init_erase:
 sai_gcu_spr_init_loop:
 ; vdisp wait
 0:
-	btst	d3, GCU_STATUS_OFFS+1-GCU_DATA_OFFS(a0)
+	btst	d3, GCU_STATUS_OFFS+1(a0)
 	bne.s	0b
 ; address and data
-	move.w	d0, GCU_ADDR_OFFS-GCU_DATA_OFFS(a0)
-	move.w	d2, GCU_DATA_OFFS-GCU_DATA_OFFS(a0)
+	move.w	d0, GCU_ADDR_OFFS(a0)
+	move.w	d2, GCU_DATA_OFFS(a0)
 	addq.w	#GcuSpr.len/2, d0
 	dbf	d1, sai_gcu_spr_init_loop
 	movem.l	(sp)+, d2-d3
@@ -215,29 +230,3 @@ sai_gcu_spr_finish:
 	subq.w	#1, d1
 
 	bra.w	sai_gcu_spr_init_erase
-
-	.global	sai_gcu_clear_plane
-.global sai_gcu_clear_plane
-	lea	GCU_BASE, a1
-	move.w	4+2(sp), d0
-	add.w	d0, d0
-	add.w	d0, d0
-	move.w	gcu_plane_addr_tbl(pc, d0.w), d1
-	move.w	gcu_plane_addr_tbl+2(pc, d0.w), d0
-	move.w	d0, GCU_ADDR_OFFS(a1)
-	moveq	#0, d0
-0:
-	btst	#GCU_STATUS_BLANKING_BIT, GCU_STATUS_OFFS(a1)
-	bne.b	0b
-
-	.rept	2
-	move.w	d0, GCU_DATA_OFFS(a1)
-	.endr
-	dbf	d1, 0b
-	rts
-
-gcu_plane_addr_tbl:
-	dc.w GCU_VRAM_A_BASE,   ((GCU_VRAM_PAGE_SIZE)/2)-1
-	dc.w GCU_VRAM_B_BASE,   ((GCU_VRAM_PAGE_SIZE)/2)-1
-	dc.w GCU_VRAM_C_BASE,   ((GCU_VRAM_PAGE_SIZE)/2)-1
-	dc.w GCU_VRAM_SPR_BASE, (((GCU_SPR_COUNT*GcuSpr.len/2))/2)-1

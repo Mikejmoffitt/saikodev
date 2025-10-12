@@ -56,6 +56,8 @@ extern "C"
 #include "sai/at/ymz.h"
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 #include "sai/toa/gcu.h"
+#include "sai/toa/gcu_spr.h"
+#include "sai/toa/gcu_bg.h"
 #include "sai/toa/io.h"
 #include "sai/toa/pal.h"
 #include "sai/toa/text.h"

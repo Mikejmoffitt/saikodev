@@ -11,6 +11,9 @@ extern "C"
 #include "sai/target.h"
 #include "sai/toa/hw.h"
 
+#define TVRAM_TILES_W (512/8)
+#define TVRAM_TILES_H (256/8)
+
 // Nametable (layout)
 #define TVRAM_NT_OFFS    (0x000000)
 // Line select
