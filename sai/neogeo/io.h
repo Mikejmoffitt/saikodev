@@ -13,12 +13,12 @@ extern "C"
 #include "sai/neogeo/hw.h"
 
 #ifndef __ASSEMBLER__
-void sai_neogeo_io_init(void);
-void sai_neogeo_io_poll(void);
+void sai_neo_io_init(void);
+void sai_neo_io_poll(void);
 
 #else
-	.extern	sai_neogeo_io_init
-	.extern	sai_neogeo_io_poll
+	.extern	sai_neo_io_init
+	.extern	sai_neo_io_poll
 #endif  // __ASSEMBLER__
 
 #ifdef __cplusplus

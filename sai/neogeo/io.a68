@@ -18,13 +18,13 @@
 
 	.section	.text
 
-	.global	sai_neogeo_io_init
-sai_neogeo_io_init:
+	.global	sai_neo_io_init
+sai_neo_io_init:
 	; TODO: Init coils
 	rts
 
-	.global	sai_neogeo_io_poll
-sai_neogeo_io_poll:
+	.global	sai_neo_io_poll
+sai_neo_io_poll:
 	sf	SAI_NEO_REG_DIPSW  ; pet watchdog
 ;
 ; Player 1

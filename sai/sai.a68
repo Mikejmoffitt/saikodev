@@ -82,13 +82,11 @@ sai_init:
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init
 #elif SAI_TARGET == SAI_TARGET_NEOGEO
-	// TODO: Init sprites
-	// TODO: I/O init
-	bsr.w	sai_neogeo_io_init
+	bsr.w	sai_neo_io_init
 	bsr.w	sai_pal_init
 	bsr.w	sai_palcmd_init
-	bsr.w	sai_fix_init
-	bsr.w	sai_lspc_init
+	bsr.w	sai_neo_fix_init
+	bsr.w	sai_neo_lspc_init
 #endif  // SAI_TARGET
 	sf	g_sai_vbl_wait_flag
 	rts
@@ -171,7 +169,7 @@ sai_finish:
 #elif SAI_TARGET == SAI_TARGET_TATSUJIN_OH
 	bsr.w	sai_toa_io_poll
 #elif SAI_TARGET == SAI_TARGET_NEOGEO
-	bsr.w	sai_neogeo_io_poll
+	bsr.w	sai_neo_io_poll
 #endif  // SAI_TARGET
 	bsr.w	sai_input_post_poll
 
