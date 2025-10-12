@@ -87,11 +87,15 @@ extern "C"
 
 // Pal:   $00 - $3F
 // Prio:    0 -   7
-#define GCU_ATTR(pal, prio) (GCU_DF | ((prio)<<8) | ((pal)<<2))
-#define GCU_AT32(pal, prio) (GCU_ATTR(pal, prio)<<16)
-#define GCU_SIZE(x, y) (((y)<<16)|(x))
+#define GCU_SPR_ATTR(pal, prio) (GCU_DF | ((prio)<<8) | ((pal)<<2))
+#define GCU_SPR_AT32(pal, prio) (GCU_SPR_ATTR(pal, prio)<<16)
+#define GCU_SPR_SIZE(x, y) (((y)<<16)|(x))
 
-#define GCU_VRAM_OFFS(x, y) ((((x)+((y)*(GCU_PLANE_W_TILES)))*2) & (GCU_VRAM_PAGE_SIZE-1))
+#define GCU_BG_ATTR(pal, prio) (((prio)<<8) | ((pal)))
+#define GCU_BG_AT32(pal, prio) (GCU_BG_ATTR(pal, prio)<<16)
+
+#define GCU_OFFS(x, y) ((((x)+((y)*(GCU_PLANE_W_TILES)))*2) & (GCU_VRAM_PAGE_SIZE-1))
+#define GCU_ADDR(plane, x, y) (((plane)*GCU_VRAM_PAGE_SIZE) + GCU_OFFS(x, y))
 
 #ifndef __ASSEMBLER__
 
@@ -231,6 +235,16 @@ GcuSpr.len:
 //
 // GCU Background tiles.
 //
+
+// $00 - 設定・色 attributes, color, etc.
+// fedc ba98 7654 3210
+// .... pppp .... .... プライオリティー　priority
+// .... .... .ccc cccc 色　              color
+
+// $01 - パターン pattern code. Many titles use this exclusively.
+// fedc ba98 7654 3210
+// CCCC CCCC CCCC CCCC パターンコード    pattern code (bits 0-15)
+
 
 #ifdef __cplusplus
 }

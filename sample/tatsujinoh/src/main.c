@@ -66,10 +66,27 @@ static void move_test_sprite(void)
 		s_dy = 1;
 	}
 
-	sai_gcu_spr_draw(GCU_AT32(1, 0) | GCU_BIGSPRITE_CODE,
+	sai_gcu_spr_draw(GCU_SPR_AT32(1, 0) | GCU_BIGSPRITE_CODE,
 	                 GCU_SPR_STATIC_OFFS_FIX+(s_x<<GCU_SPR_FIXPX_BITS),
 	                 GCU_SPR_STATIC_OFFS_FIX+(s_y<<GCU_SPR_FIXPX_BITS),
 	                 GCU_BIGSPRITE_SIZE);
+}
+
+static void draw_background(void)
+{
+	volatile uint16_t *gcu_addr   = (volatile uint16_t *)(GCU_BASE+GCU_ADDR_OFFS);
+	volatile uint32_t *gcu_data32 = (volatile uint32_t *)(GCU_BASE+GCU_DATA_OFFS);
+
+	uint32_t tile = GCU_BG_ATTR(0, 0) | GCU_BACKGROUND_CODE;
+	for (uint16_t y = 0; y < 240/16; y++)
+	{
+		sai_gcu_wait_access();
+		*gcu_addr = GCU_ADDR(0, 0, y);
+		for (uint16_t x = 0; x < 320/16; x++)
+		{
+			*gcu_data32 = tile++;
+		}
+	}
 }
 
 static void draw_initial_text(void)
@@ -119,15 +136,15 @@ static void draw_inputs(void)
 void __attribute__((noreturn)) main(void)
 {
 	sai_init();
+	sai_pal_load(0x00+0x00, &wrk_gcu_pal[GCU_BACKGROUND_PAL_OFFS], GCU_BACKGROUND_PAL_LEN/16);
 	sai_pal_load(0x40+0x01, &wrk_txt_pal[TXT_FONT_PAL_OFFS], TXT_FONT_PAL_LEN/16);
-	sai_pal_load(0x01, &wrk_gcu_pal[GCU_FILLER_PAL_OFFS], GCU_FILLER_PAL_LEN/16);
+	sai_pal_load(0x01, &wrk_gcu_pal[GCU_BIGSPRITE_PAL_OFFS], GCU_BIGSPRITE_PAL_LEN/16);
 	sai_toa_text_load_chr(vel_get_wrk_txt_chr(TXT_FONT),
 	                      TXT_FONT_CHR_BYTES,
 	                      0);
 
-	sai_finish();
-
 	draw_initial_text();
+	draw_background();
 
 	while (true)
 	{
