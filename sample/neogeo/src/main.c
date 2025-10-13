@@ -1,7 +1,7 @@
 #include "sai/sai.h"
 #include "res.h"
 
-#define SPR_POOL_CAPACITY 8
+#define SPR_POOL_CAPACITY 16
 
 static SaiNeoSprPool s_sprpool;
 
@@ -13,20 +13,19 @@ static inline void print_string_fix(uint16_t vram_addr, const uint16_t attr_base
 	(void)vram_addr;
 	(void)attr_base;
 	(void)str;
-/*	volatile uint16_t *fix_addr = (volatile uint16_t *)(GCU_BASE+GCU_ADDR_OFFS);
-	volatile uint16_t *fix_data = (volatile uint16_t *)(GCU_BASE+GCU_DATA_OFFS);
-	*fix_addr = vram_addr;
+
+	volatile uint16_t *vramaddr = (volatile uint16_t *)(SAI_NEO_REG_VRAMADDR);
+	volatile uint16_t *vramrw = (volatile uint16_t *)(SAI_NEO_REG_VRAMRW);
+	volatile uint16_t *vrammod = (volatile uint16_t *)(SAI_NEO_REG_VRAMMOD);
+	*vrammod = FIX_OFFS(1, 0);
+	*vramaddr = FIX_ADDR(0, 2)+vram_addr;
 
 	char val;
 	while ((val = *str))
 	{
-		sai_fix_wait_access();
-		if (val >= ' ')
-		{
-			*fix_data = (val-' ') | attr_base;
-		}
+		*vramrw = val | attr_base;
 		str++;
-	}*/
+	}
 }
 
 static void run_test_color_anim(void)
@@ -57,7 +56,7 @@ static void move_test_sprite(void)
 	s_x += s_dx;
 	s_y += s_dy;
 
-	if (s_x + 32 >= NEO_RASTER_W)
+	if (s_x + CHR_NEOGEO_W >= NEO_RASTER_W)
 	{
 		s_dx = -1;
 	}
@@ -65,7 +64,7 @@ static void move_test_sprite(void)
 	{
 		s_dx = 1;
 	}
-	if (s_y + 32 >= NEO_RASTER_H)
+	if (s_y + CHR_NEOGEO_H >= NEO_RASTER_H)
 	{
 		s_dy = -1;
 	}
@@ -74,71 +73,34 @@ static void move_test_sprite(void)
 		s_dy = 1;
 	}
 
-	static const uint16_t attr = SAI_NEO_SCB1_ATTR(0, 0x01, 0);
-	static const uint16_t code = 4;
+	static const uint16_t attr = SAI_NEO_SCB1_ATTR(CHR_NEOGEO_CODE_MSB, 2, 0);
+	uint16_t code = CHR_NEOGEO_CODE;
 	static const uint16_t shrink = SAI_NEO_SCB2_ATTR(0xF, 0xFF);
 
-	if (g_sai_in[0].now & SAI_BTN_A)
+	sai_neo_spr_pool_draw(&s_sprpool, attr,
+	                      code,
+	                      shrink, CHR_NEOGEO_TILES_H,
+	                      s_x<<SAI_NEO_SPR_FIXPX_BITS,
+	                      (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);
+	for (uint16_t i = 0; i < CHR_NEOGEO_TILES_W-1; i++)
 	{
-		sai_neo_spr_pool_draw(&s_sprpool, attr, code+0, shrink, 2,
-		                      s_x<<SAI_NEO_SPR_FIXPX_BITS,  // X
-		                      (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);  // Y
-		if (g_sai_in[0].now & SAI_BTN_B)
-		{
-			sai_neo_spr_pool_stick(&s_sprpool, attr, code+2, shrink, 2);
-		}
-	};
-
-	if (!(g_sai_in[0].now & SAI_BTN_C))
-	{
-		sai_neo_spr_pool_draw(&s_sprpool,
-		                      attr, code+32,
-		                      shrink,  // shrink
-		                      1, // tiles H
-		                      (s_x+32)<<SAI_NEO_SPR_FIXPX_BITS,  // X
-		                      (SAI_NEO_SPR_Y_ADJ-(224-s_y))<<SAI_NEO_SPR_FIXPX_BITS);  // Y
+		code += CHR_NEOGEO_TILES_H;
+		sai_neo_spr_pool_stick(&s_sprpool, attr,
+		                       code,
+		                       shrink, CHR_NEOGEO_TILES_H);
 	}
 
 }
 
+
 static void draw_initial_text(void)
 {
-/*	const uint32_t attr = BG038_AT32(0, 3);
-	print_string_fix((GCU_VRAM_A_BASE + GCU_VRAM_OFFS(1, 22)),
-	              attr, "Inputs");
-	print_string_fix((GCU_VRAM_A_BASE + GCU_VRAM_OFFS(1, 24)),
-	              attr, "1: ");
-	print_string_fix((GCU_VRAM_A_BASE + GCU_VRAM_OFFS(1, 25)),
-	              attr, "2: ");
+	const uint32_t attr = FIX_ATTR(1);
+	print_string_fix((FIX_OFFS(1, 22)), attr, "Inputs");
+	print_string_fix((FIX_OFFS(1, 24)), attr, "1: ");
+	print_string_fix((FIX_OFFS(1, 25)), attr, "2: ");
 
-	print_string_fix((BG038_A_VRAM_BASE + BG038_VRAM_NT8),
-	             attr, "Hello World!");
-
-	print_string_fix((GCU_VRAM_A_BASE + GCU_VRAM_OFFS(0, 1)),
-	              attr, "Plane A   *");
-	print_string_fix((GCU_VRAM_B_BASE + GCU_VRAM_OFFS(0, 1)),
-	              attr, "Plane  B  *");
-	print_string_fix((GCU_VRAM_C_BASE + GCU_VRAM_OFFS(0, 1)),
-	              attr, "Plane   C *");
-
-	print_string_fix((BG038_A_VRAM_BASE + GCU_VRAM_OFFS(8, 8)),
-	              BG038_AT32(0, 3), "High Priority");
-	print_string_fix((BG038_A_VRAM_BASE + GCU_VRAM_OFFS(9, 9)),
-	              BG038_AT32(0, 2), "Low Priority");*/
-
-	volatile uint16_t *vramaddr = (volatile uint16_t *)(SAI_NEO_REG_VRAMADDR);
-	volatile uint16_t *vramrw = (volatile uint16_t *)(SAI_NEO_REG_VRAMRW);
-	volatile uint16_t *vrammod = (volatile uint16_t *)(SAI_NEO_REG_VRAMMOD);
-
-	static const uint16_t attr = FIX_ATTR(1);
-
-	*vramaddr = FIX_ADDR(2, 4);
-	*vrammod = FIX_OFFS(1, 0);
-	static const char str_neo[] = "Oh no it's neo geo";
-	for (uint16_t i = 0; i < sizeof(str_neo); i++)
-	{
-		*vramrw = attr | str_neo[i];
-	}
+	print_string_fix(FIX_OFFS(0, 0), attr, "Hello World!");
 }
 
 static inline void set_input_str(uint16_t in, char *str)
@@ -159,14 +121,12 @@ static inline void set_input_str(uint16_t in, char *str)
 
 static void draw_inputs(void)
 {
-/*	static char s_input_str[] = ".... .... ....";
-
+	static char s_input_str[] = ".... .... ....";
+	const uint32_t attr = FIX_ATTR(1);
 	set_input_str(g_sai_in[0].now, s_input_str);
-	print_string_fix(GCU_VRAM_A_BASE + GCU_VRAM_OFFS(2, 12),
-	              attr, s_input_str);
+	print_string_fix(FIX_OFFS(3, 24), attr, s_input_str);
 	set_input_str(g_sai_in[1].now, s_input_str);
-	print_string_fix(GCU_VRAM_A_BASE + GCU_VRAM_OFFS(2, 13),
-	              attr, s_input_str);*/
+	print_string_fix(FIX_OFFS(3, 25), attr, s_input_str);
 }
 
 // This is the main "USER" routine for the game.
@@ -205,6 +165,7 @@ void main(void)
 	uint16_t attract_timer = 0;
 
 	sai_pal_load(0x01, &wrk_fix_pal[FIX_FONT_PAL_OFFS], FIX_FONT_PAL_LEN/16);
+	sai_pal_load(0x02, &wrk_chr_pal[CHR_NEOGEO_PAL_OFFS], CHR_NEOGEO_PAL_LEN/16);
 
 	sai_finish();
 
@@ -215,10 +176,11 @@ void main(void)
 	while (true)
 	{
 		if (attract) attract_timer++;
-		draw_inputs();
 		run_test_color_anim();
 		move_test_sprite();
 		sai_finish();
+
+		draw_inputs();
 		sai_neo_spr_pool_on_vbl(&s_sprpool);
 	}
 

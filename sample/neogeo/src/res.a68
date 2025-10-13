@@ -3,3 +3,6 @@
 	.global	wrk_fix_pal
 wrk_fix_pal:
 	.incbin	"wrk/fix.pal"
+	.global	wrk_chr_pal
+wrk_chr_pal:
+	.incbin	"wrk/chr.pal"

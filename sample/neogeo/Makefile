@@ -86,14 +86,13 @@ include $(SAI)/mk/build-rules.mk
 # C1 and C2 can be further split (ordinarily, using split) to fit ROM sockets
 # of lower capacity.
 .PHONY: $(RESDIR)/chr.c1
-$(RESDIR)/chr.c1: # png/chr.ini $(VELELLA)
+$(RESDIR)/chr.c1: png/chr.ini $(VELELLA)
 	mkdir -p $(WRKDIR)
 	mkdir -p $(@D)
-#	$(VELELLA) $<
-#	$(BSPLIT) s $(WRKDIR)/chr.chr $(@D)/chr.c1 $(@D)/chr.c2 2
-# TODO: remove test crap once Velella support is done.
-	cp chr.c1 $(@D)/chr.c1
-	cp chr.c2 $(@D)/chr.c2
+	$(VELELLA) $<
+	$(BSPLIT) s $(WRKDIR)/chr.chr $(@D)/chr.c1 $(@D)/chr.c2 2
+	$(BINPAD) $(@D)/chr.c1 0x800000
+	$(BINPAD) $(@D)/chr.c2 0x800000
 
 .PHONY: $(RESDIR)/fix.s1
 $(RESDIR)/fix.s1: png/fix.ini $(VELELLA)
