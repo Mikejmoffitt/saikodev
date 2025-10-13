@@ -85,147 +85,23 @@ scb1_loop_outer:
 	movea.l	a1, a3  ; A3 is used to iterate within the source data.
 	move.w	(a2)+, d6   ; SCB3 size data associated with this sprite.
 	andi.w	#$003F, d6  ; Mask to tile count
-	beq.w	scb1_loop_next  ; 0 tile count case; just put it somewhere safe.
-	subq.w	#1, d6
-	beq.w	scb1_copy1  ; hot case for single-tile (bullets, etc)
 	eori.w	#$003F, d6  ; Get values $00 - $3F.
 	add.w	d6, d6
-	add.w	d6, d6  ; *4, sized for bra.w table
+	add.w	d6, d6  ; *4, sized for direct jump
 	jmp	scb1_copyjmp(pc, d6.w)
 scb1_copyjmp:
 	; Invalid values above 33 tiles
-	.rept	64-33
+	.rept	32-1
 	bra.w	scb1_loop_next  ; invalid
 	.endr
-	bra.w	scb1_copy32  ; 33 tile value still only needs 32 tiles' of data.
-	bra.w	scb1_copy32
-	bra.w	scb1_copy31
-	bra.w	scb1_copy30
-	bra.w	scb1_copy29
-	bra.w	scb1_copy28
-	bra.w	scb1_copy27
-	bra.w	scb1_copy26
-	bra.w	scb1_copy25
-	bra.w	scb1_copy24
-	bra.w	scb1_copy23
-	bra.w	scb1_copy22
-	bra.w	scb1_copy21
-	bra.w	scb1_copy20
-	bra.w	scb1_copy19
-	bra.w	scb1_copy18
-	bra.w	scb1_copy17
-	bra.w	scb1_copy16
-	bra.w	scb1_copy15
-	bra.w	scb1_copy14
-	bra.w	scb1_copy13
-	bra.w	scb1_copy12
-	bra.w	scb1_copy11
-	bra.w	scb1_copy10
-	bra.w	scb1_copy9
-	bra.w	scb1_copy8
-	bra.w	scb1_copy7
-	bra.w	scb1_copy6
-	bra.w	scb1_copy5
-	bra.w	scb1_copy4
-	bra.w	scb1_copy3
-	bra.w	scb1_copy2
-	bra.w	scb1_copy1
-scb1_copy32:
+	; 33 tile case
+	nop
+	nop
+	; 32 tiles and below
+	.rept	32
 	move.w	(a3)+, (a5)  ; attr, then code. This hardware unfortunately does
 	move.w	(a3)+, (a5)  ; not allow us to write a longword to VRAMRW.
-scb1_copy31:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy30:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy29:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy28:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy27:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy26:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy25:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy24:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy23:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy22:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy21:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy20:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy19:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy18:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy17:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy16:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy15:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy14:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy13:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy12:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy11:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy10:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy9:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy8:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy7:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy6:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy5:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy4:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy3:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy2:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
-scb1_copy1:
-	move.w	(a3)+, (a5)
-	move.w	(a3)+, (a5)
+	.endr
 scb1_loop_next:
 	lea	64*2(a1), a1  ; Next SCB1 source block
 	addi.w	#64, d1  ; Next SCB1 vram destination block.
