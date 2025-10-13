@@ -1,9 +1,11 @@
 #include "sai/sai.h"
 #include "res.h"
 
+#define SPR_POOL_CAPACITY 8
+
 static SaiNeoSprPool s_sprpool;
 
-static uint16_t s_scb_buffer[SAI_NEO_SCB_BUFFER_SIZE(32)];
+static uint16_t s_scb_buffer[SAI_NEO_SCB_BUFFER_SIZE(SPR_POOL_CAPACITY)];
 
 static inline void print_string_fix(uint16_t vram_addr, const uint16_t attr_base,
                                     const char *str)
@@ -55,7 +57,7 @@ static void move_test_sprite(void)
 	s_x += s_dx;
 	s_y += s_dy;
 
-	if (s_x + 32 >= 320)
+	if (s_x + 32 >= NEO_RASTER_W)
 	{
 		s_dx = -1;
 	}
@@ -63,7 +65,7 @@ static void move_test_sprite(void)
 	{
 		s_dx = 1;
 	}
-	if (s_y + 32 >= 224)
+	if (s_y + 32 >= NEO_RASTER_H)
 	{
 		s_dy = -1;
 	}
@@ -72,15 +74,22 @@ static void move_test_sprite(void)
 		s_dy = 1;
 	}
 
-	sai_neo_spr_pool_draw(&s_sprpool,
-	                      SAI_NEO_SCB1_ATTR(0, 0x01, 0),  // attr
-	                      4, // code
-	                      SAI_NEO_SCB2_ATTR(0xF, 0xFF),  // shrink
-	                      4, // tiles H
+	static const uint16_t attr = SAI_NEO_SCB1_ATTR(0, 0x01, 0);
+	static const uint16_t code = 4;
+	static const uint16_t shrink = SAI_NEO_SCB2_ATTR(0xF, 0xFF);
+
+	sai_neo_spr_pool_draw(&s_sprpool, attr, code+0, shrink, 2,
 	                      s_x<<SAI_NEO_SPR_FIXPX_BITS,  // X
 	                      (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);  // Y
+	sai_neo_spr_pool_stick(&s_sprpool, attr, code+2, shrink, 2);
 
-//	sai_sp013_draw(s_x, s_y, SP013_AT32(1, 3)|SPR_ESPRADE_CODE, SPR_ESPRADE_SIZE);
+	sai_neo_spr_pool_draw(&s_sprpool,
+	                      attr, code+32,
+	                      shrink,  // shrink
+	                      2, // tiles H
+	                      (s_x+32)<<SAI_NEO_SPR_FIXPX_BITS,  // X
+	                      (SAI_NEO_SPR_Y_ADJ-(224-s_y))<<SAI_NEO_SPR_FIXPX_BITS);  // Y
+
 }
 
 static void draw_initial_text(void)
@@ -112,19 +121,14 @@ static void draw_initial_text(void)
 	volatile uint16_t *vramrw = (volatile uint16_t *)(SAI_NEO_REG_VRAMRW);
 	volatile uint16_t *vrammod = (volatile uint16_t *)(SAI_NEO_REG_VRAMMOD);
 
-	*vramaddr = FIX_ADDR(0, 2);
-	*vrammod = FIX_OFFS(1, 0);
-	for (uint16_t i = 0; i < 16; i++)
-	{
-		*vramrw = i;
-	}
+	static const uint16_t attr = FIX_ATTR(1);
 
 	*vramaddr = FIX_ADDR(2, 4);
 	*vrammod = FIX_OFFS(1, 0);
 	static const char str_neo[] = "Oh no it's neo geo";
 	for (uint16_t i = 0; i < sizeof(str_neo); i++)
 	{
-		*vramrw = str_neo[i];
+		*vramrw = attr | str_neo[i];
 	}
 }
 
@@ -197,7 +201,7 @@ void main(void)
 
 	draw_initial_text();
 
-	sai_neo_spr_pool_init(&s_sprpool, s_scb_buffer, 0, 32, false);
+	sai_neo_spr_pool_init(&s_sprpool, s_scb_buffer, 1, SPR_POOL_CAPACITY, false);
 
 	while (true)
 	{

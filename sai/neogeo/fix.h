@@ -11,6 +11,7 @@ extern "C"
 
 #include "sai/neogeo/vram.h"
 
+#define FIX_ATTR(pal) ((pal)<<12)
 #define FIX_OFFS(x, y) (y + (x*0x20))
 #define FIX_ADDR(x, y) (VRAM_FIXMAP+FIX_OFFS(x, y))
 

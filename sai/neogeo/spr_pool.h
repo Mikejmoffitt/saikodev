@@ -104,6 +104,7 @@ typedef struct SaiNeoSprPool
 	uint16_t pool_capacity; // Maximum sprite count.
 
 	uint16_t sprite_count;  // Quantity of sprites drawn/used.
+	uint16_t sprite_count_prev;  // From the last frame.
 
 	uint16_t scb_vram_addr[4];  // VRAM Address for start of pool SCBs.
 	uint16_t *scb_buf[4];   // Start address of user-owned buffer.
@@ -119,7 +120,11 @@ void sai_neo_spr_pool_init(SaiNeoSprPool *pool, uint16_t *scb_buffer,
                            uint16_t pool_capacity,
                            uint16_t fixed_shrink);
 
-// Transfer sprite data and reset draw state.
+// Call before sai_finish() after having drawn sprites to the pool.
+// Sprites are erased immediately to avoid wasting vblank transfer time.
+void sai_neo_spr_pool_finish(SaiNeoSprPool *pool);
+
+// Call right after sai_finish() to transfer sprites.
 void sai_neo_spr_pool_on_vbl(SaiNeoSprPool *pool);
 
 // Draws a sprite with full parameters. It is assumed that the tile code
@@ -137,34 +142,84 @@ static inline void sai_neo_spr_pool_draw(SaiNeoSprPool *pool,
 {
 	if (pool->sprite_count >= pool->pool_capacity) return;
 
-	uint32_t *scb1_32 = (uint32_t *)(pool->scb_next[0]);
+	uint16_t *scb1 = pool->scb_next[0];
 	uint16_t *scb2 = pool->scb_next[1];
 	uint16_t *scb3 = pool->scb_next[2];
 	uint16_t *scb4 = pool->scb_next[3];
 
-	*scb4++ = x;
-	*scb2++ = shrink;
+	*scb4 = x;
+	*scb2 = shrink;
 	uint16_t size = tiles_h;
 	const uint16_t shrink_y = shrink & 0xFF;
 	// Write tilemap data.
-	for (uint16_t i = 0; i < tiles_h; i++) *scb1_32++ = attr | code++;
+	for (uint16_t i = 0; i < tiles_h; i++)
+	{
+		*scb1++ = code++;
+		*scb1++ = attr;
+	}
 	// When shrinking vertically, the tilemap and height need adjustment.
 	if (shrink_y != 0xFF)
 	{
 		// Clear out the next tile to prevent shrink artifacts.
-		if (tiles_h < 32) *scb1_32++ = 0;
+		if (tiles_h < 32)
+		{
+			*scb1++ = 0;
+			*scb1++ = 0;
+		}
 		// Reduce size field based on utilization from shrink
-		size = ((tiles_h * (shrink_y+1)) >> 8) - 1;
+		size = (((tiles_h * (shrink_y+1)) >> 8) - 1);
 	}
 
-	*scb3++ = y | size;
+	*scb3 = SAI_NEO_SCB3_ATTR(size, y);
 
 	// Advance sprites
 	pool->sprite_count++;
-	pool->scb_next[0] = &pool->scb_next[0][0x40];  // 64 words per sprite.
-	pool->scb_next[1] = scb2;
-	pool->scb_next[2] = scb3;
-	pool->scb_next[3] = scb4;
+	pool->scb_next[0]+=64;
+	pool->scb_next[1]++;
+	pool->scb_next[2]++;
+	pool->scb_next[3]++;
+}
+
+static inline void sai_neo_spr_pool_stick(SaiNeoSprPool *pool,
+                                          uint16_t attr, uint16_t code,
+                                          uint16_t shrink, uint16_t tiles_h)
+{
+	if (pool->sprite_count >= pool->pool_capacity) return;
+
+	uint16_t *scb1 = pool->scb_next[0];
+	uint16_t *scb2 = pool->scb_next[1];
+	uint16_t *scb3 = pool->scb_next[2];
+	uint16_t *scb4 = pool->scb_next[3];
+
+	*scb2 = shrink;  // Only the H shrink data is actually respected.
+	const uint16_t shrink_y = shrink & 0xFF;
+	// Write tilemap data.
+	for (uint16_t i = 0; i < tiles_h; i++)
+	{
+		*scb1++ = code++;
+		*scb1++ = attr;
+	}
+	// When shrinking vertically, the tilemap needs adjustment.
+	if (shrink_y != 0xFF)
+	{
+		// Clear out the next tile to prevent shrink artifacts.
+		if (tiles_h < 32)
+		{
+			*scb1++ = 0;
+			*scb1++ = 0;
+		}
+	}
+
+	// Althrough sticky sprites do not read the height or position data,
+	// the sprite pool tranfsfer code does use the height.
+	*scb3 = SAI_NEO_SCB3_STICKY | tiles_h;
+
+	// Advance sprites
+	pool->sprite_count++;
+	pool->scb_next[0]+=64;
+	pool->scb_next[1]++;
+	pool->scb_next[2]++;
+	pool->scb_next[3]++;
 }
 
 #else
@@ -173,6 +228,7 @@ static inline void sai_neo_spr_pool_draw(SaiNeoSprPool *pool,
 SaiNeoSprPool.fixed_shrink:         ds.w 1
 SaiNeoSprPool.pool_capacity:        ds.w 1
 SaiNeoSprPool.sprite_count:         ds.w 1
+SaiNeoSprPool.sprite_count_prev:    ds.w 1
 SaiNeoSprPool.scb_vram_addr:        ds.w 4
 SaiNeoSprPool.scb_buf:              ds.l 4
 SaiNeoSprPool.scb_next:             ds.l 4

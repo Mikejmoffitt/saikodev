@@ -14,6 +14,7 @@ sai_neo_spr_pool_on_vbl:
 	movea.l	4(sp), a0  ; SaiNeoSprPool *
 
 	move.w	SaiNeoSprPool.sprite_count(a0), d0
+	move.w	d0, SaiNeoSprPool.sprite_count_prev(a0)
 	subq.w	#1, d0
 	bmi.w	done
 	move.w	d0, d7
@@ -61,7 +62,9 @@ scb1_loop_outer:
 	move.w	d1, SAI_NEO_REG_VRAMADDR  ; Point VRAM to SCB1 block.
 	movea.l	a1, a3  ; A3 is used to iterate within the source data.
 	move.w	(a2)+, d6   ; SCB3 size data associated with this sprite.
-	andi.w	#$003F, d6  ; Mask to tile count - 1.
+	andi.w	#$003F, d6  ; Mask to tile count
+	beq.w	scb1_loop_next  ; 0 tile count case; just put it somewhere safe.
+	subq.w	#1, d6
 	beq.w	scb1_copy1  ; hot case for single-tile (bullets, etc)
 	eori.w	#$003F, d6  ; Get values $00 - $3F.
 	add.w	d6, d6
@@ -202,8 +205,8 @@ scb1_copy1:
 	move.w	(a3)+, (a5)
 	move.w	(a3)+, (a5)
 scb1_loop_next:
-	lea	32*2(a1), a1  ; Next SCB1 source block.
-	addi.w	#32, d1  ; Next SCB1 vram destination block.
+	lea	32*2*2(a1), a1  ; Next SCB1 source block (32*2 words)
+	addi.w	#32*2, d1  ; Next SCB1 vram destination block.
 	dbf	d7, scb1_loop_outer
 
 	; Reset draw state and exit.
