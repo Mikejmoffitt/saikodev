@@ -62,6 +62,7 @@ sai_neo_io_poll:
 ; Player 2
 ;
 	lea	SaiInput.len(a0), a0
+	moveq	#0, d0
 	move.b	SAI_NEO_REG_P2CNT, d0
 	not.b	d0
 
@@ -77,10 +78,6 @@ sai_neo_io_poll:
 	btst	#1, d1
 	bne.s	0f
 	ori.w	#SAI_BTN_COIN, d0
-0:
-	btst	#2, d1
-	bne.s	0f
-	ori.w	#SAI_BTN_SERVICE, d0
 0:
 	move.w	d0, SaiInput.now(a0)
 	rts
