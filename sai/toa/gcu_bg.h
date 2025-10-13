@@ -39,7 +39,8 @@ extern "C"
 #define GCU_BG_AT32(pal, prio) (GCU_BG_ATTR(pal, prio)<<16)
 
 // VRAM Math
-#define GCU_BG_OFFS(x, y) (((x)*2)+((y)*2)*GCU_BG_W_TILES)
+#define GCU_BG_OFFS(x, y)        (((x)+((y)*GCU_BG_W_TILES))*2)
+#define GCU_BG_ADDR(plane, x, y) (((plane)*GCU_BG_PAGE_WORDS) + GCU_BG_OFFS(x, y))
 
 #ifdef __cplusplus
 }

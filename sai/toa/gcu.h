@@ -96,13 +96,6 @@ SAI_ENUMEND
 #define GCU_CONFIG_RESET1_BIT            0x1
 #define GCU_CONFIG_RESET0_BIT            0x0
 
-//
-// VRAM math
-//
-
-#define GCU_OFFS(x, y) ((((x)+((y)*(GCU_PLANE_W_TILES)))*2) & (GCU_VRAM_PAGE_SIZE-1))
-#define GCU_ADDR(plane, x, y) (((plane)*GCU_VRAM_PAGE_SIZE) + GCU_OFFS(x, y))
-
 #ifndef __ASSEMBLER__
 
 // The GCU can only accept VRAM writes *outside* of vertical blank!
@@ -125,7 +118,6 @@ typedef struct SaiGcuPlaneCfg
 } SaiGcuPlaneCfg;
 
 extern SaiGcuPlaneCfg g_sai_gcu_scroll[4];
-extern uint16_t g_sai_gcu_cfg;
 
 // Configure the GCU registers and initialize Video RAM.
 void sai_gcu_init(void);

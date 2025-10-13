@@ -11,6 +11,7 @@ SAI_SOURCES_ASM := \
 	$(SAI)/boot/exceptions.a68 \
 	$(SAI)/boot/memcheck.a68 \
 	$(SAI)/toa/gcu.a68 \
+	$(SAI)/toa/gcu_spr.a68 \
 	$(SAI)/toa/io.a68 \
 	$(SAI)/toa/irq.a68 \
 	$(SAI)/toa/pal.a68 \

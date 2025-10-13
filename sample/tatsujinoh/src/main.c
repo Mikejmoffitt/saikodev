@@ -81,7 +81,7 @@ static void draw_background(void)
 	for (uint16_t y = 0; y < 240/16; y++)
 	{
 		sai_gcu_wait_access();
-		*gcu_addr = GCU_ADDR(0, 0, y);
+		*gcu_addr = GCU_BG_ADDR(GCU_PLANE_A, 0, y);
 		for (uint16_t x = 0; x < 320/16; x++)
 		{
 			*gcu_data32 = tile++;

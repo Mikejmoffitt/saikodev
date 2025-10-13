@@ -10,22 +10,16 @@
 
 	.section	.bss
 
-; Sprite support
-	.global	g_sai_gcu_spr_count
-g_sai_gcu_spr_count:        ds.w 1
-	.global	g_sai_gcu_spr_next
-g_sai_gcu_spr_next:         ds.w 1  ; VRAM address of next sprite
-s_sai_gcu_spr_next_prev:    ds.w 1  ; For erasing unused slots from the last frame.
-
-
 	.global g_sai_gcu_scroll
 ; User scroll configuration.
-g_sai_gcu_scroll: ds.w 4*SaiGcuPlaneCfg.len/2
+g_sai_gcu_scroll:              ds.w 4*SaiGcuPlaneCfg.len/2
+
 ; Plane base offsets.
-s_scroll_offs:    ds.w 4*SaiGcuPlaneCfg.len/2
+s_scroll_offs:                 ds.w 4*SaiGcuPlaneCfg.len/2
+
 ; Due to the sprite framebuffer a frame of delay must be added to the scroll.
 ; This holds the sum of the offset + scroll setting from the prior frame.
-s_scroll_out_buffer:    ds.w 4*SaiGcuPlaneCfg.len/2
+s_scroll_out_buffer:           ds.w 4*SaiGcuPlaneCfg.len/2
 
 	.section	.text
 
@@ -52,9 +46,10 @@ s_scroll_out_buffer:    ds.w 4*SaiGcuPlaneCfg.len/2
 ; clobbers a2.
 	.global	sai_min_gcu_init
 sai_min_gcu_init:
+	; Short initial delay
 	moveq	#-1, d0
 0:
-	.rept	16
+	.rept	3
 	nop
 	.endr
 	dbf	d0, 0b
@@ -62,8 +57,15 @@ sai_min_gcu_init:
 	lea	GCU_BASE, a1
 	; Configuration registers
 	move.w	#GCU_REG_CONFIG, GCU_REG_ADDR_OFFS(a1)
+	; There's no reset pin! Setting either of these bits causes the display
+	; to go blank, and for interrupts to stop firing. All titles using the
+	; GCU poke pin 0, and then bits 0 and 1 together. Some reverse this
+	; order.
 	move.w	#SAI_BITVAL(GCU_CONFIG_RESET1_BIT)|SAI_BITVAL(GCU_CONFIG_RESET0_BIT), GCU_REG_DATA_OFFS(a1)
 	move.w	#SAI_BITVAL(GCU_CONFIG_RESET1_BIT), GCU_REG_DATA_OFFS(a1)
+	; After releasing the reset bits, every title sets bit 14. It is not
+	; clear what this does, and not setting it does not have any obvious
+	; consequences.
 	move.w	#SAI_BITVAL(GCU_CONFIG_B14_BIT), GCU_REG_DATA_OFFS(a1)
 
 	; Scroll setup
@@ -170,63 +172,3 @@ gcu_plane_addr_tbl:
 	dc.w GCU_VRAM_B_BASE,   ((GCU_BG_PAGE_WORDS)/4)-1
 	dc.w GCU_VRAM_C_BASE,   ((GCU_BG_PAGE_WORDS)/4)-1
 	dc.w GCU_VRAM_SPR_BASE, ((GCU_SPR_PAGE_WORDS)/4)-1
-
-; -----------------------------------------------------------------------------
-;
-; Sprite code
-;
-; -----------------------------------------------------------------------------
-
-	.global	sai_gcu_spr_init
-sai_gcu_spr_init:
-	move.w	#GCU_SPR_COUNT-1, d1
-
-	move.w	#GCU_VRAM_SPR_BASE, d0
-	move.w	d0, g_sai_gcu_spr_next
-	add.w	#GCU_SPR_COUNT*GcuSpr.len, d0
-	move.w	d0, s_sai_gcu_spr_next_prev
-
-	moveq	#0, d0
-	move.w	d0, g_sai_gcu_spr_count
-
-; d0.w = sprite VRAM address
-; d1.w = count
-sai_gcu_spr_init_erase:
-	movem.l	d2-d3, -(sp)
-	lea	GCU_BASE, a0
-	moveq	#GCU_STATUS_BLANKING_BIT, d3
-	moveq	#0, d2  ; blank data
-
-
-sai_gcu_spr_init_loop:
-; vdisp wait
-0:
-	btst	d3, GCU_STATUS_OFFS+1(a0)
-	bne.s	0b
-; address and data
-	move.w	d0, GCU_ADDR_OFFS(a0)
-	move.w	d2, GCU_DATA_OFFS(a0)
-	addq.w	#GcuSpr.len/2, d0
-	dbf	d1, sai_gcu_spr_init_loop
-	movem.l	(sp)+, d2-d3
-
-sai_gcu_spr_init_ret:
-	rts
-
-	.global	sai_gcu_spr_finish
-sai_gcu_spr_finish:
-	move.w	g_sai_gcu_spr_next, d0
-	move.w	#GCU_VRAM_SPR_BASE, g_sai_gcu_spr_next
-	clr.w	g_sai_gcu_spr_count
-	move.w	s_sai_gcu_spr_next_prev, d1
-	move.w	d0, s_sai_gcu_spr_next_prev
-	; Figure out how many slots linger from the last draw.
-	cmp.w	d1, d0
-	bcc.s	sai_gcu_spr_init_ret  ; If now >= prev, skip the clear
-
-	; Address math to get sprite count
-	sub.w	d0, d1
-	lsr.w	#2, d1
-	subq.w	#1, d1
-
-	bra.w	sai_gcu_spr_init_erase

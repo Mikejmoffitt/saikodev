@@ -1,0 +1,66 @@
+#include	"sai/toa/gcu_spr.h"
+#include	"sai/toa/gcu.h"
+#include	"sai/toa/hw.h"
+#include	"sai/macro.h"
+
+	.section	.bss
+
+; Sprite support
+	.global	g_sai_gcu_spr_count
+g_sai_gcu_spr_count:        ds.w 1
+	.global	g_sai_gcu_spr_next
+g_sai_gcu_spr_next:         ds.w 1  ; VRAM address of next sprite
+s_sai_gcu_spr_next_prev:    ds.w 1  ; For erasing unused slots from the last frame.
+
+	.section	.text
+
+	.global	sai_gcu_spr_init
+sai_gcu_spr_init:
+	move.w	#GCU_SPR_COUNT-1, d1
+
+	move.w	#GCU_VRAM_SPR_BASE,  g_sai_gcu_spr_next
+	add.w	#GCU_SPR_COUNT*GcuSpr.len, s_sai_gcu_spr_next_prev
+
+	moveq	#0, d0
+	move.w	d0, g_sai_gcu_spr_count
+
+; d0.w = sprite VRAM address
+; d1.w = count
+sai_gcu_spr_init_erase:
+	movem.l	d2-d3, -(sp)
+	lea	GCU_BASE, a0
+	moveq	#GCU_STATUS_BLANKING_BIT, d3
+	moveq	#0, d2  ; blank data
+
+init_loop:
+; vdisp wait for every sprite like a goody two shoes
+0:
+	btst	d3, GCU_STATUS_OFFS+1(a0)
+	bne.s	0b
+; address and data
+	move.w	d0, GCU_ADDR_OFFS(a0)
+	move.w	d2, GCU_DATA_OFFS(a0)
+	addq.w	#GcuSpr.len/2, d0
+	dbf	d1, init_loop
+	movem.l	(sp)+, d2-d3
+
+sai_gcu_spr_init_ret:
+	rts
+
+	.global	sai_gcu_spr_finish
+sai_gcu_spr_finish:
+	move.w	g_sai_gcu_spr_next, d0
+	move.w	#GCU_VRAM_SPR_BASE, g_sai_gcu_spr_next
+	clr.w	g_sai_gcu_spr_count
+	move.w	s_sai_gcu_spr_next_prev, d1
+	move.w	d0, s_sai_gcu_spr_next_prev
+	; Figure out how many slots linger from the last draw.
+	cmp.w	d1, d0
+	bcc.s	sai_gcu_spr_init_ret  ; If now >= prev, skip the clear
+
+	; Address math to get sprite count
+	sub.w	d0, d1
+	lsr.w	#2, d1
+	subq.w	#1, d1
+
+	bra.w	sai_gcu_spr_init_erase
