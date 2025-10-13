@@ -1,6 +1,10 @@
 #include "sai/sai.h"
 #include "res.h"
 
+static SaiNeoSprPool s_sprpool;
+
+static uint16_t s_scb_buffer[SAI_NEO_SCB_BUFFER_SIZE(32)];
+
 static inline void print_string_fix(uint16_t vram_addr, const uint16_t attr_base,
                                     const char *str)
 {
@@ -67,6 +71,14 @@ static void move_test_sprite(void)
 	{
 		s_dy = 1;
 	}
+
+	sai_neo_spr_pool_draw(&s_sprpool,
+	                      SAI_NEO_SCB1_ATTR(0, 0x01, 0),  // attr
+	                      4, // code
+	                      SAI_NEO_SCB2_ATTR(0xF, 0xFF),  // shrink
+	                      4, // tiles H
+	                      s_x<<SAI_NEO_SPR_FIXPX_BITS,  // X
+	                      (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);  // Y
 
 //	sai_sp013_draw(s_x, s_y, SP013_AT32(1, 3)|SPR_ESPRADE_CODE, SPR_ESPRADE_SIZE);
 }
@@ -179,19 +191,22 @@ void main(void)
 
 	uint16_t attract_timer = 0;
 
-	sai_pal_load(0x00*16, &wrk_fix_pal[FIX_FONT_PAL_OFFS], FIX_FONT_PAL_LEN/16);
+	sai_pal_load(0x01, &wrk_fix_pal[FIX_FONT_PAL_OFFS], FIX_FONT_PAL_LEN/16);
 
 	sai_finish();
 
 	draw_initial_text();
 
+	sai_neo_spr_pool_init(&s_sprpool, s_scb_buffer, 0, 32, false);
+
 	while (true)
 	{
+		if (attract) attract_timer++;
 		draw_inputs();
 		run_test_color_anim();
 		move_test_sprite();
 		sai_finish();
-		if (attract) attract_timer++;
+		sai_neo_spr_pool_on_vbl(&s_sprpool);
 	}
 
 	sai_neo_system_return();

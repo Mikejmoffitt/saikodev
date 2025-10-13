@@ -35,6 +35,9 @@ extern "C"
 #define SYSROM_BASE            (0xC00000)
 #define BRAM_BASE              (0xD00000)
 
+#define NEO_RASTER_W 320
+#define NEO_RASTER_H 240
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

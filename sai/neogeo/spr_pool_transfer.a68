@@ -1,0 +1,219 @@
+#include "sai/neogeo/spr_pool.h"
+#include "sai/neogeo/reg.h"
+#include "sai/neogeo/lspc.h"
+
+; TODO: Unroll some of the copy loops a bit
+
+#define ON_VBL_CLOBBERLIST_W d6-d7
+#define ON_VBL_CLOBBERLIST_L a2-a5
+
+	.section	.text
+
+	.global	sai_neo_spr_pool_on_vbl
+sai_neo_spr_pool_on_vbl:
+	movea.l	4(sp), a0  ; SaiNeoSprPool *
+
+	move.w	SaiNeoSprPool.sprite_count(a0), d0
+	subq.w	#1, d0
+	bmi.w	done
+	move.w	d0, d7
+
+	movem.w	ON_VBL_CLOBBERLIST_W, -(sp)
+	movem.l	ON_VBL_CLOBBERLIST_L, -(sp)
+
+	move.w	#1, SAI_NEO_REG_VRAMMOD       ; word-sized postinc
+
+	movem.l	SaiNeoSprPool.scb_buf(a0), a1-a4  ; SCB source data pointers
+	lea	SAI_NEO_REG_VRAMRW, a5        ; VRAMRW data port
+; SCB2 - Shrink values
+scb2_transfer:
+	tst.w	SaiNeoSprPool.fixed_shrink(a0)  ; sprites at fixed size?
+	bne.s	scb3_transfer               ; yes --> don't bother
+	move.w	SaiNeoSprPool.scb_vram_addr+(2*1)(a0), SAI_NEO_REG_VRAMADDR
+	move.w	d7, d6
+scb2_loop:
+	move.w	(a2)+, (a5)
+	dbf	d6, scb2_loop
+
+; SCB3 - Y position and size
+scb3_transfer:
+	move.l	a3, a2  ; Back up start of SCB3 in a2, for use in SCB1 copy.
+	move.w	SaiNeoSprPool.scb_vram_addr+(2*2)(a0), SAI_NEO_REG_VRAMADDR
+	move.w	d7, d6
+scb3_loop:
+	move.w	(a3)+, (a5)
+	dbf	d6, scb3_loop
+
+; SCB4 - X position
+scb4_transfer:
+	move.w	SaiNeoSprPool.scb_vram_addr+(2*3)(a0), SAI_NEO_REG_VRAMADDR
+	move.w	d7, d6
+scb4_loop:
+	move.w	(a4)+, (a5)
+	dbf	d6, scb4_loop
+
+; SCB1 - Tilemaps
+	; A2 points to start of SCB3 source data. We use it to reduce the amount
+	; of SCB1 data that must be transferred based on tile count.
+	move.w	SaiNeoSprPool.scb_vram_addr+(2*0)(a0), d1  ; Dest VRAM
+	; Each sprite has up to a $40 word chunk of data transferred.
+scb1_loop_outer:
+	move.w	d1, SAI_NEO_REG_VRAMADDR  ; Point VRAM to SCB1 block.
+	movea.l	a1, a3  ; A3 is used to iterate within the source data.
+	move.w	(a2)+, d6   ; SCB3 size data associated with this sprite.
+	andi.w	#$003F, d6  ; Mask to tile count - 1.
+	beq.w	scb1_copy1  ; hot case for single-tile (bullets, etc)
+	eori.w	#$003F, d6  ; Get values $00 - $3F.
+	add.w	d6, d6
+	add.w	d6, d6  ; *4, sized for bra.w table
+	jmp	scb1_copyjmp(pc, d6.w)
+scb1_copyjmp:
+	; Invalid values above 33 tiles
+	.rept	64-33
+	bra.w	scb1_loop_next  ; invalid
+	.endr
+	bra.w	scb1_copy32  ; 33 tile value still only needs 32 tiles' of data.
+	bra.w	scb1_copy32
+	bra.w	scb1_copy31
+	bra.w	scb1_copy30
+	bra.w	scb1_copy29
+	bra.w	scb1_copy28
+	bra.w	scb1_copy27
+	bra.w	scb1_copy26
+	bra.w	scb1_copy25
+	bra.w	scb1_copy24
+	bra.w	scb1_copy23
+	bra.w	scb1_copy22
+	bra.w	scb1_copy21
+	bra.w	scb1_copy20
+	bra.w	scb1_copy19
+	bra.w	scb1_copy18
+	bra.w	scb1_copy17
+	bra.w	scb1_copy16
+	bra.w	scb1_copy15
+	bra.w	scb1_copy14
+	bra.w	scb1_copy13
+	bra.w	scb1_copy12
+	bra.w	scb1_copy11
+	bra.w	scb1_copy10
+	bra.w	scb1_copy9
+	bra.w	scb1_copy8
+	bra.w	scb1_copy7
+	bra.w	scb1_copy6
+	bra.w	scb1_copy5
+	bra.w	scb1_copy4
+	bra.w	scb1_copy3
+	bra.w	scb1_copy2
+	bra.w	scb1_copy1
+scb1_copy32:
+	move.w	(a3)+, (a5)  ; attr, then code. This hardware unfortunately does
+	move.w	(a3)+, (a5)  ; not allow us to write a longword to VRAMRW.
+scb1_copy31:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy30:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy29:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy28:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy27:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy26:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy25:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy24:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy23:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy22:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy21:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy20:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy19:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy18:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy17:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy16:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy15:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy14:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy13:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy12:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy11:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy10:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy9:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy8:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy7:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy6:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy5:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy4:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy3:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy2:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_copy1:
+	move.w	(a3)+, (a5)
+	move.w	(a3)+, (a5)
+scb1_loop_next:
+	lea	32*2(a1), a1  ; Next SCB1 source block.
+	addi.w	#32, d1  ; Next SCB1 vram destination block.
+	dbf	d7, scb1_loop_outer
+
+	; Reset draw state and exit.
+	clr.w	SaiNeoSprPool.sprite_count(a0)
+	movem.l	SaiNeoSprPool.scb_buf(a0), a1-a4
+	movem.l	a1-a4, SaiNeoSprPool.scb_next(a0)
+
+	movem.l	(sp)+, ON_VBL_CLOBBERLIST_L
+	movem.w	(sp)+, ON_VBL_CLOBBERLIST_W
+done:
+	rts
+
+	.section	.text

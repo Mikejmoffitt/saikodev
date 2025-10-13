@@ -67,6 +67,7 @@ extern "C"
 #include "sai/neogeo/pal.h"
 #include "sai/neogeo/lspc.h"
 #include "sai/neogeo/reg.h"
+#include "sai/neogeo/spr_pool.h"
 #include "sai/neogeo/sysrom.h"
 #endif
 

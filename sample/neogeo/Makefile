@@ -75,7 +75,7 @@ clean:
 
 # Prebuild should depend on any targets that are required before compilation.
 .PHONY: prebuild
-prebuild: $(RESDIR)/fix.s1 # $(RESDIR)/spr.c1
+prebuild: $(RESDIR)/fix.s1 $(RESDIR)/chr.c1
 
 include $(SAI)/mk/build-rules.mk
 
@@ -85,13 +85,15 @@ include $(SAI)/mk/build-rules.mk
 # split it wordwise into two 16-bit files.
 # C1 and C2 can be further split (ordinarily, using split) to fit ROM sockets
 # of lower capacity.
-.PHONY: $(RESDIR)/spr.c1
-$(RESDIR)/spr.c1: png/spr.ini $(VELELLA)
+.PHONY: $(RESDIR)/chr.c1
+$(RESDIR)/chr.c1: # png/chr.ini $(VELELLA)
 	mkdir -p $(WRKDIR)
 	mkdir -p $(@D)
-	$(VELELLA) $<
-	$(BSPLIT) s $(WRKDIR)/spr.chr $(@D)/spr.c1 $(@D)/spr.c2 2
-	cp $(WRKDIR)/spr.chr $@
+#	$(VELELLA) $<
+#	$(BSPLIT) s $(WRKDIR)/chr.chr $(@D)/chr.c1 $(@D)/chr.c2 2
+# TODO: remove test crap once Velella support is done.
+	cp chr.c1 $(@D)/chr.c1
+	cp chr.c2 $(@D)/chr.c2
 
 .PHONY: $(RESDIR)/fix.s1
 $(RESDIR)/fix.s1: png/fix.ini $(VELELLA)

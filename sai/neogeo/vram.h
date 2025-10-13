@@ -10,7 +10,7 @@
 // Upper zone:
 // $8000 - $81FF | SCB2        | Shrink values
 // $8200 - $83FF | SCB3        | Sprite Y, height, flag
-// $8300 - $84FF | SCB4        | Sprite X
+// $8400 - $85FF | SCB4        | Sprite X
 
 // $8600 - $867F | objlist (0) | Sprite work area, even lines
 // $8680 - $867F | objlist (1) | Sprite work area, odd lines

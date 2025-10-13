@@ -20,8 +20,8 @@ $(OUTDIR)/rom/241-p1.p1: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 	dd if=/dev/zero of=$(@D)/241-v1.v1 bs=1M count=4
 	dd if=/dev/zero of=$(@D)/241-v2.v2 bs=1M count=4
 # Sprite data TODO
-	dd if=/dev/zero of=$(@D)/241-c1.c1 bs=1M count=8
-	dd if=/dev/zero of=$(@D)/241-c2.c2 bs=1M count=8
+	cp $(RESDIR)/chr.c1 $(@D)/241-c1.c1
+	cp $(RESDIR)/chr.c2 $(@D)/241-c2.c2
 	dd if=/dev/zero of=$(@D)/241-c3.c3 bs=1M count=8
 	dd if=/dev/zero of=$(@D)/241-c4.c4 bs=1M count=8
 

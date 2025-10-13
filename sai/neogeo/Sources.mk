@@ -17,11 +17,13 @@ SAI_SOURCES_ASM := \
 	$(SAI)/neogeo/lspc.a68 \
 	$(SAI)/neogeo/pal.a68 \
 	$(SAI)/neogeo/sysrom.a68 \
+	$(SAI)/neogeo/spr_pool_transfer.a68 \
 	$(SAI)/sai.a68 \
 	$(SAI)/input.a68 \
 	$(SAI)/palcmd.a68 \
 
-SAI_SOURCES_C :=
+SAI_SOURCES_C := \
+	$(SAI)/neogeo/spr_pool.c \
 
 SAI_SOURCES_CPP := 
 
