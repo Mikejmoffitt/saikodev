@@ -120,10 +120,6 @@ void sai_neo_spr_pool_init(SaiNeoSprPool *pool, uint16_t *scb_buffer,
                            uint16_t pool_capacity,
                            uint16_t fixed_shrink);
 
-// Call before sai_finish() after having drawn sprites to the pool.
-// Sprites are erased immediately to avoid wasting vblank transfer time.
-void sai_neo_spr_pool_finish(SaiNeoSprPool *pool);
-
 // Call right after sai_finish() to transfer sprites.
 void sai_neo_spr_pool_on_vbl(SaiNeoSprPool *pool);
 
@@ -189,7 +185,6 @@ static inline void sai_neo_spr_pool_stick(SaiNeoSprPool *pool,
 	uint16_t *scb1 = pool->scb_next[0];
 	uint16_t *scb2 = pool->scb_next[1];
 	uint16_t *scb3 = pool->scb_next[2];
-	uint16_t *scb4 = pool->scb_next[3];
 
 	*scb2 = shrink;  // Only the H shrink data is actually respected.
 	const uint16_t shrink_y = shrink & 0xFF;

@@ -78,17 +78,26 @@ static void move_test_sprite(void)
 	static const uint16_t code = 4;
 	static const uint16_t shrink = SAI_NEO_SCB2_ATTR(0xF, 0xFF);
 
-	sai_neo_spr_pool_draw(&s_sprpool, attr, code+0, shrink, 2,
-	                      s_x<<SAI_NEO_SPR_FIXPX_BITS,  // X
-	                      (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);  // Y
-	sai_neo_spr_pool_stick(&s_sprpool, attr, code+2, shrink, 2);
+	if (g_sai_in[0].now & SAI_BTN_A)
+	{
+		sai_neo_spr_pool_draw(&s_sprpool, attr, code+0, shrink, 2,
+		                      s_x<<SAI_NEO_SPR_FIXPX_BITS,  // X
+		                      (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);  // Y
+		if (g_sai_in[0].now & SAI_BTN_B)
+		{
+			sai_neo_spr_pool_stick(&s_sprpool, attr, code+2, shrink, 2);
+		}
+	};
 
-	sai_neo_spr_pool_draw(&s_sprpool,
-	                      attr, code+32,
-	                      shrink,  // shrink
-	                      2, // tiles H
-	                      (s_x+32)<<SAI_NEO_SPR_FIXPX_BITS,  // X
-	                      (SAI_NEO_SPR_Y_ADJ-(224-s_y))<<SAI_NEO_SPR_FIXPX_BITS);  // Y
+	if (!(g_sai_in[0].now & SAI_BTN_C))
+	{
+		sai_neo_spr_pool_draw(&s_sprpool,
+		                      attr, code+32,
+		                      shrink,  // shrink
+		                      1, // tiles H
+		                      (s_x+32)<<SAI_NEO_SPR_FIXPX_BITS,  // X
+		                      (SAI_NEO_SPR_Y_ADJ-(224-s_y))<<SAI_NEO_SPR_FIXPX_BITS);  // Y
+	}
 
 }
 

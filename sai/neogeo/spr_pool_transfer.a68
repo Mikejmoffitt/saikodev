@@ -12,9 +12,34 @@
 	.global	sai_neo_spr_pool_on_vbl
 sai_neo_spr_pool_on_vbl:
 	movea.l	4(sp), a0  ; SaiNeoSprPool *
+	move.w	#1, SAI_NEO_REG_VRAMMOD       ; word-sized postinc
+	lea	SAI_NEO_REG_VRAMRW, a1        ; VRAMRW data port
 
+;
+; Handling previous frame's sprites
+;
 	move.w	SaiNeoSprPool.sprite_count(a0), d0
+	move.w	SaiNeoSprPool.sprite_count_prev(a0), d1
 	move.w	d0, SaiNeoSprPool.sprite_count_prev(a0)
+prev_scb3_erase:
+	cmp.w	d0, d1  ; now sprites vs. prev sprites
+	bls.s	transfer_new  ; now >= prev --> no need to clear.
+; Clear out SCB3 of any lingering sprites from last frame.
+	sub.w	d0, d1  ; d1 = count
+	add.w	SaiNeoSprPool.scb_vram_addr+(2*2)(a0), d0  ; d0 = starting VRAM
+	move.w	d0, SAI_NEO_REG_VRAMADDR
+	moveq	#0, d0
+	subq.w	#1, d1
+prev_scb3_loop:
+	move.w	d0, (a1)  ; data
+	dbf	d1, prev_scb3_loop
+	; Get the count again
+	move.w	SaiNeoSprPool.sprite_count(a0), d0
+
+;
+; Bulk copy of new sprite data
+;
+transfer_new:
 	subq.w	#1, d0
 	bmi.w	done
 	move.w	d0, d7
@@ -22,10 +47,8 @@ sai_neo_spr_pool_on_vbl:
 	movem.w	ON_VBL_CLOBBERLIST_W, -(sp)
 	movem.l	ON_VBL_CLOBBERLIST_L, -(sp)
 
-	move.w	#1, SAI_NEO_REG_VRAMMOD       ; word-sized postinc
-
+	movea.l	a1, a5  ; data port to a5
 	movem.l	SaiNeoSprPool.scb_buf(a0), a1-a4  ; SCB source data pointers
-	lea	SAI_NEO_REG_VRAMRW, a5        ; VRAMRW data port
 ; SCB2 - Shrink values
 scb2_transfer:
 	tst.w	SaiNeoSprPool.fixed_shrink(a0)  ; sprites at fixed size?
@@ -52,7 +75,6 @@ scb4_transfer:
 scb4_loop:
 	move.w	(a4)+, (a5)
 	dbf	d6, scb4_loop
-
 ; SCB1 - Tilemaps
 	; A2 points to start of SCB3 source data. We use it to reduce the amount
 	; of SCB1 data that must be transferred based on tile count.
@@ -205,8 +227,8 @@ scb1_copy1:
 	move.w	(a3)+, (a5)
 	move.w	(a3)+, (a5)
 scb1_loop_next:
-	lea	32*2*2(a1), a1  ; Next SCB1 source block (32*2 words)
-	addi.w	#32*2, d1  ; Next SCB1 vram destination block.
+	lea	64*2(a1), a1  ; Next SCB1 source block
+	addi.w	#64, d1  ; Next SCB1 vram destination block.
 	dbf	d7, scb1_loop_outer
 
 	; Reset draw state and exit.

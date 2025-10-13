@@ -25,22 +25,10 @@ void sai_neo_spr_pool_init(SaiNeoSprPool *pool,
 	// Clean out the buffer data.
 	uint16_t *scb1 = pool->scb_buf[0];
 	for (uint16_t i = 0; i < pool_capacity*64; i++) *scb1++ = 0;
-	uint16_t *scb2 = pool->scb_buf[1];
-	for (uint16_t i = 0; i < pool_capacity; i++) *scb2++ = SAI_NEO_SCB2_ATTR(0xF, 0xFF);  // full size.
 	uint16_t *scb3 = pool->scb_buf[2];
 	for (uint16_t i = 0; i < pool_capacity; i++) *scb3++ = 0;
 	uint16_t *scb4 = pool->scb_buf[3];
-	for (uint16_t i = 0; i < pool_capacity; i++) *scb4++ = (NEO_RASTER_W)*(SAI_NEO_SPR_FIXPX);
-}
-
-void sai_neo_spr_pool_finish(SaiNeoSprPool *pool)
-{
-	if (pool->sprite_count_prev <= pool->sprite_count) return;
-
-	uint16_t *scb3 = pool->scb_next[3];
-	for (uint16_t i = 0; i < pool->sprite_count_prev - pool->sprite_count; i++)
-	{
-		pool->scb_buf[
-	}
-	const uint16_t clear_count = pool
+	for (uint16_t i = 0; i < pool_capacity; i++) *scb4++ = 0;
+	uint16_t *scb2 = pool->scb_buf[1];
+	for (uint16_t i = 0; i < pool_capacity; i++) *scb2++ = SAI_NEO_SCB2_ATTR(0xF, 0xFF);  // full size.
 }

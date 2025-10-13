@@ -22,8 +22,8 @@ $(OUTDIR)/rom/241-p1.p1: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
 # Sprite data TODO
 	cp $(RESDIR)/chr.c1 $(@D)/241-c1.c1
 	cp $(RESDIR)/chr.c2 $(@D)/241-c2.c2
-	dd if=/dev/zero of=$(@D)/241-c3.c3 bs=1M count=8
-	dd if=/dev/zero of=$(@D)/241-c4.c4 bs=1M count=8
+	cp $(RESDIR)/chr.c1 $(@D)/241-c3.c3
+	cp $(RESDIR)/chr.c2 $(@D)/241-c4.c4
 
 $(OUTDIR)/$(SAI_TESTROM_NAME)/241-p1.p1: $(OUTDIR)/rom/241-p1.p1 $(BSPLIT) $(BINPAD)
 	mkdir -p $(@D)

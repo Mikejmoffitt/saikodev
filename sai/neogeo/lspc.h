@@ -13,6 +13,7 @@ extern "C"
 
 #ifndef __ASSEMBLER__
 
+// Initializes sprite system hardware and clears VRAM.
 void sai_neo_lspc_init(void);
 
 #else
