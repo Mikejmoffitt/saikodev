@@ -89,120 +89,120 @@ Saikodev is supported for the following hardware:
 Different platforms are at different levels of feature-completeness. The meaning of "supported" and "unsupported" might require some disambiguation on a categorical basis.
 
 ### Sega Mega drive / Genesis: ⚠️ Almost Ready - Sound Engine and Tooling in progress
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ VDP initialization and API
-☑ VDP DMA queue and API
-☑ VDP Sprite list management and API
-☑ VDP Graphics data conversin tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
-☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))
-☑ Controller polling
-☑ Palette management
-☐ Sound engine and tooling ([under development](https://github.com/mikejmoffitt/nezdrv))
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ VDP initialization and API  
+☑ VDP DMA queue and API  
+☑ VDP Sprite list management and API  
+☑ VDP Graphics data conversin tooling (Via [Velella](https://github.com/mikejmoffitt/velella))  
+☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))  
+☑ Controller polling  
+☑ Palette management  
+☐ Sound engine and tooling ([under development](https://github.com/mikejmoffitt/nezdrv))  
 
 ### Sega System C / C2: ⚠️ Almost Ready - First-class Sound Engine not yet prepared.
-☑ Startup, linker script (with variant for System C), and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ VDP initialization and API
-☑ VDP DMA queue and API
-☑ VDP Sprite list management and API
-☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))
-☑ Input polling and special I/O
-☑ Palette management
-☐ Sound engine and tooling (need a 68k-native solution; it is possible to use [MDSDRV](https://github.com/superctr/MDSDRV))
+☑ Startup, linker script (with variant for System C), and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ VDP initialization and API  
+☑ VDP DMA queue and API  
+☑ VDP Sprite list management and API    
+☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))  
+☑ Input polling and special I/O  
+☑ Palette management  
+☐ Sound engine and tooling (need a 68k-native solution; it is possible to use [MDSDRV](https://github.com/superctr/MDSDRV))  
 
 ### Sega System 16B: ⚠️ Incomplete - Graphical tooling has not been prepared yet, nor sound.
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ Memory mapper configuration
-☐ S16B sprite list management and API
-☐ S16B Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
-☑ Input polling
-☑ Palette management
-☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ Memory mapper configuration  
+☐ S16B sprite list management and API  
+☐ S16B Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))  
+☑ Input polling  
+☑ Palette management  
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
 ### Sega System 18: ⚠️ Incomplete - System 16 tooling has not been prepared yet, nor sound.
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ Memory mapper configuration
-☑ VDP initialization and API
-☑ VDP DMA queue and API
-☑ VDP Sprite list management and API
-☑ VDP Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
-☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))
-☐ S16B sprite list management and API
-☐ S16B Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))
-☑ Input polling
-☑ Palette management
-☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ Memory mapper configuration  
+☑ VDP initialization and API  
+☑ VDP DMA queue and API  
+☑ VDP Sprite list management and API  
+☑ VDP Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))  
+☑ VDP Composite sprite engine (Feature of [Velella](https://github.com/mikejmoffitt/velella))  
+☐ S16B sprite list management and API  
+☐ S16B Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella))  
+☑ Input polling  
+☑ Palette management  
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
 ### Capcom CPS: ⚠️ Incomplete - Sprite tooling is rudimentary and there is no sound engine.
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ PPU initialization and API
-☑ PPU Sprite list management and API
-☑ PPU Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella); still immature)
-☑ Input polling
-☑ Palette management
-☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks    
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ PPU initialization and API  
+☑ PPU Sprite list management and API  
+☑ PPU Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella); still immature)  
+☑ Input polling  
+☑ Palette management  
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
 ### Capcom CPS2: ⚠️ Incomplete - CPS1 notes apply, and also sprites are not showing up for whatever reason.
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ PPU initialization and API
-☐ PPU Sprite list management and API (it is not yet clear to me why they are not showing up. They used to.)
-☑ PPU Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella); still immature)
-☑ Input polling
-☑ Palette management
-☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ PPU initialization and API  
+☐ PPU Sprite list management and API (it is not yet clear to me why they are not showing up. They used to.)  
+☑ PPU Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella); still immature)  
+☑ Input polling  
+☑ Palette management  
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
 ### Atlus 013/038: ☑️ Ready to Go
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ 013 initialization and API
-☑ 013 Sprite list management and API
-☑ 013 Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)
-☑ 038 initialization and API
-☑ 038 Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)
-☑ Input polling
-☑ Palette management
-☑ Sound playback code and tooling (Via [YMZTool](https://github.com/mikejmoffitt/ymztool))
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ 013 initialization and API  
+☑ 013 Sprite list management and API  
+☑ 013 Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)  
+☑ 038 initialization and API  
+☑ 038 Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)  
+☑ Input polling  
+☑ Palette management  
+☑ Sound playback code and tooling (Via [YMZTool](https://github.com/mikejmoffitt/ymztool))  
 
 ### Toaplan GCU: ⚠️ Incomplete - Sprites are not working well on hardware at all, and there is no sound engine.
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ GCU initialization and API
-☑ GCU Sprite list management and API
-☑ GCU Graphics data conversion tooling
-☑ Text PCG initialization and API
-☑ Text PCG Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)
-☑ Input polling
-☑ Palette management
-☐ Sound engine and tooling (need a 68k-native solution)
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ GCU initialization and API  
+☑ GCU Sprite list management and API  
+☑ GCU Graphics data conversion tooling  
+☑ Text PCG initialization and API  
+☑ Text PCG Graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)  
+☑ Input polling  
+☑ Palette management  
+☐ Sound engine and tooling (need a 68k-native solution)  
 
 ### Neo-Geo: ⚠️ Almost Ready - Soft DIPs and Bios integration need work, and there is no sound engine.
-☑ Startup, linker script, and sample project
-☑ IRQ callbacks
-☐ Exception handling (error message, register display, stack print, etc)
-☑ LSPC initialization and basic hardware definitions
-☑ Boot code handling different entry points
-☑ FIX layer interaction code and macros
-☑ Sprite pool management
-☑ Background plane management object
-☑ FIX layer graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)
-☑ Sprite graphics data conversion tooling
-☐ Optimized sprite graphics data conversion tooling
-☑ Input polling
-☑ Palette management
-☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)
+☑ Startup, linker script, and sample project  
+☑ IRQ callbacks  
+☐ Exception handling (error message, register display, stack print, etc)  
+☑ LSPC initialization and basic hardware definitions  
+☑ Boot code handling different entry points  
+☑ FIX layer interaction code and macros  
+☑ Sprite pool management  
+☑ Background plane management object  
+☑ FIX layer graphics data conversion tooling (Via [Velella](https://github.com/mikejmoffitt/velella)  
+☑ Sprite graphics data conversion tooling  
+☐ Optimized sprite graphics data conversion tooling  
+☑ Input polling  
+☑ Palette management  
+☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
 # Usage
 
