@@ -22,8 +22,6 @@ PROJECT_NAME := saisample
 # Neo-Geo specific special vars
 #
 
-SAI_NEO_NGH_ID := 0x512
-
 SAI := ../../sai
 
 WRKDIR := wrk

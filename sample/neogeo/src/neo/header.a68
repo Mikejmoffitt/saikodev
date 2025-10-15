@@ -1,0 +1,14 @@
+;
+; Header data for the game.
+;
+
+#include "sai/sai.h"
+#include "wrk/chr.h"
+
+	.global	sai_neo_ngh_id
+	.global	sai_neo_eyecatch_cfg
+	.global	sai_neo_eyecatch_tile
+
+sai_neo_ngh_id        = 0x315
+sai_neo_eyecatch_cfg  = SAI_NEO_EYECATCH_SYSTEM
+sai_neo_eyecatch_tile = CHR_EYECATCH_LOGO_CODE

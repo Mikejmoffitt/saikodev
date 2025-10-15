@@ -1,0 +1,23 @@
+;
+; Non-volatile configuration data.
+;
+#include "neo/bram.h"
+
+;
+; For pickup by sai/neogeo/header.a68.
+;
+	.global	sai_neo_bram_data
+	.global	sai_neo_bram_bytes
+sai_neo_bram_data = g_bram
+sai_neo_bram_bytes = BramData.len
+
+;
+; The BRAM data as it lives in WRAM.
+;
+	.section	.bss
+
+	.align	2
+	.global	g_bram
+g_bram:                ds.b BramData.len
+	.align	2
+

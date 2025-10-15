@@ -13,6 +13,12 @@
 ; ------------------------------------------------------------------------------
 
 ;
+; Header data.
+;
+	.extern	sai_neo_ngh_id         ; e.g. 0x315
+	.extern	sai_neo_eyecatch_cfg   ; SAI_NEO_EYECATCH_*
+	.extern	sai_neo_eyecatch_tile  ; Default is 0.
+;
 ; Soft DIPs.
 ;
 	.extern	sai_neo_sdips_jp
@@ -35,16 +41,12 @@
 ;
 ; ------------------------------------------------------------------------------
 	.asciz	"NEO-GEO"
-#ifdef SAI_NEO_NGH_ID
-	dc.w	SAI_NEO_NGH_ID
-#else
-	dc.w	0x315
-#endif  // SAI_NEO_NGH_ID
+	dc.w	sai_neo_ngh_id
 	dc.l	$100000                 ; Rom size TODO: Use linker symbol
-	dc.l	WRAM_BASE               ; Backup RAM address
-	dc.w	$0                      ; Backup RAM size
-	dc.b	SAI_NEO_EYECATCH_SYSTEM ; Eyecatcher mode
-	dc.b	$0                      ; Logo tile offset
+	dc.l	sai_neo_bram_data       ; Backup RAM address
+	dc.w	sai_neo_bram_bytes      ; Backup RAM size
+	dc.b	sai_neo_eyecatch_cfg    ; Eyecatcher mode
+	dc.b	sai_neo_eyecatch_tile   ; Logo tile offset
 
 ; ------------------------------------------------------------------------------
 ;

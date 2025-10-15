@@ -1,10 +1,16 @@
+;
+; Declaration of Soft DIP area.
+;
 #include "sai/sai.h"
 
-	.section	.text
-	.align	2
+; The following symbols are pointed to by the Neo-Geo program header, which is
+; defined in sai/neogeo/header.a68.
 	.global	sai_neo_sdips_jp
 	.global	sai_neo_sdips_us
 	.global	sai_neo_sdips_eu
+
+	.align	2
+	.section	.text
 sai_neo_sdips_jp:
 sai_neo_sdips_us:
 sai_neo_sdips_eu:

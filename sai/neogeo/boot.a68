@@ -12,6 +12,9 @@
 
 	.extern	sai_crt0_begin
 
+	.extern	sai_neo_bram_data
+	.extern	sai_neo_bram_bytes
+
 	.section	.text
 
 	.global	start
@@ -32,13 +35,51 @@ start:
 
 	.global sai_neo_entry_user_internal
 sai_neo_entry_user_internal:
-	; Set a flag in the BIOS memory as a bugfix that prevents the BIOS from
-	; calling user command #3 twice.
-	cmpi.b	#SAI_NEO_UREQ_TITLE, g_sai_neo_user_request
-	bne.s	0f
+	move.b	g_sai_neo_user_request, d1
+;
+; User Command 0 - Init
+;
+user_cmd0:
+	; Clear BRAM data if in first init for the game.
+	cmpi.b	#SAI_NEO_UREQ_INIT, d1
+	bne.s	user_cmd1
+	move.b	#SAI_NEO_USERMODE_INIT, g_sai_neo_user_mode_for_system
+	lea	sai_neo_bram_data, a0
+	moveq	#sai_neo_bram_bytes-1, d0
+1:
+	sf	SAI_NEO_REG_DIPSW  ; Watchdog
+	sf	(a0)+
+	dbf	d0, 1b
+	bra.s	user_begin
+;
+; User Command 1 - Eyecatch
+;
+user_cmd1:
+	cmpi.b	#SAI_NEO_UREQ_EYE_CATCH, d1
+	beq.s	user_begin  ; Let the program handle it.
+;
+; User Command 2 - Attract / Demonstration
+;
+user_cmd2:
+	cmpi.b	#SAI_NEO_UREQ_ATTRACT, d1
+	bne.s	user_cmd3
+	move.b	#SAI_NEO_USERMODE_ATTRACT, g_sai_neo_user_mode_for_system
+	bra.s	user_begin
+;
+; User Command 3 - Title / Game
+;
+user_cmd3:
+	cmpi.b	#SAI_NEO_UREQ_TITLE, d1
+	bne.s	user_ng
 	move.b	#$01, $10FEC5  ; TODO: real symbol name
-0:
+user_begin:
 	jmp	(sai_crt0_begin).l
+;
+; Unknown / Invalid command - Just return.
+;
+user_ng:
+	jmp	SAI_NEO_SYSTEM_RETURN
+
 
 	.global	sai_neo_entry_player_start_internal
 sai_neo_entry_player_start_internal:
@@ -57,3 +98,7 @@ softreset:
 
 startup_err:
 	jmp	start
+
+sai_neo_init_bram_sub:
+
+	rts
