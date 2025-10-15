@@ -28,19 +28,9 @@ static void print_string_fix(uint16_t vram_addr, uint16_t attr_base,
 	sai_neo_lspc_vram_set_mod(FIX_OFFS(1, 0));
 	sai_neo_lspc_vram_set_addr(FIX_ADDR(0, 2)+vram_addr);
 	char val;
-	attr_base += 0x300;
 	while ((val = *str++))
 	{
-		sai_neo_lspc_vram_write(attr_base++);
-		continue;
-		if (val >= ' ')
-		{
-			sai_neo_lspc_vram_write((val+FIX_FONT_CODE-' ') | attr_base);
-		}
-		else
-		{
-			sai_neo_lspc_vram_write((FIX_FONT_CODE) | attr_base);
-		}
+		sai_neo_lspc_vram_write((val+FIX_FONT_CODE) | attr_base);
 	}
 }
 
@@ -182,7 +172,6 @@ static void draw_inputs(void)
 // -----------------------------------------------------------------------------
 void main(void)
 {
-	bool attract = false;
 	switch (g_sai_neo_user_request)
 	{
 		case SAI_NEO_UREQ_INIT:
@@ -202,7 +191,6 @@ void main(void)
 		case SAI_NEO_UREQ_ATTRACT:
 			// Show attract mode, demo play, how to play, score table, etc.
 			// On AES, this is where the game itself takes place.
-			attract = true;
 			break;
 
 		case SAI_NEO_UREQ_TITLE:
@@ -210,9 +198,8 @@ void main(void)
 			break;
 	}
 	sai_init();
-	sai_neo_fix_select(true);  // Use cartridge FIX graphics.
 
-//	const bool attract = g_sai_neo_user_mode_for_system == SAI_NEO_USERMODE_ATTRACT;
+	const bool attract = g_sai_neo_user_mode_for_system == SAI_NEO_USERMODE_ATTRACT;
 
 	sai_neo_tmap_init(&s_tmap, TMAP_STARTING_INDEX, true);
 	sai_neo_spr_pool_init(&s_sprpool, s_scb_buffer, SPR_POOL_STARTING_INDEX,
@@ -227,6 +214,8 @@ void main(void)
 
 	draw_initial_text();
 	draw_background();
+
+	sai_neo_fix_select(true);  // Use cartridge FIX graphics.
 
 	while (true)
 	{
