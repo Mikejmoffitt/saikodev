@@ -88,7 +88,8 @@ Saikodev is supported for the following hardware:
 
 Different platforms are at different levels of feature-completeness. The meaning of "supported" and "unsupported" might require some disambiguation on a categorical basis.
 
-### Sega Mega drive / Genesis: ⚠️ Almost Ready - Sound Engine and Tooling in progress
+### Sega Mega drive / Genesis:
+⚠️ Almost Ready - Sound Engine and Tooling in progress  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -101,7 +102,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☐ Sound engine and tooling ([under development](https://github.com/mikejmoffitt/nezdrv))  
 
-### Sega System C / C2: ⚠️ Almost Ready - First-class Sound Engine not yet prepared.
+### Sega System C / C2:
+⚠️ Almost Ready - First-class Sound Engine not yet prepared.  
 ☑ Startup, linker script (with variant for System C), and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -113,7 +115,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☐ Sound engine and tooling (need a 68k-native solution; it is possible to use [MDSDRV](https://github.com/superctr/MDSDRV))  
 
-### Sega System 16B: ⚠️ Incomplete - Graphical tooling has not been prepared yet, nor sound.
+### Sega System 16B:
+⚠️ Incomplete - Graphical tooling has not been prepared yet, nor sound.  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -124,7 +127,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
-### Sega System 18: ⚠️ Incomplete - System 16 tooling has not been prepared yet, nor sound.
+### Sega System 18:
+⚠️ Incomplete - System 16 tooling has not been prepared yet, nor sound.  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -140,7 +144,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
-### Capcom CPS: ⚠️ Incomplete - Sprite tooling is rudimentary and there is no sound engine.
+### Capcom CPS:
+⚠️ Incomplete - Sprite tooling is rudimentary and there is no sound engine.  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks    
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -151,7 +156,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
-### Capcom CPS2: ⚠️ Incomplete - CPS1 notes apply, and also sprites are not showing up for whatever reason.
+### Capcom CPS2:
+⚠️ Incomplete - CPS1 notes apply, and also sprites are not showing up for whatever reason.  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -162,7 +168,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☐ Sound engine and tooling (Can possibly port [NEZDRV](https://github.com/mikejmoffitt/nezdrv) when it is finished)  
 
-### Atlus 013/038: ☑️ Ready to Go
+### Atlus 013/038:
+☑️ Ready to Go  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -175,7 +182,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☑ Sound playback code and tooling (Via [YMZTool](https://github.com/mikejmoffitt/ymztool))  
 
-### Toaplan GCU: ⚠️ Incomplete - Sprites are not working well on hardware at all, and there is no sound engine.
+### Toaplan GCU:
+⚠️ Incomplete - Sprites are not working well on hardware at all, and there is no sound engine.  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
@@ -188,7 +196,8 @@ Different platforms are at different levels of feature-completeness. The meaning
 ☑ Palette management  
 ☐ Sound engine and tooling (need a 68k-native solution)  
 
-### Neo-Geo: ⚠️ Almost Ready - Soft DIPs and Bios integration need work, and there is no sound engine.
+### Neo-Geo:
+⚠️ Almost Ready - Soft DIPs and Bios integration need work, and there is no sound engine.  
 ☑ Startup, linker script, and sample project  
 ☑ IRQ callbacks  
 ☐ Exception handling (error message, register display, stack print, etc)  
