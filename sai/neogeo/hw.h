@@ -36,7 +36,7 @@ extern "C"
 #define BRAM_BASE              (0xD00000)
 
 #define NEO_RASTER_W 320
-#define NEO_RASTER_H 240
+#define NEO_RASTER_H 224
 
 #ifdef __cplusplus
 }

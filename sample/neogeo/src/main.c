@@ -1,30 +1,36 @@
 #include "sai/sai.h"
 #include "res.h"
 
+#define PAL_TEXT 0
+#define PAL_BACKGROUND 2
+#define PAL_LOGO 5
+
+#define TMAP_STARTING_INDEX  1
+#define SPR_POOL_STARTING_INDEX (TMAP_STARTING_INDEX+32)
+
 #define SPR_POOL_CAPACITY 16
 
+static SaiNeoTmap    s_tmap;
 static SaiNeoSprPool s_sprpool;
 
 static uint16_t s_scb_buffer[SAI_NEO_SCB_BUFFER_SIZE(SPR_POOL_CAPACITY)];
 
-static inline void print_string_fix(uint16_t vram_addr, const uint16_t attr_base,
-                                    const char *str)
+static void print_string_fix(uint16_t vram_addr, const uint16_t attr_base,
+                             const char *str)
 {
-	(void)vram_addr;
-	(void)attr_base;
-	(void)str;
-
-	volatile uint16_t *vramaddr = (volatile uint16_t *)(SAI_NEO_REG_VRAMADDR);
-	volatile uint16_t *vramrw = (volatile uint16_t *)(SAI_NEO_REG_VRAMRW);
-	volatile uint16_t *vrammod = (volatile uint16_t *)(SAI_NEO_REG_VRAMMOD);
-	*vrammod = FIX_OFFS(1, 0);
-	*vramaddr = FIX_ADDR(0, 2)+vram_addr;
-
+	sai_neo_lspc_vram_set_mod(FIX_OFFS(1, 0));
+	sai_neo_lspc_vram_set_addr(FIX_ADDR(0, 2)+vram_addr);
 	char val;
-	while ((val = *str))
+	while ((val = *str++))
 	{
-		*vramrw = val | attr_base;
-		str++;
+		if (val >= ' ')
+		{
+			sai_neo_lspc_vram_write((val+FIX_FONT_CODE-' ') | attr_base);
+		}
+		else
+		{
+			sai_neo_lspc_vram_write((FIX_FONT_CODE) | attr_base);
+		}
 	}
 }
 
@@ -56,15 +62,15 @@ static void move_test_sprite(void)
 	s_x += s_dx;
 	s_y += s_dy;
 
-	if (s_x + CHR_NEOGEO_W >= NEO_RASTER_W)
+	if (s_x + CHR_NEOGEO_W > NEO_RASTER_W-9)
 	{
 		s_dx = -1;
 	}
-	else if (s_x <= 0)
+	else if (s_x <= 8)
 	{
 		s_dx = 1;
 	}
-	if (s_y + CHR_NEOGEO_H >= NEO_RASTER_H)
+	if (s_y + CHR_NEOGEO_H > NEO_RASTER_H)
 	{
 		s_dy = -1;
 	}
@@ -73,34 +79,30 @@ static void move_test_sprite(void)
 		s_dy = 1;
 	}
 
-	static const uint16_t attr = SAI_NEO_SCB1_ATTR(CHR_NEOGEO_CODE_MSB, 2, 0);
+	static const uint16_t attr = SAI_NEO_SCB1_ATTR(CHR_NEOGEO_CODE_MSB, PAL_LOGO, 0);
 	uint16_t code = CHR_NEOGEO_CODE;
+
 	static const uint16_t shrink = SAI_NEO_SCB2_ATTR(0xF, 0xFF);
 
-	sai_neo_spr_pool_draw(&s_sprpool, attr,
-	                      code,
-	                      shrink, CHR_NEOGEO_TILES_H,
-	                      s_x<<SAI_NEO_SPR_FIXPX_BITS,
-	                      (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);
-	for (uint16_t i = 0; i < CHR_NEOGEO_TILES_W-1; i++)
-	{
-		code += CHR_NEOGEO_TILES_H;
-		sai_neo_spr_pool_stick(&s_sprpool, attr,
-		                       code,
-		                       shrink, CHR_NEOGEO_TILES_H);
-	}
-
+	sai_neo_spr_pool_draw_grp(&s_sprpool,
+	                          attr,
+	                          code,
+	                          shrink,
+	                          CHR_NEOGEO_TILES_W,
+	                          CHR_NEOGEO_TILES_H,
+	                          s_x<<SAI_NEO_SPR_FIXPX_BITS,
+	                          (SAI_NEO_SPR_Y_ADJ-s_y)<<SAI_NEO_SPR_FIXPX_BITS);
 }
 
 
 static void draw_initial_text(void)
 {
-	const uint32_t attr = FIX_ATTR(1);
+	const uint32_t attr = FIX_ATTR(PAL_TEXT);
 	print_string_fix((FIX_OFFS(1, 22)), attr, "Inputs");
 	print_string_fix((FIX_OFFS(1, 24)), attr, "1: ");
 	print_string_fix((FIX_OFFS(1, 25)), attr, "2: ");
 
-	print_string_fix(FIX_OFFS(0, 0), attr, "Hello World!");
+	print_string_fix(FIX_OFFS(1, 1), attr, "Hello World!");
 }
 
 static inline void set_input_str(uint16_t in, char *str)
@@ -122,11 +124,50 @@ static inline void set_input_str(uint16_t in, char *str)
 static void draw_inputs(void)
 {
 	static char s_input_str[] = ".... .... ....";
-	const uint32_t attr = FIX_ATTR(1);
+	const uint32_t attr = FIX_ATTR(PAL_TEXT);
 	set_input_str(g_sai_in[0].now, s_input_str);
-	print_string_fix(FIX_OFFS(3, 24), attr, s_input_str);
+	print_string_fix(FIX_OFFS(4, 24), attr, s_input_str);
 	set_input_str(g_sai_in[1].now, s_input_str);
-	print_string_fix(FIX_OFFS(3, 25), attr, s_input_str);
+	print_string_fix(FIX_OFFS(4, 25), attr, s_input_str);
+}
+
+static void draw_background(void)
+{
+	sai_neo_lspc_vram_set_mod(1);
+	const uint16_t vram = VRAM_SCB1+(TMAP_STARTING_INDEX*SAI_NEO_SCB1_WORDS);
+	sai_neo_lspc_vram_set_addr(vram);
+
+	for (uint16_t i = 0; i < 32*32; i++)
+	{
+		sai_neo_lspc_vram_write(CHR_BACKGROUND_CODE + i);
+		sai_neo_lspc_vram_write(SAI_NEO_SCB1_ATTR(CHR_BACKGROUND_CODE_MSB, PAL_BACKGROUND, 0));
+	}
+}
+
+static void move_background(void)
+{
+	static int16_t s_bg_x = 0;
+	static int16_t s_bg_y = 0;
+	static int16_t s_bg_dx = 0.75*SAI_NEO_SPR_FIXPX;
+	static int16_t s_bg_dy = 0.25*SAI_NEO_SPR_FIXPX;
+
+	static const int16_t kaccel = 8;
+	static const int16_t kspeed_max = 5*SAI_NEO_SPR_FIXPX;
+
+	if (g_sai_in[0].now & SAI_BTN_DOWN) s_bg_dy += kaccel;
+	else if (g_sai_in[0].now & SAI_BTN_UP) s_bg_dy -= kaccel;
+	if (g_sai_in[0].now & SAI_BTN_RIGHT) s_bg_dx += kaccel;
+	else if (g_sai_in[0].now & SAI_BTN_LEFT) s_bg_dx -= kaccel;
+	if (s_bg_dx > kspeed_max) s_bg_dx = kspeed_max;
+	else if (s_bg_dx < -kspeed_max) s_bg_dx = -kspeed_max;
+	if (s_bg_dy > kspeed_max) s_bg_dy = kspeed_max;
+	else if (s_bg_dy < -kspeed_max) s_bg_dy = -kspeed_max;
+
+	s_bg_x += s_bg_dx;
+	s_bg_y -= s_bg_dy;
+
+	sai_neo_tmap_set_scroll_x(&s_tmap, s_bg_x);
+	sai_neo_tmap_set_scroll_y(&s_tmap, s_bg_y);
 }
 
 // This is the main "USER" routine for the game.
@@ -162,26 +203,34 @@ void main(void)
 	                                 SAI_NEO_USERMODE_ATTRACT :
 	                                 SAI_NEO_USERMODE_INGAME;
 
+	sai_neo_tmap_init(&s_tmap, TMAP_STARTING_INDEX, true);
+	sai_neo_spr_pool_init(&s_sprpool, s_scb_buffer, SPR_POOL_STARTING_INDEX,
+	                      SPR_POOL_CAPACITY, false);
+
 	uint16_t attract_timer = 0;
 
-	sai_pal_load(0x01, &wrk_fix_pal[FIX_FONT_PAL_OFFS], FIX_FONT_PAL_LEN/16);
-	sai_pal_load(0x02, &wrk_chr_pal[CHR_NEOGEO_PAL_OFFS], CHR_NEOGEO_PAL_LEN/16);
+	sai_pal_load(PAL_TEXT, vel_get_wrk_fix_pal(FIX_FONT), FIX_FONT_PAL_LEN/16);
+	sai_pal_load(PAL_BACKGROUND, vel_get_wrk_chr_pal(CHR_BACKGROUND), CHR_BACKGROUND_PAL_LEN/16);
+	sai_pal_load(PAL_LOGO, vel_get_wrk_chr_pal(CHR_NEOGEO), CHR_NEOGEO_PAL_LEN/16);
 
 	sai_finish();
 
 	draw_initial_text();
 
-	sai_neo_spr_pool_init(&s_sprpool, s_scb_buffer, 1, SPR_POOL_CAPACITY, false);
+
+	draw_background();
 
 	while (true)
 	{
 		if (attract) attract_timer++;
 		run_test_color_anim();
 		move_test_sprite();
-		sai_finish();
-
+		move_background();
 		draw_inputs();
-		sai_neo_spr_pool_on_vbl(&s_sprpool);
+
+		sai_finish();
+		sai_neo_tmap_transfer(&s_tmap);
+		sai_neo_spr_pool_transfer(&s_sprpool);
 	}
 
 	sai_neo_system_return();

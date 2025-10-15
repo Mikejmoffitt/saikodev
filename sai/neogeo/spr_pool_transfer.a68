@@ -9,8 +9,8 @@
 
 	.section	.text
 
-	.global	sai_neo_spr_pool_on_vbl
-sai_neo_spr_pool_on_vbl:
+	.global	sai_neo_spr_pool_transfer
+sai_neo_spr_pool_transfer:
 	movea.l	4(sp), a0  ; SaiNeoSprPool *
 	move.w	#1, SAI_NEO_REG_VRAMMOD       ; word-sized postinc
 	lea	SAI_NEO_REG_VRAMRW, a1        ; VRAMRW data port
@@ -84,8 +84,8 @@ scb1_loop_outer:
 	move.w	d1, SAI_NEO_REG_VRAMADDR  ; Point VRAM to SCB1 block.
 	movea.l	a1, a3  ; A3 is used to iterate within the source data.
 	move.w	(a2)+, d6   ; SCB3 size data associated with this sprite.
-	andi.w	#$003F, d6  ; Mask to tile count
-	eori.w	#$003F, d6  ; Get values $00 - $3F.
+	andi.w	#SAI_NEO_SCB3_SIZE_MASK, d6  ; Mask to tile count
+	eori.w	#SAI_NEO_SCB3_SIZE_MASK, d6  ; Get values $00 - $3F.
 	add.w	d6, d6
 	add.w	d6, d6  ; *4, sized for direct jump
 	jmp	scb1_copyjmp(pc, d6.w)
@@ -103,8 +103,8 @@ scb1_copyjmp:
 	move.w	(a3)+, (a5)  ; not allow us to write a longword to VRAMRW.
 	.endr
 scb1_loop_next:
-	lea	64*2(a1), a1  ; Next SCB1 source block
-	addi.w	#64, d1  ; Next SCB1 vram destination block.
+	lea	SAI_NEO_SCB1_WORDS*2(a1), a1  ; Next SCB1 source block
+	addi.w	#SAI_NEO_SCB1_WORDS, d1  ; Next SCB1 vram destination block.
 	dbf	d7, scb1_loop_outer
 
 	; Reset draw state and exit.

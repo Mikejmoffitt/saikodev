@@ -24,6 +24,7 @@ SAI_SOURCES_ASM := \
 
 SAI_SOURCES_C := \
 	$(SAI)/neogeo/spr_pool.c \
+	$(SAI)/neogeo/tmap.c \
 
 SAI_SOURCES_CPP := 
 

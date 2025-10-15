@@ -13,6 +13,7 @@ extern "C"
 // I/O registers.
 //
 
+// Control, misc. I/O
 #define SAI_NEO_REG_P1CNT       0x300000
 #define SAI_NEO_REG_DIPSW       0x300001
 #define SAI_NEO_REG_SOUND       0x320000
@@ -21,6 +22,7 @@ extern "C"
 #define SAI_NEO_REG_STATUS_B    0x380000
 #define SAI_NEO_REG_POUTPUT     0x380001
 #define SAI_NEO_REG_SLOT        0x380021
+//
 #define SAI_NEO_REG_SYS_BASE    0x3A0000
 #define SAI_NEO_REG_NOSHADOW    0x3A0001
 #define SAI_NEO_REG_SWPBIOS     0x3A0003
@@ -37,6 +39,7 @@ extern "C"
 #define SAI_NEO_REG_CRTFIX      0x3A001B
 #define SAI_NEO_REG_SRAMUNLOCK  0x3A001D
 #define SAI_NEO_REG_PALBANK0    0x3A001F
+// LSPC addresses
 #define SAI_NEO_REG_VRAMADDR    0x3C0000
 #define SAI_NEO_REG_VRAMRW      0x3C0002
 #define SAI_NEO_REG_VRAMMOD     0x3C0004
