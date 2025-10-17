@@ -26,6 +26,7 @@ COMMON_FLAGS += -fno-web -fno-unit-at-a-time
 COMMON_FLAGS += -falign-functions=2
 COMMON_FLAGS += -flimit-function-alignment
 COMMON_FLAGS += -fno-tree-loop-optimize
+COMMON_FLAGS += -Wa,--register-prefix-optional
 # TODO: investigate lto breaking some asm interop.
 #COMMON_FLAGS += -flto
 COMMON_FLAGS += -I$(SRCDIR) -I$(shell pwd) -I$(SAI)/..
@@ -45,7 +46,6 @@ CPPFLAGS += -std=gnu++23
 ASFLAGS := $(COMMON_FLAGS) -I$(OBJDIR)
 ASFLAGS += -Wa,-I$(SRCDIR) -Wa,-I$(OBJDIR) -Wa,-I$(shell pwd) -Wa,-I$(SAI)/..
 ASFLAGS += -mcpu=68000 -Wa,--bitwise-or
-ASFLAGS += -Wa,--register-prefix-optional
 ASFLAGS += -x assembler-with-cpp
 
 # Linker.

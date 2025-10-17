@@ -183,7 +183,11 @@ extern uint8_t g_sai_neo_select_timer;
 
 static inline void sai_neo_system_return(void)
 {
-	asm volatile ("jmp (0xC00444).l");  // TODO: How can I get the #defines from above to hang out?
+	const void *addr = (const void *)(SAI_NEO_SYSTEM_RETURN);
+	asm volatile ("movea.l %0, a0; jmp (a0)"
+	              :
+	              : "g"(addr)
+	              :);
 }
 
 #endif  // __ASSEMBLER__
