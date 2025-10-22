@@ -23,7 +23,7 @@ extern "C"
 // .... pppp .... .... プライオリティー　priority
 // .... .... .ccc cccc 色　              color
 
-// $01 - パターン pattern code. Many titles use this exclusively.
+// $01 - パターン pattern code.
 // fedc ba98 7654 3210
 // CCCC CCCC CCCC CCCC パターンコード    pattern code (bits 0-15)
 
