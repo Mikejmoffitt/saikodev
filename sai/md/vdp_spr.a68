@@ -88,7 +88,13 @@ sai_vdp_spr_finish:
 	sf	SaiVdpSpr.link(a0, d1.w)
 0:
 #endif  // SAI_MD_VDP_SPR_DIRECT
-	move.l	d0, -(sp)
-	bsr.w	sai_vdp_dma_transfer_spr_vram
-	addq.w	#4, sp
+	pea	2                         ; stride
+	add.w	d0, d0                    ; words
+	add.w	d0, d0  ; *= 4 words      ; words
+	move.w	d0, -(sp)                 ; words
+	clr.w	-(sp)                     ; words
+	pea	g_sai_vdp_spr             ; src
+	move.l	g_sai_vdp_sprbase, -(sp)  ; dest
+	jsr	sai_vdp_dma_transfer_vram
+	lea	4*4(sp), sp
 	rts
