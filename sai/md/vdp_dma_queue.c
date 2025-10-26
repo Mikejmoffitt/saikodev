@@ -1,17 +1,10 @@
 #include "sai/md/vdp_dma_queue.h"
+#include "sai/md/vdp_regs.h"
 #include "sai/md/vdp_spr.h"
 #include "sai/md/vdp.h"
 #include "sai/macro.h"
 
 #define SAI_MD_VDP_DMA_QUEUE_DEPTH_DEFAULT 32
-
-#define VDP_CTRL_DMA_BIT     0x00000080
-#define VDP_CTRL_VRAM_READ   0x00000000
-#define VDP_CTRL_VRAM_WRITE  0x40000000
-#define VDP_CTRL_VSRAM_READ  0x00000010
-#define VDP_CTRL_VSRAM_WRITE 0x40000010
-#define VDP_CTRL_CRAM_READ   0x00000020
-#define VDP_CTRL_CRAM_WRITE  0xC0000000
 
 #define VDP_DMA_SRC_FILL 0x80
 #define VDP_DMA_SRC_COPY 0xC0
@@ -22,16 +15,6 @@
 #endif  // SAI_MD_VDP_DMA_QUEUE_DEPTH
 // Used with modulo operator, so should be power of 2.
 _Static_assert(SAI_NUM_IS_POW2(SAI_MD_VDP_DMA_QUEUE_DEPTH), "DMA queue depth != power of 2!");
-
-typedef enum DmaOp DmaOp;
-enum DmaOp
-{
-	DMA_OP_NONE,
-	DMA_OP_TRANSFER,
-	DMA_OP_SPR_TRANSFER,
-	DMA_OP_COPY,
-	DMA_OP_FILL
-};
 
 // Struct representing pre-calculated register values for the VDP's DMA.
 typedef struct DmaCmd DmaCmd;
@@ -48,9 +31,6 @@ struct DmaCmd
 
 _Static_assert(sizeof(DmaCmd) == 0x10);
 
-// Special high priority sprite list(s) queue.
-static uint16_t s_dma_prio_q_idx;
-static DmaCmd s_dma_prio_q_cmd[SAI_MD_VDP_DMA_QUEUE_PRIO_DEPTH];
 // DMA queue ring buffer.
 static uint16_t s_dma_q_write_idx;
 static uint16_t s_dma_q_read_idx;
@@ -60,30 +40,20 @@ void sai_vdp_dma_init(void)
 {
 	s_dma_q_read_idx = 0;
 	s_dma_q_write_idx = 0;
-	s_dma_prio_q_idx = 0;
 }
 
 // Calculate required register values for a transfer.
 // If the queue cannot accept any more transfers, a flush begins.
-static inline void enqueue_int(DmaOp op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
+static inline void enqueue_int(uint16_t op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
 {
 	// A command slot is chosen from one of the two queues, based on the type.
 	DmaCmd *cmd;
-	if (op == DMA_OP_SPR_TRANSFER)
-	{
-		if (s_dma_prio_q_idx >= SAI_ARRAYSIZE(s_dma_prio_q_cmd)) sai_vdp_dma_flush();
-		if (s_dma_prio_q_idx >= SAI_ARRAYSIZE(s_dma_prio_q_cmd)) return;
-		cmd = &s_dma_prio_q_cmd[s_dma_prio_q_idx];
-		s_dma_prio_q_idx++;
-	}
-	else
-	{
-		cmd = &s_dma_q[s_dma_q_write_idx];
-		s_dma_q_write_idx = (s_dma_q_write_idx + 1) %
-		                     SAI_ARRAYSIZE(s_dma_q);
-		if (s_dma_q_write_idx == s_dma_q_read_idx) sai_vdp_dma_flush();
-		if (s_dma_q_write_idx == s_dma_q_read_idx) return;
-	}
+
+	cmd = &s_dma_q[s_dma_q_write_idx];
+	s_dma_q_write_idx = (s_dma_q_write_idx + 1) %
+	                     SAI_ARRAYSIZE(s_dma_q);
+	if (s_dma_q_write_idx == s_dma_q_read_idx) sai_vdp_dma_flush();
+	if (s_dma_q_write_idx == s_dma_q_read_idx) return;
 
 	// DMA register values are calculated ahead of time to be consumed during
 	// VBlank faster.
@@ -97,7 +67,6 @@ static inline void enqueue_int(DmaOp op, uint32_t bus, uint32_t dest, uint32_t s
 			return;
 
 		case DMA_OP_TRANSFER:
-		case DMA_OP_SPR_TRANSFER:
 			src = src >> 1;
 			cmd->src_1 = VDP_REGST(VDP_DMASRC1, src & 0xFF);
 			src = src >> 8;
@@ -121,26 +90,24 @@ static inline void enqueue_int(DmaOp op, uint32_t bus, uint32_t dest, uint32_t s
 	cmd->ctrl = VDP_CTRL_DMA_BIT | VDP_CTRL_ADDR(dest) | bus;
 }
 
-static inline void sai_vdp_dma_enqueue(DmaOp op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
+static inline void sai_vdp_dma_enqueue(uint16_t op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
 {
-	if (op != DMA_OP_TRANSFER && op != DMA_OP_SPR_TRANSFER)
+	if (op == DMA_OP_TRANSFER)
 	{
-		enqueue_int(op, bus, dest, src, n, stride);
-		return;
-	}
-	// check that the source address + length won't cross a 128KIB boundary
-	// based on SGDK's DMA validation.
-	const uint32_t limit = 0x20000 - (src & 0x1FFFF);
+		// check that the source address + length won't cross a 128KIB boundary
+		// based on SGDK's DMA validation.
+		const uint32_t limit = 0x20000 - (src & 0x1FFFF);
 
-	// If the transfer will cross the 128KiB boundary, transfer the latter
-	// half first, then truncate the transfer's length to fill the rest.
-	if (n > (limit >> 1))
-	{
-		enqueue_int(op, bus,
-		            dest + limit,
-		            src + limit,
-		            n - (limit >> 1), stride);
-		n = limit >> 1;
+		// If the transfer will cross the 128KiB boundary, transfer the latter
+		// half first, then truncate the transfer's length to fill the rest.
+		if (n > (limit >> 1))
+		{
+			enqueue_int(op, bus,
+			            dest + limit,
+			            src + limit,
+			            n - (limit >> 1), stride);
+			n = limit >> 1;
+		}
 	}
 	enqueue_int(op, bus, dest, src, n, stride);
 }
@@ -164,14 +131,6 @@ void sai_vdp_dma_transfer_vsram(uint32_t dest, const void *src, uint16_t words, 
 	                    dest, (uint32_t)src, words, stride);
 }
 
-void sai_vdp_dma_transfer_spr_vram(uint16_t count)
-{
-	sai_vdp_dma_enqueue(DMA_OP_SPR_TRANSFER, VDP_CTRL_VRAM_WRITE,
-	                    g_sai_vdp_sprbase, (uint32_t)g_sai_vdp_spr,
-	                    count*(sizeof(SaiVdpSpr)/sizeof(uint16_t)),
-	                    sizeof(uint16_t));
-}
-
 // Schedule a DMA for next vblank to fill specified bytes at dest with val.
 void sai_vdp_dma_fill_vram(uint32_t dest, uint16_t val, uint16_t bytes, uint16_t stride)
 {
@@ -191,18 +150,6 @@ void sai_vdp_dma_flush(void)
 	const bool hint_en = sai_vdp_set_hint_en(false);
 	const bool vint_en = sai_vdp_set_vint_en(false);
 	const bool thint_en = sai_vdp_set_thint_en(false);
-
-	// Process high-priority slots first.
-	for (uint16_t i = 0; i < SAI_ARRAYSIZE(s_dma_prio_q_cmd); i++)
-	{
-		if (s_dma_prio_q_cmd[i].stride == 0) break;
-		register void *a0 asm ("a0") = &s_dma_prio_q_cmd[i];
-		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
-		              :
-		              : "a" (a0)
-		              : "d0", "a1", "memory", "cc" );
-	}
-	s_dma_prio_q_idx = 0;
 
 	// Process all queued transfers.
 	while (s_dma_q_read_idx != s_dma_q_write_idx)

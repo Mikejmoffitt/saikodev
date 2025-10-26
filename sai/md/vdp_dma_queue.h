@@ -22,16 +22,20 @@ extern "C"
 // The default value is 32, but you may override this value by defining it.
 //
 
+SAI_ENUMSTART
+SAI_ENUMNEXT(DMA_OP_NONE)
+SAI_ENUMNEXT(DMA_OP_TRANSFER)
+SAI_ENUMNEXT(DMA_OP_COPY)
+SAI_ENUMNEXT(DMA_OP_FILL)
+SAI_ENUMEND
+
 #ifndef __ASSEMBLER__
 void sai_vdp_dma_init(void);
 
-// Schedule a DMA for next vblank from 68K mem to VRAM
+// Schedule a DMA for next vblank from 68K mem to VRAM.
 void sai_vdp_dma_transfer_vram(uint32_t dest, const void *src, uint16_t words, uint16_t stride);
 void sai_vdp_dma_transfer_cram(uint32_t dest, const void *src, uint16_t words, uint16_t stride);
 void sai_vdp_dma_transfer_vsram(uint32_t dest, const void *src, uint16_t words, uint16_t stride);
-// Special high-priority DMA for sprite tables. Schedules transfers that will
-// run before any others.
-void sai_vdp_dma_transfer_spr_vram(uint16_t count);
 
 // Schedule a DMA for next vblank to fill n words at dest with val.
 void sai_vdp_dma_fill_vram(uint32_t dest, uint16_t val, uint16_t bytes, uint16_t stride);
@@ -44,6 +48,16 @@ void sai_vdp_dma_flush(void);
 
 // Clears the specified plane to 0 by way of DMA fill.
 void sai_vdp_dma_clear_plane(uint16_t plane);
+#else
+
+	.extern sai_vpd_dma_init
+	.extern sai_vdp_dma_transfer_vram
+	.extern sai_vdp_dma_transfer_cram
+	.extern sai_vdp_dma_transfer_vsram
+	.extern sai_vdp_dma_fill_vram
+	.extern sai_vdp_dma_copy_vram
+	.extern sai_vdp_dma_flush
+	.extern sai_vdp_dma_clear_plane
 
 #endif  // __ASSEMBLER__
 

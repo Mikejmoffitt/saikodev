@@ -380,3 +380,14 @@ Very subtle corruption of sprite pixel data at the instant it is written.
 #define VDP_DEBUG_LYSEL_SPRITE  0x01
 #define VDP_DEBUG_LYSEL_PLANE_A 0x02
 #define VDP_DEBUG_LYSEL_PLANE_B 0x03
+
+//
+// VRAM and DMA Command words
+//
+#define VDP_CTRL_DMA_BIT     0x00000080
+#define VDP_CTRL_VRAM_READ   0x00000000
+#define VDP_CTRL_VRAM_WRITE  0x40000000
+#define VDP_CTRL_VSRAM_READ  0x00000010
+#define VDP_CTRL_VSRAM_WRITE 0x40000010
+#define VDP_CTRL_CRAM_READ   0x00000020
+#define VDP_CTRL_CRAM_WRITE  0xC0000000
