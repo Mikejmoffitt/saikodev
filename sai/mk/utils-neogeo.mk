@@ -4,7 +4,13 @@ SAI_TESTROM_NAME := mslug2
 .PHONY: rom
 rom: $(OUTDIR)/rom/241-p1.p1
 
-$(OUTDIR)/rom/241-p1.p1: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD)
+# The user needs to provide `neogeo.zip` for the requisite BIOS data, which is copyrighted and thus not included.
+# Place `neogeo.zip` in the project root.
+$(OUTDIR)/neogeo.zip: neogeo.zip
+	mkdir -p $(@D)
+	cp $< $@
+
+$(OUTDIR)/rom/241-p1.p1: $(PROJECT_OUTPUT) $(BSPLIT) $(BINPAD) $(OUTDIR)/neogeo.zip
 	mkdir -p $(@D)
 	mkdir -p $(WRKDIR)
 # Program data
