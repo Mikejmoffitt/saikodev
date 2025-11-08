@@ -84,7 +84,7 @@ include $(SAI)/mk/build-rules.mk
 # C1 and C2 can be further split (ordinarily, using split) to fit ROM sockets
 # of lower capacity.
 .PHONY: $(RESDIR)/chr.c1
-$(RESDIR)/chr.c1: png/chr.ini $(VELELLA)
+$(RESDIR)/chr.c1: png/chr.ini $(VELELLA) $(BSPLIT) $(BINPAD)
 	mkdir -p $(WRKDIR)
 	mkdir -p $(@D)
 	$(VELELLA) $<
