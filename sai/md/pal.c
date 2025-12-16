@@ -16,68 +16,68 @@ void sai_pal_poll(void)
 			return;
 
 		case 0x1:  // 0...
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*1, 2);
 			break;
 
 		case 0x2:  // .1..
-			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 16*1, 2);
 			break;
 
 		case 0x3:  // 01..
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 32, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*2, 2);
 			break;
 
 		case 0x4:  // ..2.
-			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 16*1, 2);
 			break;
 
 		case 0x5:  // 0.2.
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16, 2);
-			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*1, 2);
+			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 16*1, 2);
 			break;
 
 		case 0x6:  // .12.
-			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 32, 2);
+			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 16*2, 2);
 			break;
 
 		case 0x7:  // 012.
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 48, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*3, 2);
 			break;
 
 		case 0x8:  // ...3
-			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16*1, 2);
 			break;
 
 		case 0x9:  // 0..3
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16, 2);
-			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*1, 2);
+			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16*1, 2);
 			break;
 
 		case 0xA:  // .1.3
-			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 16, 2);
-			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 16*1, 2);
+			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16*1, 2);
 			break;
 
 		case 0xB:  // 01.3
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 32, 2);
-			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*2, 2);
+			sai_vdp_dma_transfer_cram(16*2*3, &g_sai_pal[16*3], 16*1, 2);
 			break;
 
 		case 0xC:  // ..23
-			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 32, 2);
+			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 16*2, 2);
 			break;
 
 		case 0xD:  // 0.23
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16, 2);
-			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 32, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*1, 2);
+			sai_vdp_dma_transfer_cram(16*2*2, &g_sai_pal[16*2], 16*2, 2);
 			break;
 
 		case 0xE:  // .123
-			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 48, 2);
+			sai_vdp_dma_transfer_cram(16*2*1, &g_sai_pal[16*1], 16*3, 2);
 			break;
 
 		case 0xF:  // 0123
-			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 64, 2);
+			sai_vdp_dma_transfer_cram(16*2*0, &g_sai_pal[16*0], 16*4, 2);
 			break;
 	}
 	g_sai_pal_dirty = 0;
