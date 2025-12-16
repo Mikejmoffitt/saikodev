@@ -73,10 +73,34 @@ static void move_test_sprite(void)
 	                           /*vflip=*/false,
 	                           TEST_SPR_PAL,
 	                           /*prio=*/false);
+#ifndef SAI_MD_VDP_SPR_DIRECT
 	sai_vdp_spr_draw(s_x+128,          s_y+128,          attr_base+(SPR_C2_FRAME_OFFS*0), SPR_C2_SIZE);
 	sai_vdp_spr_draw(s_x+128+SPR_C2_W, s_y+128,          attr_base+(SPR_C2_FRAME_OFFS*1), SPR_C2_SIZE);
 	sai_vdp_spr_draw(s_x+128,          s_y+128+SPR_C2_H, attr_base+(SPR_C2_FRAME_OFFS*2), SPR_C2_SIZE);
 	sai_vdp_spr_draw(s_x+128+SPR_C2_W, s_y+128+SPR_C2_H, attr_base+(SPR_C2_FRAME_OFFS*3), SPR_C2_SIZE);
+#else
+	g_sai_vdp_spr[0].x = s_x+128;
+	g_sai_vdp_spr[0].y = s_y+128;
+	g_sai_vdp_spr[0].attr = attr_base+(SPR_C2_FRAME_OFFS*0);
+	g_sai_vdp_spr[0].size = SPR_C2_SIZE;
+	g_sai_vdp_spr[0].link = 1;
+	g_sai_vdp_spr[1].x = s_x+128+SPR_C2_W;
+	g_sai_vdp_spr[1].y = s_y+128;
+	g_sai_vdp_spr[1].attr = attr_base+(SPR_C2_FRAME_OFFS*1);
+	g_sai_vdp_spr[1].size = SPR_C2_SIZE;
+	g_sai_vdp_spr[1].link = 2;
+	g_sai_vdp_spr[2].x = s_x+128;
+	g_sai_vdp_spr[2].y = s_y+128+SPR_C2_H;
+	g_sai_vdp_spr[2].attr = attr_base+(SPR_C2_FRAME_OFFS*2);
+	g_sai_vdp_spr[2].size = SPR_C2_SIZE;
+	g_sai_vdp_spr[2].link = 3;
+	g_sai_vdp_spr[3].x = s_x+128+SPR_C2_W;
+	g_sai_vdp_spr[3].y = s_y+128+SPR_C2_H;
+	g_sai_vdp_spr[3].attr = attr_base+(SPR_C2_FRAME_OFFS*3);
+	g_sai_vdp_spr[3].size = SPR_C2_SIZE;
+	g_sai_vdp_spr[3].link = 0;
+	g_sai_vdp_spr_count = 4;
+#endif  // SAI_MD_VDP_SPR_DIRECT
 }
 
 static void draw_initial_text(void)
@@ -142,11 +166,11 @@ static void draw_inputs(void)
 void __attribute__((noreturn)) main(void)
 {
 	sai_init();
-	sai_pal_load(TEST_FONT_PAL, wrk_gfx_pal+BG_FONT_PAL_OFFS, 1);
-	sai_pal_load(TEST_SPR_PAL, wrk_gfx_pal+SPR_C2_PAL_OFFS, 1);
-	sai_vdp_dma_transfer_vram(TEST_SPR_VRAM_ADDR, wrk_gfx_chr+SPR_C2_CHR_OFFS,
+	sai_pal_load(TEST_FONT_PAL, vel_get_wrk_gfx_pal(BG_FONT), 1);
+	sai_pal_load(TEST_SPR_PAL, vel_get_wrk_gfx_pal(SPR_C2), 1);
+	sai_vdp_dma_transfer_vram(TEST_SPR_VRAM_ADDR, vel_get_wrk_gfx_chr(SPR_C2),
 	                          SPR_C2_CHR_WORDS, 2);
-	sai_vdp_dma_transfer_vram(TEST_BG_VRAM_FONT_ADDR, wrk_gfx_chr+BG_FONT_CHR_OFFS,
+	sai_vdp_dma_transfer_vram(TEST_BG_VRAM_FONT_ADDR, vel_get_wrk_gfx_chr(BG_FONT),
 	                          BG_FONT_CHR_WORDS, 2);
 	draw_initial_text();
 
