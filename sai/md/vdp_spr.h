@@ -108,10 +108,10 @@ static inline bool sai_vdp_spr_draw(uint16_t x, uint16_t y,
 static inline bool sai_vdp_spr_draw_safe(uint16_t x, uint16_t y,
                                          uint16_t attr, uint8_t size)
 {
-	if (y <= 128-32) return true;
-	if (y >= 128+240) return true;
-	if (x <= 128-32) return true;
-	if (y >= 128+320) return true;
+	if (y <= VDP_SPR_STATIC_OFFS-32) return true;
+	if (y >= VDP_SPR_STATIC_OFFS+240) return true;
+	if (x <= VDP_SPR_STATIC_OFFS-32) return true;
+	if (y >= VDP_SPR_STATIC_OFFS+320) return true;
 	return sai_vdp_spr_draw(y, x, attr, size);
 }
 
