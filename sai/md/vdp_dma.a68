@@ -20,14 +20,16 @@ DmaCmd.len:
 ; a0.l = command
 	.global	sai_vdp_dma_process_cmd
 sai_vdp_dma_process_cmd:
-	lea	VDP_BASE, a1
+	lea	VDP_BASE+VDP_OFFS_STATUS, a1
+	move.w	#VDP_STATUS_DMA, d0
 	; Wait for another DMA to be done.
 0:
-	move.w	VDP_OFFS_STATUS(a1), d0
-	andi.w	#VDP_STATUS_DMA, d0
+	and.w	(a1), d0
 	bne.s	0b
 
-	lea	VDP_OFFS_CTRL(a1), a1
+	.if VDP_OFFS_STATUS != VDP_OFFS_CTRL
+	.error "VDP status port is not equal to control port?!"
+	.endif
 	; A0 holds the DMA command, with precalculated register values.
 	move.w	DmaCmd.src3(a0), d0
 	move.w	(a0)+, (a1)  ; DmaCmd.stride
@@ -35,7 +37,7 @@ sai_vdp_dma_process_cmd:
 	tst.b	d0
 	bmi.s	dma_fill
 	move.l	(a0)+, (a1)  ; DmaCmd.src1/2
-	addq.w	#2, a0  ; Skip src3, already read it
+	addq.l	#2, a0  ; Skip src3, already read it (it's in d0)
 	move.w	d0, (a1)  ; src3
 
 #if SAI_TARGET==SAI_TARGET_MD

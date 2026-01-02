@@ -9,7 +9,6 @@
 #define VDP_DMA_SRC_FILL 0x80
 #define VDP_DMA_SRC_COPY 0xC0
 
-#define SAI_MD_VDP_DMA_QUEUE_PRIO_DEPTH 2
 #ifndef SAI_MD_VDP_DMA_QUEUE_DEPTH
 #define SAI_MD_VDP_DMA_QUEUE_DEPTH SAI_MD_VDP_DMA_QUEUE_DEPTH_DEFAULT
 #endif  // SAI_MD_VDP_DMA_QUEUE_DEPTH
@@ -32,14 +31,35 @@ struct DmaCmd
 _Static_assert(sizeof(DmaCmd) == 0x10);
 
 // DMA queue ring buffer.
+static uint16_t s_dma_q_cnt;
 static uint16_t s_dma_q_write_idx;
 static uint16_t s_dma_q_read_idx;
 static DmaCmd s_dma_q[SAI_MD_VDP_DMA_QUEUE_DEPTH];
+
+static inline void process_single_command(DmaCmd *cmd)
+{
+	register void *a0 asm ("a0") = cmd;
+	asm volatile ("bsr.w sai_vdp_dma_process_cmd"
+	              :
+	              : "a" (a0)
+	              : "d0", "a1", "memory", "cc" );
+}
+
+static inline uint16_t next_read_idx(void)
+{
+	return (s_dma_q_read_idx + 1) % SAI_MD_VDP_DMA_QUEUE_DEPTH;
+}
+
+static inline uint16_t next_write_idx(void)
+{
+	return (s_dma_q_write_idx + 1) % SAI_MD_VDP_DMA_QUEUE_DEPTH;
+}
 
 void sai_vdp_dma_init(void)
 {
 	s_dma_q_read_idx = 0;
 	s_dma_q_write_idx = 0;
+	s_dma_q_cnt = 0;
 }
 
 // Calculate required register values for a transfer.
@@ -49,11 +69,11 @@ static inline void enqueue_int(uint16_t op, uint32_t bus, uint32_t dest, uint32_
 	// A command slot is chosen from one of the two queues, based on the type.
 	DmaCmd *cmd;
 
+	// If the DMA queue is full, force a flush.
+	if (s_dma_q_cnt >= SAI_MD_VDP_DMA_QUEUE_DEPTH) sai_vdp_dma_flush();
+
 	cmd = &s_dma_q[s_dma_q_write_idx];
-	s_dma_q_write_idx = (s_dma_q_write_idx + 1) %
-	                     SAI_ARRAYSIZE(s_dma_q);
-	if (s_dma_q_write_idx == s_dma_q_read_idx) sai_vdp_dma_flush();
-	if (s_dma_q_write_idx == s_dma_q_read_idx) return;
+	s_dma_q_write_idx = next_write_idx();
 
 	// DMA register values are calculated ahead of time to be consumed during
 	// VBlank faster.
@@ -88,6 +108,8 @@ static inline void enqueue_int(uint16_t op, uint32_t bus, uint32_t dest, uint32_
 	}
 
 	cmd->ctrl = VDP_CTRL_DMA_BIT | VDP_CTRL_ADDR(dest) | bus;
+
+	s_dma_q_cnt++;
 }
 
 static inline void sai_vdp_dma_enqueue(uint16_t op, uint32_t bus, uint32_t dest, uint32_t src, uint16_t n, uint16_t stride)
@@ -143,8 +165,6 @@ void sai_vdp_dma_copy_vram(uint32_t dest, uint16_t src, uint16_t bytes, uint16_t
 	sai_vdp_dma_enqueue(DMA_OP_COPY, VDP_CTRL_VRAM_WRITE, dest, src, bytes, stride);
 }
 
-void sai_vdp_dma_process_cmd(DmaCmd *cmd);  // dma_process.a68
-
 void sai_vdp_dma_flush(void)
 {
 	const bool hint_en = sai_vdp_set_hint_en(false);
@@ -152,16 +172,16 @@ void sai_vdp_dma_flush(void)
 	const bool thint_en = sai_vdp_set_thint_en(false);
 
 	// Process all queued transfers.
-	while (s_dma_q_read_idx != s_dma_q_write_idx)
+	for (uint16_t i = 0; i < s_dma_q_cnt; i++)
 	{
+//	while (s_dma_q_read_idx != s_dma_q_write_idx)
+//	{
 		DmaCmd *cmd = &s_dma_q[s_dma_q_read_idx];
-		register void *a0 asm ("a0") = cmd;
-		asm volatile ("bsr.w sai_vdp_dma_process_cmd"
-		              :
-		              : "a" (a0)
-		              : "d0", "a1", "memory", "cc" );
-		s_dma_q_read_idx = (s_dma_q_read_idx + 1) % SAI_MD_VDP_DMA_QUEUE_DEPTH;
+		process_single_command(cmd);
+		s_dma_q_read_idx = next_read_idx();
 	}
+
+	s_dma_q_cnt = 0;
 
 	sai_vdp_set_hint_en(hint_en);
 	sai_vdp_set_vint_en(vint_en);
