@@ -20,7 +20,7 @@ extern "C"
 // Set this flag to tell Saikodev that you don't want it to set the link fields
 // or terminate the sprite list. The sprite buffer still exists, but it becomes
 // the programmer's responsibility to correctly terminate the sprite list and
-// hide unwanted sprites. 
+// hide unwanted sprites.
 //
 // In direct mode, set g_sai_vdp_spr_count to the size of the sprite list that
 // you will transfer. By default, this will be set to the full sprite list size
@@ -31,6 +31,10 @@ extern "C"
 // g_sai_vdp_spr_next is also still present, and you can use the drawing code
 // defined below, but keep in mind that unless you are careful you run the risk
 // of clobbering manual sprite list manipulations.
+//
+// * SAI_MD_VDP_SPR_NO_OFFSET
+//
+// Set this flag to disable the automatic +128 offset applied to sprites.
 //
 
 #ifndef __ASSEMBLER__
@@ -83,10 +87,17 @@ static inline bool sai_vdp_spr_mask_line_comb(int16_t y1, uint8_t size1,
 static inline bool sai_vdp_spr_draw_st(const SaiVdpSpr *param)
 {
 	if (g_sai_vdp_spr_count >= VDP_SPR_COUNT) return true;
-	g_sai_vdp_spr_next->y = param->y;
+#ifndef SAI_MD_VDP_SPR_NO_OFFSET
+	const uint16_t x = param->x + VDP_SPR_STATIC_OFFS;
+	const uint16_t y = param->y + VDP_SPR_STATIC_OFFS;
+#else
+	const uint16_t x = param->x;
+	const uint16_t y = param->y;
+#endif  // SAI_MD_VDP_SPR_NO_OFFSET
+	g_sai_vdp_spr_next->y = y;
 	g_sai_vdp_spr_next->size = param->size;
 	g_sai_vdp_spr_next->attr = param->attr;
-	g_sai_vdp_spr_next->x = param->x;
+	g_sai_vdp_spr_next->x = x;
 	g_sai_vdp_spr_next++;
 	g_sai_vdp_spr_count++;
 	return false;
@@ -96,6 +107,10 @@ static inline bool sai_vdp_spr_draw(uint16_t x, uint16_t y,
                                     uint16_t attr, uint8_t size)
 {
 	if (g_sai_vdp_spr_count >= VDP_SPR_COUNT) return true;
+#ifndef SAI_MD_VDP_SPR_NO_OFFSET
+	x += VDP_SPR_STATIC_OFFS;
+	y += VDP_SPR_STATIC_OFFS;
+#endif  // SAI_MD_VDP_SPR_NO_OFFSET
 	g_sai_vdp_spr_next->y = y;
 	g_sai_vdp_spr_next->size = size;
 	g_sai_vdp_spr_next->attr = attr;

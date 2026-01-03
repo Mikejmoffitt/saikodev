@@ -74,28 +74,28 @@ static void move_test_sprite(void)
 	                           TEST_SPR_PAL,
 	                           /*prio=*/false);
 #ifndef SAI_MD_VDP_SPR_DIRECT
-	sai_vdp_spr_draw(s_x+128,          s_y+128,          attr_base+(SPR_MD_FRAME_OFFS*0), SPR_MD_SIZE);
-	sai_vdp_spr_draw(s_x+128+SPR_MD_W, s_y+128,          attr_base+(SPR_MD_FRAME_OFFS*1), SPR_MD_SIZE);
-	sai_vdp_spr_draw(s_x+128,          s_y+128+SPR_MD_H, attr_base+(SPR_MD_FRAME_OFFS*2), SPR_MD_SIZE);
-	sai_vdp_spr_draw(s_x+128+SPR_MD_W, s_y+128+SPR_MD_H, attr_base+(SPR_MD_FRAME_OFFS*3), SPR_MD_SIZE);
+	sai_vdp_spr_draw(s_x,          s_y,          attr_base+(SPR_MD_FRAME_OFFS*0), SPR_MD_SIZE);
+	sai_vdp_spr_draw(s_x+SPR_MD_W, s_y,          attr_base+(SPR_MD_FRAME_OFFS*1), SPR_MD_SIZE);
+	sai_vdp_spr_draw(s_x,          s_y+SPR_MD_H, attr_base+(SPR_MD_FRAME_OFFS*2), SPR_MD_SIZE);
+	sai_vdp_spr_draw(s_x+SPR_MD_W, s_y+SPR_MD_H, attr_base+(SPR_MD_FRAME_OFFS*3), SPR_MD_SIZE);
 #else
-	g_sai_vdp_spr[0].x = s_x+128;
-	g_sai_vdp_spr[0].y = s_y+128;
+	g_sai_vdp_spr[0].x = s_x+VDP_SPR_STATIC_OFFS;
+	g_sai_vdp_spr[0].y = s_y+VDP_SPR_STATIC_OFFS;
 	g_sai_vdp_spr[0].attr = attr_base+(SPR_MD_FRAME_OFFS*0);
 	g_sai_vdp_spr[0].size = SPR_MD_SIZE;
 	g_sai_vdp_spr[0].link = 1;
-	g_sai_vdp_spr[1].x = s_x+128+SPR_MD_W;
-	g_sai_vdp_spr[1].y = s_y+128;
+	g_sai_vdp_spr[1].x = s_x+VDP_SPR_STATIC_OFFS+SPR_MD_W;
+	g_sai_vdp_spr[1].y = s_y+VDP_SPR_STATIC_OFFS;
 	g_sai_vdp_spr[1].attr = attr_base+(SPR_MD_FRAME_OFFS*1);
 	g_sai_vdp_spr[1].size = SPR_MD_SIZE;
 	g_sai_vdp_spr[1].link = 2;
-	g_sai_vdp_spr[2].x = s_x+128;
-	g_sai_vdp_spr[2].y = s_y+128+SPR_MD_H;
+	g_sai_vdp_spr[2].x = s_x+VDP_SPR_STATIC_OFFS;
+	g_sai_vdp_spr[2].y = s_y+VDP_SPR_STATIC_OFFS+SPR_MD_H;
 	g_sai_vdp_spr[2].attr = attr_base+(SPR_MD_FRAME_OFFS*2);
 	g_sai_vdp_spr[2].size = SPR_MD_SIZE;
 	g_sai_vdp_spr[2].link = 3;
-	g_sai_vdp_spr[3].x = s_x+128+SPR_MD_W;
-	g_sai_vdp_spr[3].y = s_y+128+SPR_MD_H;
+	g_sai_vdp_spr[3].x = s_x+VDP_SPR_STATIC_OFFS+SPR_MD_W;
+	g_sai_vdp_spr[3].y = s_y+VDP_SPR_STATIC_OFFS+SPR_MD_H;
 	g_sai_vdp_spr[3].attr = attr_base+(SPR_MD_FRAME_OFFS*3);
 	g_sai_vdp_spr[3].size = SPR_MD_SIZE;
 	g_sai_vdp_spr[3].link = 0;
